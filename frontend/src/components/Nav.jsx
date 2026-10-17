@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Shield } from "lucide-react";
+import { X, Shield, ShieldCheck, MapPin } from "lucide-react";
 import LogoMark, { SkullIcon, CompassRose } from "./LogoMark";
 import LangSwitcher from "./LangSwitcher";
 import { scrollToId } from "@/App";
@@ -167,7 +167,7 @@ export default function Nav() {
               </div>
             </div>
 
-            <div className="relative z-10 flex-1 min-h-0 flex flex-col lg:flex-row overflow-y-auto">
+            <div className="relative z-10 flex-1 min-h-0 flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
               <div className="lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 pb-14">
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
@@ -232,20 +232,38 @@ export default function Nav() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.55, duration: 0.7, ease: EASE }}
-                  onClick={goSuivi}
-                  className="w-full max-w-md font-mono2 text-xs tracking-[0.3em] text-gold border border-gold/40 px-6 py-4 uppercase hover:bg-gold/10 hover:border-gold transition-all duration-300"
+                  onClick={location.pathname === "/suivi" ? undefined : goSuivi}
+                  aria-current={location.pathname === "/suivi" ? "page" : undefined}
+                  className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
+                    location.pathname === "/suivi"
+                      ? "border border-gold bg-gold/10 text-gold cursor-default"
+                      : "text-gold border border-gold/40 hover:bg-gold/10 hover:border-gold"
+                  }`}
                 >
-                  {c.nav.suivi}
+                  {location.pathname === "/suivi" ? (
+                    <>
+                      <MapPin className="w-4 h-4 shrink-0" /> {c.nav.suivi} — {c.nav.here}
+                    </>
+                  ) : (
+                    c.nav.suivi
+                  )}
                 </motion.button>
                 <motion.button
                   data-testid="nav-link-admin"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7, duration: 0.7, ease: EASE }}
-                  onClick={goAdmin}
-                  className="w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] text-bone/90 border border-mist/40 bg-deck/70 px-6 py-4 uppercase hover:text-gold hover:border-gold/60 hover:bg-gold/5 transition-all duration-300"
+                  onClick={location.pathname === "/admin" ? undefined : goAdmin}
+                  aria-current={location.pathname === "/admin" ? "page" : undefined}
+                  className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
+                    location.pathname === "/admin"
+                      ? "border border-gold bg-gold/10 text-gold cursor-default"
+                      : "text-bone/90 border border-mist/40 bg-deck/70 hover:text-gold hover:border-gold/60 hover:bg-gold/5"
+                  }`}
                 >
-                  <Shield className="w-4 h-4 text-gold/80 shrink-0" /> {c.nav.admin}
+                  {location.pathname === "/admin" ? <ShieldCheck className="w-4 h-4 shrink-0" /> : <Shield className="w-4 h-4 text-gold/80 shrink-0" />}
+                  {c.nav.admin}
+                  {location.pathname === "/admin" && <span className="text-gold">— {c.nav.here}</span>}
                 </motion.button>
               </div>
             </div>

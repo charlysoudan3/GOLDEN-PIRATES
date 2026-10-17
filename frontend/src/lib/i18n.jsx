@@ -13,6 +13,7 @@ const fr = {
     suivi: "Suivre ma candidature",
     suiviShort: "Suivi",
     admin: "Espace Conseil",
+    here: "VOUS Y ÊTES",
     cta: "Postuler",
   },
   hero: {
@@ -238,6 +239,7 @@ const fr = {
     dash: {
       eyebrow: "CONSEIL DES CAPITAINES",
       title: "Le registre des recrues",
+      titleMessages: "La messagerie du Conseil",
       logout: "REFERMER LE COFFRE",
       tabs: [
         { key: "registry", label: "REGISTRE" },
@@ -328,6 +330,7 @@ const en = {
     suivi: "Track my application",
     suiviShort: "Tracking",
     admin: "Council Space",
+    here: "YOU'RE HERE",
     cta: "Apply",
   },
   hero: {
@@ -553,6 +556,7 @@ const en = {
     dash: {
       eyebrow: "COUNCIL OF CAPTAINS",
       title: "The recruits' register",
+      titleMessages: "The Council's message room",
       logout: "LOCK THE CHEST",
       tabs: [
         { key: "registry", label: "REGISTER" },

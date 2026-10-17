@@ -649,7 +649,9 @@ export default function Admin() {
               <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
                 <div>
                   <p className="font-mono2 text-[11px] tracking-[0.35em] text-gold mb-3">{a.dash.eyebrow}</p>
-                  <h1 className="font-display text-4xl sm:text-5xl text-bone">{a.dash.title}</h1>
+                  <h1 className="font-display text-4xl sm:text-5xl text-bone">
+                    {view === "messages" ? a.dash.titleMessages : a.dash.title}
+                  </h1>
                 </div>
                 <button
                   data-testid="admin-logout-btn"
