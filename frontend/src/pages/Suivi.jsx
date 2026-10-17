@@ -359,24 +359,40 @@ export default function Suivi() {
             )}
           </AnimatePresence>
 
-          {result && (result.status === "rejected" || result.status === "reserve") && (
-            <motion.div
-              data-testid="reapply-block"
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE }}
-              className="mt-6 border border-amber-500/40 bg-amber-500/5 p-6 text-center"
-            >
-              <p className="font-fell italic text-base text-bone/80 mb-4">{s.reapplyHint}</p>
-              <button
-                data-testid="reapply-btn"
-                onClick={() => navigate("/#postuler")}
-                className="font-display text-xl tracking-wider uppercase px-8 py-3 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+          {result && result.status === "rejected" && (() => {
+            const locked = !!result.reapply_at && new Date(result.reapply_at) > new Date();
+            return (
+              <motion.div
+                data-testid="reapply-block"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: EASE }}
+                className="mt-6 border border-amber-500/40 bg-amber-500/5 p-6 text-center"
               >
-                {s.reapply}
-              </button>
-            </motion.div>
-          )}
+                <p className="font-fell italic text-base text-bone/80 mb-4">
+                  {locked
+                    ? s.reapplyLocked(new Date(result.reapply_at).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }))
+                    : s.reapplyHint}
+                </p>
+                {locked ? (
+                  <span
+                    data-testid="reapply-locked-chip"
+                    className="inline-block font-mono2 text-[10px] tracking-[0.25em] text-amber-400 border border-amber-500/50 bg-amber-500/10 px-4 py-2"
+                  >
+                    {s.reapplyLockedLabel}
+                  </span>
+                ) : (
+                  <button
+                    data-testid="reapply-btn"
+                    onClick={() => navigate("/#postuler")}
+                    className="font-display text-xl tracking-wider uppercase px-8 py-3 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+                  >
+                    {s.reapply}
+                  </button>
+                )}
+              </motion.div>
+            );
+          })()}
 
           {rack.length > 0 && (
             <motion.div

@@ -218,7 +218,7 @@ function LoginScreen({ onAuthed }) {
   );
 }
 
-function AppRow({ app, onUpdate, onDelete }) {
+function AppRow({ app, onUpdate, onDelete, history }) {
   const { c, lang } = useLang();
   const d = c.admin.dash;
   const locale = lang === "fr" ? "fr-FR" : "en-GB";
@@ -237,7 +237,17 @@ function AppRow({ app, onUpdate, onDelete }) {
         <div className="col-span-11 sm:col-span-3 flex items-center gap-3 min-w-0">
           <ChevronDown className={`w-4 h-4 text-gold shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
           <div className="min-w-0">
-            <p className="font-display text-xl text-bone truncate">{app.pseudo}</p>
+            <p className="font-display text-xl text-bone truncate">
+              {app.pseudo}
+              {history && (
+                <span
+                  data-testid={`admin-attempt-badge-${app.id}`}
+                  className="ml-2 inline-block align-middle border border-amber-500/50 bg-amber-500/10 text-amber-400 font-mono2 text-[8px] tracking-[0.2em] px-1.5 py-0.5"
+                >
+                  {d.attemptBadge(history.attempt)}
+                </span>
+              )}
+            </p>
             <p className="font-mono2 text-[9px] tracking-[0.2em] text-gold">{app.tracking_code}</p>
           </div>
         </div>
@@ -286,6 +296,14 @@ function AppRow({ app, onUpdate, onDelete }) {
                 <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">
                   {d.filedOn}{frDate(app.created_at, locale).toUpperCase()}
                 </p>
+                {history && (
+                  <p
+                    data-testid={`admin-prev-decision-${app.id}`}
+                    className="font-fell text-sm text-amber-400/90 border-l-2 border-amber-500/40 pl-3"
+                  >
+                    {d.prevDecision} {c.status[history.prev.status]?.label} — {frDate(history.prev.created_at, locale)}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block font-mono2 text-[9px] tracking-[0.2em] text-gold mb-2" htmlFor={`note-${app.id}`}>
@@ -568,6 +586,20 @@ export default function Admin() {
     }
   };
 
+  const pseudoGroups = {};
+  apps.forEach((a) => {
+    const k = (a.pseudo || "").trim().toLowerCase();
+    (pseudoGroups[k] = pseudoGroups[k] || []).push(a);
+  });
+  Object.values(pseudoGroups).forEach((list) =>
+    list.sort((x, y) => (x.created_at || "").localeCompare(y.created_at || ""))
+  );
+  const getHistory = (app) => {
+    const list = pseudoGroups[(app.pseudo || "").trim().toLowerCase()] || [];
+    const idx = list.indexOf(app);
+    return idx > 0 ? { attempt: idx + 1, prev: list[idx - 1] } : null;
+  };
+
   const visible = apps.filter((x) => {
     if (filter !== "all" && x.status !== filter) return false;
     if (search.trim()) {
@@ -704,7 +736,7 @@ export default function Admin() {
                       </div>
                     ) : (
                       visible.map((app) => (
-                        <AppRow key={app.id} app={app} onUpdate={onUpdate} onDelete={onDelete} />
+                        <AppRow key={app.id} app={app} onUpdate={onUpdate} onDelete={onDelete} history={getHistory(app)} />
                       ))
                     )}
                   </div>

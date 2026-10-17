@@ -123,15 +123,77 @@ async def root():
     return {"message": "Golden Pirates API — Royaume 1023", "status": "ok"}
 
 
+REAPPLY_COOLDOWN_DAYS = 30
+IP_APPLICATIONS_PER_DAY = 3
+
+
 @api_router.post("/applications")
-async def create_application(data: ApplicationCreate):
+async def create_application(data: ApplicationCreate, request: Request):
+    pseudo_key = data.pseudo.strip().lower()
+    now = now_utc()
+
+    # Garde 1 — un seul dossier actif par pseudo (pas de doublon qui noie le registre)
+    active = await db.applications.find_one(
+        {"pseudo_lower": pseudo_key, "status": {"$in": ["pending", "reserve"]}},
+        sort=[("created_at", -1)],
+    )
+    if active:
+        raise HTTPException(status_code=409, detail={
+            "code": "duplicate_active",
+            "msg": "Tu as déjà un dossier en examen ou en réserve — garde ton code de suivi et consulte l'Espace Recrue.",
+        })
+
+    # Garde 2 — déjà accepté à bord : pas de nouvelle candidature
+    aboard = await db.applications.find_one({"pseudo_lower": pseudo_key, "status": "accepted"})
+    if aboard:
+        raise HTTPException(status_code=409, detail={
+            "code": "already_accepted",
+            "msg": "Tu fais déjà partie de l'équipage, marin — vérifie ton dossier dans l'Espace Recrue.",
+        })
+
+    # Garde 3 — délai de reflection après un refus (pas de repostage-instantané)
+    last_rejected = await db.applications.find_one(
+        {"pseudo_lower": pseudo_key, "status": "rejected"},
+        sort=[("created_at", -1)],
+    )
+    if last_rejected:
+        base = last_rejected.get("status_changed_at") or last_rejected.get("created_at")
+        try:
+            base_dt = datetime.fromisoformat(base)
+        except (TypeError, ValueError):
+            base_dt = None
+        if base_dt and base_dt.tzinfo is None:
+            base_dt = base_dt.replace(tzinfo=timezone.utc)
+        retry_at = base_dt + timedelta(days=REAPPLY_COOLDOWN_DAYS) if base_dt else None
+        if retry_at and retry_at > now:
+            raise HTTPException(status_code=429, detail={
+                "code": "cooldown",
+                "msg": "Dossier refusé récemment — la mer t'apprendra la patience, marin.",
+                "retry_at": retry_at.isoformat(),
+            })
+
+    # Garde 4 — limite anti-flood par appareil (IP)
+    ip = (request.headers.get("x-forwarded-for") or "").split(",")[-1].strip()
+    if not ip:
+        ip = request.client.host if request.client else "unknown"
+    day_ago = (now - timedelta(days=1)).isoformat()
+    ip_count = await db.applications.count_documents({"ip": ip, "created_at": {"$gte": day_ago}})
+    if ip_count >= IP_APPLICATIONS_PER_DAY:
+        raise HTTPException(status_code=429, detail={
+            "code": "ip_limit",
+            "msg": "Trop de candidatures depuis cet appareil aujourd'hui — reviens demain, la mer ne bouge pas.",
+        })
+
     doc = data.model_dump()
     doc["id"] = str(uuid.uuid4())
     doc["status"] = "pending"
     doc["note"] = ""
     doc["seen_status"] = "pending"
     doc["seen_note"] = ""
-    doc["created_at"] = now_utc().isoformat()
+    doc["created_at"] = now.isoformat()
+    doc["status_changed_at"] = now.isoformat()
+    doc["pseudo_lower"] = pseudo_key
+    doc["ip"] = ip
     code = None
     for _ in range(6):
         candidate = "GP-1023-" + "".join(
@@ -160,6 +222,17 @@ async def track_application(code: str):
             {"tracking_code": code},
             {"$set": {"seen_status": doc["status"], "seen_note": doc.get("note", "")}},
         )
+    reapply_at = None
+    if doc["status"] == "rejected":
+        base = doc.get("status_changed_at") or doc.get("created_at")
+        try:
+            base_dt = datetime.fromisoformat(base)
+        except (TypeError, ValueError):
+            base_dt = None
+        if base_dt:
+            if base_dt.tzinfo is None:
+                base_dt = base_dt.replace(tzinfo=timezone.utc)
+            reapply_at = (base_dt + timedelta(days=REAPPLY_COOLDOWN_DAYS)).isoformat()
     return {
         "tracking_code": doc["tracking_code"],
         "pseudo": doc["pseudo"],
@@ -172,6 +245,7 @@ async def track_application(code: str):
         "status": doc["status"],
         "note": doc.get("note", ""),
         "created_at": doc.get("created_at"),
+        "reapply_at": reapply_at,
         "new_status": new_status,
         "new_note": new_note,
     }
@@ -252,9 +326,16 @@ async def admin_stats(_: str = Depends(require_admin)):
 async def update_application(app_id: str, data: StatusUpdate, _: str = Depends(require_admin)):
     if data.status not in ("pending", "accepted", "rejected", "reserve"):
         raise HTTPException(status_code=400, detail="Statut invalide")
+    current = await db.applications.find_one({"id": app_id}, {"status": 1})
+    if not current:
+        raise HTTPException(status_code=404, detail="Candidature introuvable")
+    update = {"note": data.note or ""}
+    if current["status"] != data.status:
+        update["status"] = data.status
+        update["status_changed_at"] = now_utc().isoformat()
     doc = await db.applications.find_one_and_update(
         {"id": app_id},
-        {"$set": {"status": data.status, "note": data.note or ""}},
+        {"$set": update},
         return_document=ReturnDocument.AFTER,
     )
     if not doc:
@@ -441,6 +522,15 @@ async def admin_mark_read(code: str, _: str = Depends(require_admin)):
 async def seed():
     await db.users.create_index("email", unique=True)
     await db.applications.create_index("tracking_code", unique=True)
+    await db.applications.create_index("pseudo_lower")
+    await db.applications.create_index("ip")
+    await db.applications.update_many(
+        {"pseudo_lower": {"$exists": False}},
+        [{"$set": {
+            "pseudo_lower": {"$toLower": {"$trim": {"input": "$pseudo"}}},
+            "status_changed_at": "$created_at",
+        }}],
+    )
     await db.login_attempts.create_index("identifier")
     await db.messages.create_index([("conv_code", 1), ("created_at", 1)])
     admin = await db.users.find_one({"email": ADMIN_EMAIL})

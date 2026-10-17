@@ -13,7 +13,7 @@ const inputCls =
 const labelCls = "block font-mono2 text-[10px] tracking-[0.3em] text-gold mb-2";
 
 export default function ApplyForm() {
-  const { c } = useLang();
+  const { c, lang } = useLang();
   const s = c.apply;
   const [form, setForm] = useState(() => ({
     pseudo: "",
@@ -55,7 +55,18 @@ export default function ApplyForm() {
       setResult(data);
       toast.success(s.toastSuccess(data.tracking_code));
     } catch (err) {
-      toast.error(formatApiError(err));
+      const detail = err?.response?.data?.detail;
+      const code = detail?.code;
+      const locale = lang === "fr" ? "fr-FR" : "en-GB";
+      if (code === "duplicate_active") toast.error(s.errors.duplicateActive);
+      else if (code === "already_accepted") toast.error(s.errors.alreadyAccepted);
+      else if (code === "cooldown") {
+        const dstr = detail?.retry_at
+          ? new Date(detail.retry_at).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })
+          : null;
+        toast.error(dstr ? s.errors.cooldown(dstr) : formatApiError(err));
+      } else if (code === "ip_limit") toast.error(s.errors.ipLimit);
+      else toast.error(formatApiError(err));
     } finally {
       setSending(false);
     }
