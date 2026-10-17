@@ -252,6 +252,50 @@ def test_cooldown_lifted_by_explicit_pardon(admin_session):
     db.applications.delete_one({"id": r.json()["id"]})
 
 
+def test_cooldown_sanctuary_allows_after_30_days():
+    """Après l'expiration du délai (source : sanctuaire), la recrue n'est plus
+    bloquée : repostage accepté — rien ne reste figé."""
+    pseudo = f"{TEST_PREFIX}SanctuaryOver"
+    old_iso = (datetime.now(timezone.utc) - timedelta(days=31)).isoformat()
+    db.rejections.update_one(
+        {"pseudo_lower": pseudo.lower()},
+        {"$set": {"pseudo_lower": pseudo.lower(), "rejected_at": old_iso}},
+        upsert=True,
+    )
+    payload = {
+        "pseudo": pseudo,
+        "power": "100M", "troops": "Marine", "activity": "Quotidien",
+        "experience": "", "discord": "x#sanct",
+        "message": "TEST repostage apres expiration du sanctuaire",
+    }
+    r = requests.post(f"{BASE_URL}/api/applications", json=payload,
+                      headers={"X-Forwarded-For": "203.0.113.78"}, timeout=15)
+    assert r.status_code == 200, r.text
+    assert r.json()["tracking_code"].startswith("GP-1023-")
+    db.applications.delete_one({"id": r.json()["id"]})
+
+
+def test_cooldown_sanctuary_still_blocks_before_expiry():
+    """Juste avant l'expiration (29 jours), le sanctuaire bloque toujours."""
+    pseudo = f"{TEST_PREFIX}SanctuaryNear"
+    near_iso = (datetime.now(timezone.utc) - timedelta(days=29)).isoformat()
+    db.rejections.update_one(
+        {"pseudo_lower": pseudo.lower()},
+        {"$set": {"pseudo_lower": pseudo.lower(), "rejected_at": near_iso}},
+        upsert=True,
+    )
+    payload = {
+        "pseudo": pseudo,
+        "power": "100M", "troops": "Marine", "activity": "Quotidien",
+        "experience": "", "discord": "x#snear",
+        "message": "TEST repostage juste avant expiration du sanctuaire",
+    }
+    r = requests.post(f"{BASE_URL}/api/applications", json=payload,
+                      headers={"X-Forwarded-For": "203.0.113.79"}, timeout=15)
+    assert r.status_code == 429, r.text
+    assert r.json()["detail"]["code"] == "cooldown"
+
+
 # ---------------- Guard: ip_limit (6 per 24h) ----------------
 
 def test_ip_limit_blocks_after_six_from_same_ip():
