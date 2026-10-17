@@ -239,13 +239,13 @@ export default function Nav() {
                 </motion.button>
                 <motion.button
                   data-testid="nav-link-admin"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.7, duration: 0.6 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.7, ease: EASE }}
                   onClick={goAdmin}
-                  className="w-max flex items-center gap-2 font-mono2 text-[10px] tracking-[0.3em] text-mist hover:text-gold transition-colors duration-300 uppercase"
+                  className="w-max max-w-full flex items-center gap-2.5 font-mono2 text-[11px] sm:text-xs tracking-[0.3em] text-bone/90 border border-mist/40 bg-deck/70 px-6 py-3.5 uppercase hover:text-gold hover:border-gold/60 hover:bg-gold/5 transition-all duration-300"
                 >
-                  <Shield className="w-3.5 h-3.5" /> {c.nav.admin}
+                  <Shield className="w-4 h-4 text-gold/80 shrink-0" /> {c.nav.admin}
                 </motion.button>
               </div>
             </div>

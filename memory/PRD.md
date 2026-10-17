@@ -45,3 +45,4 @@ Choix confirmés : thème « jamais vu » 100% pirates et impressionnant ; formu
 1. Confirmer la puissance minimum réelle et l'ajuster partout (2 constantes).
 2. Ajouter le lien Discord officiel dans le footer + section processus.
 3. Déployer (le premier Deploy copie la base de prévisualisation ; ensuite saisissez le contenu réel sur le site en ligne).
+- 2026-10-17 : Bouton « ESPACE CONSEIL » du menu plein écran rendu lisible (signalement utilisateur : bouton noir et illisible sur mobile) — ancien lien texte gris 10 px sans fond remplacé par une plaque de 3ᵉ niveau : texte bone/90 11-12 px, bouclier or, bordure mist/40, fond deck/70, survol or ; hiérarchie préservée (POSTULER or plein > SUIVRE bordure or > CONSEIL plaque discrète). Vérifié sur 6 familles d'écrans : 1440×900, 1024×768, 768×1024, 390×844, 320×568 et 844×390 paysage — visible et cliquable partout, zéro débordement horizontal.
