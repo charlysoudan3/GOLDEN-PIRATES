@@ -504,6 +504,7 @@ export default function Admin() {
   const [activeConv, setActiveConv] = useState(null);
   const [badges, setBadges] = useState({ unread: 0, pending: 0 });
   const [exporting, setExporting] = useState(null);
+  const [splash, setSplash] = useState(true);
 
   // Lien direct du footer Conseil → onglet MESSAGERIE (/admin#messagerie)
   useEffect(() => {
@@ -533,13 +534,12 @@ export default function Admin() {
       .catch(() => setAuthed(false));
   }, [loadAll]);
 
-  // Garde-fou anti-figage : jamais plus de 12 s sur « OUVERTURE DU COFFRE… » —
-  // une connexion lente affiche le Coffre (avec réessai possible) au lieu de bloquer.
+  // Micro-écran d'ambiance (0,6 s max) : le Coffre s'affiche aussi vite que les
+  // autres boutons, pendant que la vérification de session continue en fond.
   useEffect(() => {
-    if (authed !== null) return;
-    const t = setTimeout(() => setAuthed(false), 12000);
+    const t = setTimeout(() => setSplash(false), 600);
     return () => clearTimeout(t);
-  }, [authed]);
+  }, []);
 
   useEffect(() => {
     if (authed !== true) return;
@@ -656,10 +656,10 @@ export default function Admin() {
       <Nav />
       <main className="flex-1 pt-28 md:pt-36 pb-24" data-testid="admin-section">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          {authed === null && (
+          {authed !== true && splash && (
             <p className="text-center font-mono2 text-xs tracking-[0.3em] text-mist pt-20">{a.loading}</p>
           )}
-          {authed === false && <LoginScreen onAuthed={() => { setAuthed(true); loadAll(); }} />}
+          {authed !== true && !splash && <LoginScreen onAuthed={() => { setAuthed(true); loadAll(); }} />}
           {authed === true && (
             <>
               <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
