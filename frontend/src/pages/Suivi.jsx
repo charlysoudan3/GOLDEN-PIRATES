@@ -167,7 +167,7 @@ export default function Suivi() {
       const code = err?.response?.data?.detail?.code;
       if (code === "recover_limit") setRecErr(s.recoverLimit);
       else if (code === "recover_need_one") setRecErr(s.recoverNeedOne);
-      else setRecErr(s.recoverFail);
+      else setRecErr(recRoute === "power" ? s.recoverFailPower : s.recoverFail);
     } finally {
       setRecBusy(false);
     }

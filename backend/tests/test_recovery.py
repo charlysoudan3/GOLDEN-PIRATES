@@ -109,3 +109,56 @@ def test_recovery_attempts_ttl_index():
     idx = MONGO.recovery_attempts.index_information()
     found = any(v.get("expireAfterSeconds") == 7200 for v in idx.values())
     assert found, f"TTL index manquant: {idx}"
+
+
+# ---------------- Nouveaux tests : route PAS DE DISCORD (power) + badge Conseil ----------------
+
+def test_recover_by_power_exact(seed_app):
+    """Pseudo + power exact → 200 avec le bon tracking_code."""
+    r = requests.post(f"{BASE_URL}/api/applications/recover",
+                      json={"pseudo": "RECOV_Bottle", "power": "50M"})
+    assert r.status_code == 200, r.text
+    assert r.json()["tracking_code"] == seed_app["tracking_code"]
+
+
+def test_recover_by_power_normalized(seed_app):
+    """Espaces / casse ignorés : '50 m' doit matcher '50M'."""
+    r = requests.post(f"{BASE_URL}/api/applications/recover",
+                      json={"pseudo": "recov_bottle", "power": "50 m"})
+    assert r.status_code == 200
+    assert r.json()["tracking_code"] == seed_app["tracking_code"]
+
+
+def test_recover_by_wrong_power_generic_404(seed_app):
+    """Power faux → 404 générique recover_not_found — pas de fuite d'info."""
+    r = requests.post(f"{BASE_URL}/api/applications/recover",
+                      json={"pseudo": "RECOV_Bottle", "power": "999M"})
+    assert r.status_code == 404
+    assert r.json()["detail"]["code"] == "recover_not_found"
+
+
+def test_recover_need_one_when_neither_provided(seed_app):
+    """{pseudo} seul → 400 recover_need_one."""
+    r = requests.post(f"{BASE_URL}/api/applications/recover",
+                      json={"pseudo": "RECOV_Bottle"})
+    assert r.status_code == 400
+    assert r.json()["detail"]["code"] == "recover_need_one"
+
+
+def test_recover_response_no_personal_data_leak(seed_app):
+    """Réponse limitée à code/pseudo/statut — pas de discord/power/message."""
+    r = requests.post(f"{BASE_URL}/api/applications/recover",
+                      json={"pseudo": "RECOV_Bottle", "power": "50M"})
+    assert r.status_code == 200
+    data = r.json()
+    assert set(data.keys()) == {"tracking_code", "pseudo", "status"}
+
+
+def test_recover_stamps_code_recovered_at(seed_app):
+    """Après une récupération réussie, code_recovered_at est posé sur le doc."""
+    r = requests.post(f"{BASE_URL}/api/applications/recover",
+                      json={"pseudo": "RECOV_Bottle", "power": "50M"})
+    assert r.status_code == 200
+    doc = MONGO.applications.find_one({"tracking_code": seed_app["tracking_code"]})
+    assert doc is not None
+    assert doc.get("code_recovered_at"), "code_recovered_at manquant sur le dossier"
