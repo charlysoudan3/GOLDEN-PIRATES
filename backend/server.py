@@ -134,7 +134,7 @@ async def root():
 
 
 REAPPLY_COOLDOWN_DAYS = 30
-IP_APPLICATIONS_PER_DAY = 3
+IP_APPLICATIONS_PER_DAY = 6
 
 
 @api_router.post("/applications")

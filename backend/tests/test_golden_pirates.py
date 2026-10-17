@@ -199,12 +199,12 @@ def test_cooldown_allows_after_30_days():
     db.applications.delete_one({"id": body["id"]})
 
 
-# ---------------- Guard: ip_limit (3 per 24h) ----------------
+# ---------------- Guard: ip_limit (6 per 24h) ----------------
 
-def test_ip_limit_blocks_after_three_from_same_ip():
+def test_ip_limit_blocks_after_six_from_same_ip():
     """We can't spoof the client IP (ingress rewrites x-forwarded-for), so we
     first discover the IP the backend actually sees via a canary POST, then
-    seed 3 recent applications matching that IP, then expect the next POST to
+    seed 6 recent applications matching that IP, then expect the next POST to
     be rejected with 429 ip_limit. Finally restore the previous state by
     removing our seeds + canary so the real quota is preserved."""
     # Canary POST — small but valid; it will consume 1 slot of the real pod IP.
@@ -225,22 +225,22 @@ def test_ip_limit_blocks_after_three_from_same_ip():
     real_ip = stored["ip"]
     db.applications.delete_one({"id": canary_id})
 
-    # If 2 more fake entries from same IP → we'd be at 3 → next POST = 429.
-    for i in range(2):
+    # If 5 more fake entries from same IP → we'd be at 6 → next POST = 429.
+    for i in range(5):
         _insert_app(f"{TEST_PREFIX}IP{i}", status="pending",
                     created_days_ago=0.01, ip=real_ip)
 
     # Also count existing real entries from that IP in the last 24h; if there
-    # are already some, add fewer. We want exactly 3 at POST time.
+    # are already some, add fewer. We want exactly 6 at POST time.
     day_ago_iso = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
     existing = db.applications.count_documents({"ip": real_ip, "created_at": {"$gte": day_ago_iso}})
     # Normalise: delete any TEST_IP seeds to only keep what's needed
-    while existing > 3:
+    while existing > 6:
         # we don't delete non-test real docs — just abort gracefully
         return
-    # Top up with more TEST_IP seeds if existing < 3
-    i = 2
-    while existing < 3:
+    # Top up with more TEST_IP seeds if existing < 6
+    i = 5
+    while existing < 6:
         _insert_app(f"{TEST_PREFIX}IPX{i}", status="pending",
                     created_days_ago=0.01, ip=real_ip)
         existing += 1
