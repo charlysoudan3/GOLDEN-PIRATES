@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { ChevronDown, LogOut, Search, Shield, Trash2, MessagesSquare, Anchor } from "lucide-react";
+import { ChevronDown, LogOut, Search, Trash2, MessagesSquare, Anchor, Mail, KeyRound, Eye, EyeOff, Lock, Fingerprint } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
 import ChatBox from "@/components/ChatBox";
+import { SkullIcon } from "@/components/LogoMark";
 import api, { formatApiError } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 
@@ -30,12 +32,27 @@ const frDate = (iso, locale) =>
       })
     : "—";
 
+const RIVETS = Array.from({ length: 8 }, (_, i) => {
+  const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+  return { left: `${50 + 47 * Math.cos(a)}%`, top: `${50 + 47 * Math.sin(a)}%` };
+});
+
+const KeyholeSVG = ({ className = "w-32 h-32" }) => (
+  <svg viewBox="0 0 100 100" fill="none" className={className} aria-hidden="true">
+    <circle cx="50" cy="40" r="14" stroke="#D4AF37" strokeWidth="4.5" className="drop-shadow-[0_0_14px_rgba(212,175,55,0.7)]" />
+    <path d="M44.5 50 L37 78 L63 78 L55.5 50 Z" stroke="#D4AF37" strokeWidth="4.5" fill="rgba(212,175,55,0.18)" strokeLinejoin="round" />
+  </svg>
+);
+
 function LoginScreen({ onAuthed }) {
   const { c } = useLang();
   const s = c.admin.login;
-  const [email, setEmail] = useState("admin@goldenpirates.io");
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [fails, setFails] = useState(0);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -46,58 +63,157 @@ function LoginScreen({ onAuthed }) {
       toast.success(c.admin.toast.welcome(data.email));
       onAuthed();
     } catch (err) {
-      toast.error(formatApiError(err));
+      if (err?.response?.status === 429) toast.error(s.sealed);
+      else if (err?.response?.status === 401) setFails((f) => Math.min(f + 1, 5));
+      else toast.error(formatApiError(err));
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center px-5 py-24">
-      <motion.form
-        data-testid="admin-login-form"
-        onSubmit={submit}
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: EASE }}
-        className="w-full max-w-md border border-gold/25 bg-parch/80 frame-plate p-8 sm:p-10"
-      >
-        <div className="text-center mb-8">
-          <Shield className="w-10 h-10 text-gold mx-auto mb-4" strokeWidth={1.4} />
-          <h1 className="font-display text-3xl sm:text-4xl text-gold mb-2">{s.title}</h1>
-          <p className="font-fell italic text-base text-bone/70">{s.sub}</p>
-        </div>
-        <label className="block font-mono2 text-[10px] tracking-[0.3em] text-gold mb-2" htmlFor="admin-email">
-          {s.emailLabel}
-        </label>
-        <input
-          id="admin-email"
-          data-testid="admin-login-input-email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone focus:border-gold transition-all mb-5"
+    <div className="flex-1 relative overflow-hidden flex items-center justify-center px-5 py-14" data-testid="admin-login-screen">
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_25%_30%,rgba(11,25,44,0.95),transparent_62%)]" />
+        <div className="absolute inset-x-0 top-1/3 h-1/2 bg-[radial-gradient(ellipse_at_60%_45%,rgba(120,150,170,0.1),transparent_65%)] animate-fog" />
+        <SkullIcon className="absolute right-[-6%] bottom-[-12%] w-[52vw] max-w-[460px] text-gold/[0.05]" />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(212,175,55,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.5) 1px, transparent 1px)",
+            backgroundSize: "72px 72px",
+          }}
         />
-        <label className="block font-mono2 text-[10px] tracking-[0.3em] text-gold mb-2" htmlFor="admin-password">
-          {s.pwLabel}
-        </label>
-        <input
-          id="admin-password"
-          data-testid="admin-login-input-password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder={s.pwPh}
-          className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone focus:border-gold transition-all mb-7"
-        />
-        <button
-          type="submit"
-          data-testid="admin-login-btn"
-          disabled={busy}
-          className="w-full font-display text-2xl tracking-wider py-3.5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_35px_rgba(212,175,55,0.4)] disabled:opacity-60 transition-all duration-300"
+      </div>
+
+      <div className="relative z-10 w-full max-w-5xl grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.88 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.1, ease: EASE }}
+          className="hidden lg:flex flex-col items-center text-center"
         >
-          {busy ? s.submitting : s.submit}
-        </button>
-      </motion.form>
+          <div className="relative w-72 h-72 xl:w-80 xl:h-80">
+            <div className="absolute inset-0 rounded-full border border-dashed border-gold/30 animate-spin-slow" />
+            {RIVETS.map((r, i) => (
+              <span
+                key={i}
+                className="absolute w-2 h-2 rounded-full bg-gold/70 shadow-[0_0_8px_rgba(212,175,55,0.5)]"
+                style={{ left: r.left, top: r.top, transform: "translate(-50%, -50%)" }}
+              />
+            ))}
+            <div className="absolute inset-5 rounded-full border-2 border-gold/40 bg-deep frame-plate" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="animate-pulse">
+                <KeyholeSVG className="w-36 h-36 xl:w-44 xl:h-44" />
+              </div>
+            </div>
+          </div>
+          <p className="mt-8 font-mono2 text-[10px] tracking-[0.4em] text-gold/70">{s.vaultCaption}</p>
+          <p className="mt-3 flex items-center gap-2 font-mono2 text-[9px] tracking-[0.3em] text-bloodglow">
+            <Fingerprint className="w-3.5 h-3.5" /> {s.zoneWarning}
+          </p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
+          <motion.form
+            key={fails}
+            animate={fails ? { x: [0, -9, 9, -6, 6, 0] } : { x: 0 }}
+            transition={{ duration: 0.4 }}
+            data-testid="admin-login-form"
+            onSubmit={submit}
+            className="relative border-2 border-gold/30 bg-parch/90 frame-plate p-8 sm:p-10"
+          >
+            {[["top-2", "left-2"], ["top-2", "right-2"], ["bottom-2", "left-2"], ["bottom-2", "right-2"]].map(([v, h]) => (
+              <span key={v + h} className={`absolute ${v} ${h} w-2 h-2 rounded-full bg-gold/50`} aria-hidden="true" />
+            ))}
+
+            <div className="text-center mb-8">
+              <div className="mx-auto mb-3 w-16 h-16 lg:hidden">
+                <KeyholeSVG className="w-16 h-16" />
+              </div>
+              <h1 className="font-display text-3xl sm:text-4xl text-gold mb-2">{s.title}</h1>
+              <p className="font-fell italic text-base text-bone/70">{s.subtitle}</p>
+            </div>
+
+            <label className="flex items-center gap-2 font-mono2 text-[10px] tracking-[0.3em] text-gold mb-2" htmlFor="admin-email">
+              <Mail className="w-3.5 h-3.5" /> {s.emailLabel}
+            </label>
+            <input
+              id="admin-email"
+              data-testid="admin-login-input-email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+              className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone focus:border-gold focus:shadow-[0_0_20px_rgba(212,175,55,0.15)] transition-all mb-5"
+            />
+
+            <label className="flex items-center gap-2 font-mono2 text-[10px] tracking-[0.3em] text-gold mb-2" htmlFor="admin-password">
+              <KeyRound className="w-3.5 h-3.5" /> {s.pwLabel}
+            </label>
+            <div className="relative mb-2">
+              <input
+                id="admin-password"
+                data-testid="admin-login-input-password"
+                type={showPw ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={s.pwPh}
+                autoComplete="current-password"
+                className="w-full bg-ink/70 border border-gold/25 px-4 py-3 pr-12 font-fell text-base text-bone focus:border-gold focus:shadow-[0_0_20px_rgba(212,175,55,0.15)] transition-all"
+              />
+              <button
+                type="button"
+                data-testid="admin-login-toggle-pw"
+                onClick={() => setShowPw((v) => !v)}
+                aria-label={showPw ? s.hidePw : s.showPw}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-mist hover:text-gold transition-colors"
+              >
+                {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+
+            {fails > 0 && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                data-testid="login-attempts"
+                className="mt-3 font-mono2 text-[9px] tracking-[0.25em] text-bloodglow flex items-center gap-2"
+              >
+                <Lock className="w-3.5 h-3.5 shrink-0" /> {s.attemptsLeft(Math.max(0, 5 - fails))}
+              </motion.p>
+            )}
+
+            <button
+              type="submit"
+              data-testid="admin-login-btn"
+              disabled={busy}
+              className="mt-6 w-full font-display text-2xl tracking-wider py-3.5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_35px_rgba(212,175,55,0.4)] disabled:opacity-60 transition-all duration-300"
+            >
+              {busy ? s.submitting : s.submit}
+            </button>
+          </motion.form>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.7 }}
+            data-testid="login-recruit-box"
+            className="mt-6 border border-gold/20 bg-deck/70 p-5 text-center"
+          >
+            <p className="font-display text-xl text-bone mb-1">{s.recruitTitle}</p>
+            <p className="font-fell italic text-sm text-bone/70 mb-3">{s.recruitText}</p>
+            <button
+              data-testid="login-recruit-btn"
+              onClick={() => navigate("/suivi")}
+              className="inline-flex items-center gap-2 font-mono2 text-[10px] tracking-[0.3em] text-gold border border-gold/40 px-5 py-2.5 hover:bg-gold/10 transition-all"
+            >
+              <Anchor className="w-4 h-4" /> {s.recruitBtn}
+            </button>
+          </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }
