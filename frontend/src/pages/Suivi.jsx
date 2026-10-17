@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Compass, FileQuestion, Bell, RefreshCw, ScrollText, Anchor as AnchorIcon, RotateCcw, X } from "lucide-react";
+import { Search, Compass, FileQuestion, Bell, RefreshCw, ScrollText, Anchor as AnchorIcon, RotateCcw, X, HelpCircle, Check, Copy } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
@@ -39,6 +39,12 @@ export default function Suivi() {
   const [notFound, setNotFound] = useState(false);
   const [notif, setNotif] = useState(null);
   const [rack, setRack] = useState(loadRack);
+  const [showRecover, setShowRecover] = useState(false);
+  const [rec, setRec] = useState({ pseudo: "", discord: "" });
+  const [recRes, setRecRes] = useState(null);
+  const [recErr, setRecErr] = useState("");
+  const [recBusy, setRecBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!result) {
@@ -140,6 +146,44 @@ export default function Suivi() {
     }, 200);
   };
 
+  const recover = async (e) => {
+    e?.preventDefault();
+    if (recBusy) return;
+    if (!rec.pseudo.trim() || !rec.discord.trim()) {
+      setRecErr(s.recoverHint);
+      return;
+    }
+    setRecBusy(true);
+    setRecErr("");
+    try {
+      const { data } = await api.post("/applications/recover", { pseudo: rec.pseudo, discord: rec.discord });
+      setRecRes(data);
+      saveToRack(data.tracking_code, data.pseudo, data.status);
+    } catch (err) {
+      const code = err?.response?.data?.detail?.code;
+      setRecErr(code === "recover_limit" ? s.recoverLimit : s.recoverFail);
+    } finally {
+      setRecBusy(false);
+    }
+  };
+
+  const copyRecovered = () => {
+    try {
+      navigator.clipboard?.writeText(recRes.tracking_code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* presse-papier indisponible : la recrue recopie à la main */
+    }
+  };
+
+  const closeRecover = () => {
+    setShowRecover(false);
+    setRecRes(null);
+    setRecErr("");
+    setRec({ pseudo: "", discord: "" });
+  };
+
   const locale = lang === "fr" ? "fr-FR" : "en-GB";
 
   return (
@@ -205,6 +249,89 @@ export default function Suivi() {
             {error && notFound && (
               <p className="mt-2 font-fell italic text-sm text-mist">{s.notFoundHint}</p>
             )}
+
+            <div className="mt-6 border-t border-gold/15 pt-5" data-testid="recover-block">
+              {!showRecover ? (
+                <button
+                  type="button"
+                  data-testid="recover-toggle-btn"
+                  onClick={() => setShowRecover(true)}
+                  className="inline-flex items-center gap-2 font-mono2 text-[10px] tracking-[0.25em] text-mist hover:text-gold transition-colors"
+                >
+                  <HelpCircle className="w-4 h-4" /> {s.recoverBtn}
+                </button>
+              ) : !recRes ? (
+                <div data-testid="recover-form" className="space-y-3">
+                  <p className="font-mono2 text-[10px] tracking-[0.3em] text-gold">{s.recoverTitle}</p>
+                  <p className="font-fell italic text-sm text-mist">{s.recoverHint}</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <input
+                      data-testid="recover-input-pseudo"
+                      value={rec.pseudo}
+                      onChange={(e) => setRec({ ...rec, pseudo: e.target.value })}
+                      placeholder={s.recoverPseudo}
+                      className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone placeholder:text-mist/40 focus:border-gold transition-all"
+                    />
+                    <input
+                      data-testid="recover-input-discord"
+                      value={rec.discord}
+                      onChange={(e) => setRec({ ...rec, discord: e.target.value })}
+                      placeholder={s.recoverDiscord}
+                      className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone placeholder:text-mist/40 focus:border-gold transition-all"
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={recover}
+                      data-testid="recover-submit-btn"
+                      disabled={recBusy}
+                      className="inline-flex items-center justify-center gap-2 font-mono2 text-[11px] tracking-[0.25em] px-6 py-3 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] disabled:opacity-60 transition-all duration-300"
+                    >
+                      <Search className="w-4 h-4" />
+                      {recBusy ? s.recoverSearching : s.recoverSubmit}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="recover-close-btn"
+                      onClick={closeRecover}
+                      className="inline-flex items-center justify-center gap-2 font-mono2 text-[11px] tracking-[0.25em] px-6 py-3 border border-mist/40 text-mist hover:text-gold hover:border-gold/60 transition-all duration-300"
+                    >
+                      <X className="w-4 h-4" /> {s.resetBtn}
+                    </button>
+                  </div>
+                  {recErr && (
+                    <p data-testid="recover-error" className="font-fell text-sm text-bloodglow flex items-start gap-2">
+                      <FileQuestion className="w-4 h-4 mt-0.5 shrink-0" /> {recErr}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div data-testid="recover-success" className="space-y-3">
+                  <p className="font-fell text-base text-bone/90">{s.recoverSuccess(recRes.tracking_code)}</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <code className="font-mono2 text-2xl tracking-[0.25em] text-gold">{recRes.tracking_code}</code>
+                    <button
+                      type="button"
+                      data-testid="recover-copy-btn"
+                      onClick={copyRecovered}
+                      className="inline-flex items-center gap-1.5 font-mono2 text-[10px] tracking-[0.25em] text-mist hover:text-gold transition-colors"
+                    >
+                      {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      {copied ? "✓✓" : s.recoverCopy}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="recover-view-btn"
+                      onClick={() => { const tcode = recRes.tracking_code; closeRecover(); viewRackCode(tcode); }}
+                      className="inline-flex items-center gap-1.5 font-mono2 text-[10px] tracking-[0.25em] text-gold border border-gold/40 px-4 py-2 hover:bg-gold/10 transition-all"
+                    >
+                      <ScrollText className="w-4 h-4" /> {s.recoverSee}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </form>
 
           {notif && (notif.unread_messages > 0 || notif.new_status || notif.new_note) && (

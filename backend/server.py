@@ -12,6 +12,7 @@ import jwt
 import bcrypt
 import uuid
 import secrets
+import re
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -337,6 +338,55 @@ async def admin_stats(_: str = Depends(require_admin)):
         "accepted": await db.applications.count_documents({"status": "accepted"}),
         "reserve": await db.applications.count_documents({"status": "reserve"}),
         "rejected": await db.applications.count_documents({"status": "rejected"}),
+    }
+
+
+# ---------------- Bouteille perdue : récupération du code de suivi ----------------
+
+class RecoveryCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    pseudo: str = Field(min_length=2, max_length=32)
+    discord: str = Field(min_length=2, max_length=32)
+
+
+RECOVERY_PER_HOUR = 5
+
+
+@api_router.post("/applications/recover")
+async def recover_tracking_code(data: RecoveryCreate, request: Request):
+    """La bouteille perdue : la recrue retrouve son code avec son pseudo ET son
+    Discord (les deux doivent correspondre — jamais l'un sans l'autre)."""
+    now = now_utc()
+    ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
+    if not ip:
+        ip = request.client.host if request.client else "unknown"
+    hour_ago = now - timedelta(hours=1)
+    attempts = await db.recovery_attempts.count_documents({"ip": ip, "at": {"$gte": hour_ago}})
+    if attempts >= RECOVERY_PER_HOUR:
+        raise HTTPException(status_code=429, detail={
+            "code": "recover_limit",
+            "msg": "Trop de tentatives depuis cet appareil — réessaie dans une heure.",
+        })
+    await db.recovery_attempts.insert_one({"ip": ip, "at": now})
+
+    pseudo_key = data.pseudo.strip().lower()
+    discord_pattern = f"^{re.escape(data.discord.strip())}$"
+    doc = await db.applications.find_one(
+        {
+            "pseudo_lower": pseudo_key,
+            "discord": {"$regex": discord_pattern, "$options": "i"},
+        },
+        sort=[("created_at", -1)],
+    )
+    if not doc:
+        raise HTTPException(status_code=404, detail={
+            "code": "recover_not_found",
+            "msg": "Aucune bouteille au nom de ce pseudo et ce Discord — vérifie l'orthographe exacte de ta candidature.",
+        })
+    return {
+        "tracking_code": doc["tracking_code"],
+        "pseudo": doc["pseudo"],
+        "status": doc["status"],
     }
 
 
@@ -868,6 +918,8 @@ async def seed():
     )
     # Sanctuaire des refus : le délai de re-postulation survit au brûlage.
     await db.rejections.create_index("pseudo_lower", unique=True)
+    # Tentatives de récupération de code : auto-purge au bout de 2 h.
+    await db.recovery_attempts.create_index("at", expireAfterSeconds=7200)
     async for rej_doc in db.applications.find(
         {"status": "rejected"},
         {"pseudo": 1, "pseudo_lower": 1, "status_changed_at": 1, "created_at": 1},
