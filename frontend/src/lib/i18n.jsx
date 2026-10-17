@@ -288,6 +288,10 @@ const fr = {
       filedOn: "DÉPOSÉE LE ",
       attemptBadge: (n) => `${n}ᵉ TENTATIVE`,
       prevDecision: "DOSSIER PRÉCÉDENT :",
+      exportXlsx: "EXPORT EXCEL",
+      exportPdf: "EXPORT PDF",
+      exportBusy: "GÉNÉRATION…",
+      exportDone: "Registre exporté — bonne réunion d'officiers, Capitaine !",
     },
     toast: {
       welcome: (email) => `Bien le bonjour, Capitaine — ${email}`,
@@ -599,6 +603,10 @@ const en = {
       filedOn: "FILED ON ",
       attemptBadge: (n) => (n === 2 ? "2ND ATTEMPT" : n === 3 ? "3RD ATTEMPT" : `${n}TH ATTEMPT`),
       prevDecision: "PREVIOUS FILE:",
+      exportXlsx: "EXCEL EXPORT",
+      exportPdf: "PDF EXPORT",
+      exportBusy: "GENERATING…",
+      exportDone: "Register exported — good council meeting, Captain!",
     },
     toast: {
       welcome: (email) => `Greetings, Captain — ${email}`,

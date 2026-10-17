@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
+from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,10 +7,19 @@ from pymongo import ReturnDocument
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 import os
+import io
 import jwt
 import bcrypt
 import uuid
 import secrets
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -320,6 +330,144 @@ async def admin_stats(_: str = Depends(require_admin)):
         "reserve": await db.applications.count_documents({"status": "reserve"}),
         "rejected": await db.applications.count_documents({"status": "rejected"}),
     }
+
+
+# ---------------- Exports du registre (Excel / PDF) ----------------
+
+from xml.sax.saxutils import escape
+
+EXPORT_COLUMNS = [
+    ("tracking_code", "CODE DE SUIVI"),
+    ("pseudo", "PSEUDO"),
+    ("power", "PUISSANCE"),
+    ("troops", "TROUPES"),
+    ("activity", "ACTIVITÉ"),
+    ("discord", "DISCORD"),
+    ("status", "STATUT"),
+    ("note", "NOTE DU CONSEIL"),
+    ("created_at", "DÉPOSÉE LE"),
+    ("experience", "EXPÉRIENCE"),
+    ("message", "MESSAGE"),
+]
+
+STATUS_FR = {
+    "pending": "EN EXAMEN",
+    "accepted": "ACCEPTÉ À BORD",
+    "reserve": "EN RÉSERVE",
+    "rejected": "REFUSÉ",
+}
+
+STATUS_COLORS = {
+    "pending": "#B8860B",
+    "accepted": "#1B7F4C",
+    "reserve": "#B45309",
+    "rejected": "#B91C1C",
+}
+
+
+def fmt_row(doc):
+    row = []
+    for key, _ in EXPORT_COLUMNS:
+        v = doc.get(key, "")
+        if key == "status":
+            v = STATUS_FR.get(v, v)
+        elif key == "created_at" and v:
+            try:
+                v = datetime.fromisoformat(v).strftime("%d/%m/%Y %H:%M")
+            except (TypeError, ValueError):
+                pass
+        row.append("" if v is None else str(v))
+    return row
+
+
+@api_router.get("/admin/export/xlsx")
+async def export_xlsx(_: str = Depends(require_admin)):
+    docs = await db.applications.find({}).sort("created_at", -1).to_list(2000)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Registre"
+    ws.append([h for _, h in EXPORT_COLUMNS])
+    for cell in ws[1]:
+        cell.fill = PatternFill("solid", fgColor="0B192C")
+        cell.font = Font(color="D4AF37", bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+    fills = {"pending": "FFF4CC", "accepted": "DCF3E8", "reserve": "FEF3C7", "rejected": "FEE2E2"}
+    status_idx = [k for k, _ in EXPORT_COLUMNS].index("status") + 1
+    for d in docs:
+        ws.append(fmt_row(d))
+        fill = fills.get(d.get("status"))
+        if fill:
+            ws.cell(row=ws.max_row, column=status_idx).fill = PatternFill("solid", fgColor=fill)
+    for i, w in enumerate([15, 18, 11, 20, 24, 18, 15, 34, 17, 42, 52], 1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+    ws.freeze_panes = "A2"
+    ws2 = wb.create_sheet("Synthèse")
+    ws2["A1"] = "SYNTHÈSE DU REGISTRE — GOLDEN PIRATES (ROYAUME 1023)"
+    ws2["A1"].font = Font(color="D4AF37", bold=True, size=13)
+    ws2.append([])
+    ws2.append(["Édité le", now_utc().strftime("%d/%m/%Y %H:%M")])
+    for key, label in [("pending", "En examen"), ("accepted", "Acceptées"), ("reserve", "En réserve"), ("rejected", "Refusées")]:
+        ws2.append([label, sum(1 for d in docs if d.get("status") == key)])
+    ws2.append(["Total", len(docs)])
+    ws2.column_dimensions["A"].width = 32
+    ws2.column_dimensions["B"].width = 14
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    stamp = now_utc().strftime("%Y-%m-%d")
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="golden-pirates-registre-{stamp}.xlsx"'},
+    )
+
+
+@api_router.get("/admin/export/pdf")
+async def export_pdf(_: str = Depends(require_admin)):
+    docs = await db.applications.find({}).sort("created_at", -1).to_list(2000)
+    buf = io.BytesIO()
+    doc_pdf = SimpleDocTemplate(
+        buf, pagesize=landscape(A4),
+        topMargin=14 * mm, bottomMargin=12 * mm, leftMargin=12 * mm, rightMargin=12 * mm,
+    )
+    title_style = ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=15, textColor=colors.HexColor("#D4AF37"), spaceAfter=2)
+    sub_style = ParagraphStyle("sub", fontName="Helvetica", fontSize=8.5, textColor=colors.HexColor("#5C6B7E"))
+    cell_style = ParagraphStyle("cell", fontName="Helvetica", fontSize=7, leading=9)
+    head_style = ParagraphStyle("head", fontName="Helvetica-Bold", fontSize=7.2, leading=9, textColor=colors.HexColor("#D4AF37"))
+    edited = now_utc().strftime("%d/%m/%Y à %H:%M")
+    flow = [
+        Paragraph("GOLDEN PIRATES — REGISTRE DES RECRUES", title_style),
+        Paragraph(f"Royaume 1023 · Call of Dragons · édité le {edited} · {len(docs)} candidature(s)", sub_style),
+        Spacer(1, 5 * mm),
+    ]
+    if docs:
+        status_idx = [k for k, _ in EXPORT_COLUMNS].index("status")
+        data = [[Paragraph(escape(h), head_style) for _, h in EXPORT_COLUMNS]]
+        for d in docs:
+            vals = fmt_row(d)
+            color = STATUS_COLORS.get(d.get("status"), "#111111")
+            vals[status_idx] = f'<font color="{color}"><b>{escape(vals[status_idx])}</b></font>'
+            data.append([Paragraph(escape(v) if i != status_idx else v, cell_style) for i, v in enumerate(vals)])
+        table = Table(data, colWidths=[56, 72, 42, 66, 74, 68, 52, 90, 60, 90, 96], repeatRows=1)
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0B192C")),
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#2A3A50")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F4F6F9")]),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ]))
+        flow.append(table)
+    else:
+        flow.append(Paragraph("Aucune candidature enregistrée pour l'instant.", sub_style))
+    doc_pdf.build(flow)
+    buf.seek(0)
+    stamp = now_utc().strftime("%Y-%m-%d")
+    return StreamingResponse(
+        buf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="golden-pirates-registre-{stamp}.pdf"'},
+    )
 
 
 @api_router.patch("/admin/applications/{app_id}")

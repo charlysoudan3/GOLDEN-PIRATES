@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { ChevronDown, LogOut, Search, Trash2, MessagesSquare, Anchor, Mail, KeyRound, Eye, EyeOff, Lock, Fingerprint } from "lucide-react";
+import { ChevronDown, LogOut, Search, Trash2, MessagesSquare, Anchor, Mail, KeyRound, Eye, EyeOff, Lock, Fingerprint, FileSpreadsheet, FileText } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
@@ -502,6 +502,7 @@ export default function Admin() {
   const [view, setView] = useState("registry");
   const [activeConv, setActiveConv] = useState(null);
   const [badges, setBadges] = useState({ unread: 0, pending: 0 });
+  const [exporting, setExporting] = useState(null);
 
   const loadAll = useCallback(async () => {
     try {
@@ -583,6 +584,27 @@ export default function Admin() {
       toast.success(a.toast.burned(app.pseudo));
     } catch (err) {
       toast.error(formatApiError(err));
+    }
+  };
+
+  const downloadExport = async (fmt) => {
+    if (exporting) return;
+    setExporting(fmt);
+    try {
+      const { data } = await api.get(`/admin/export/${fmt}`, { responseType: "blob" });
+      const url = URL.createObjectURL(data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `golden-pirates-registre-${new Date().toISOString().slice(0, 10)}.${fmt}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      toast.success(a.dash.exportDone);
+    } catch (err) {
+      toast.error(formatApiError(err));
+    } finally {
+      setExporting(null);
     }
   };
 
@@ -716,7 +738,27 @@ export default function Admin() {
                         </button>
                       ))}
                     </div>
-                    <div className="relative sm:ml-auto sm:w-72">
+                    <div className="flex gap-2 sm:ml-auto" data-testid="admin-export-cluster">
+                      <button
+                        data-testid="admin-export-xlsx"
+                        onClick={() => downloadExport("xlsx")}
+                        disabled={exporting !== null}
+                        className="inline-flex items-center gap-2 font-mono2 text-[10px] tracking-[0.25em] px-4 py-2.5 border border-gold/30 text-gold hover:bg-gold/10 hover:border-gold/60 disabled:opacity-50 transition-all"
+                      >
+                        <FileSpreadsheet className="w-4 h-4 shrink-0" />
+                        {exporting === "xlsx" ? a.dash.exportBusy : a.dash.exportXlsx}
+                      </button>
+                      <button
+                        data-testid="admin-export-pdf"
+                        onClick={() => downloadExport("pdf")}
+                        disabled={exporting !== null}
+                        className="inline-flex items-center gap-2 font-mono2 text-[10px] tracking-[0.25em] px-4 py-2.5 border border-gold/30 text-gold hover:bg-gold/10 hover:border-gold/60 disabled:opacity-50 transition-all"
+                      >
+                        <FileText className="w-4 h-4 shrink-0" />
+                        {exporting === "pdf" ? a.dash.exportBusy : a.dash.exportPdf}
+                      </button>
+                    </div>
+                    <div className="relative sm:w-72">
                       <Search className="w-4 h-4 text-mist absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         data-testid="admin-search-input"
