@@ -62,6 +62,7 @@ function LoginScreen({ onAuthed }) {
       const { data } = await api.post("/admin/login", { email, password });
       toast.success(c.admin.toast.welcome(data.email));
       onAuthed();
+      window.dispatchEvent(new Event("gp-auth-changed"));
     } catch (err) {
       if (err?.response?.status === 429) toast.error(s.sealed);
       else if (err?.response?.status === 401) setFails((f) => Math.min(f + 1, 5));
@@ -561,6 +562,7 @@ export default function Admin() {
       setActiveConv(null);
       setView("registry");
       toast.success(a.toast.logout);
+      window.dispatchEvent(new Event("gp-auth-changed"));
     }
   };
 

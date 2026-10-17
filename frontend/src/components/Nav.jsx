@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Shield, ShieldCheck, MapPin } from "lucide-react";
 import LogoMark, { SkullIcon, CompassRose } from "./LogoMark";
 import LangSwitcher from "./LangSwitcher";
+import api from "@/lib/api";
 import { scrollToId } from "@/App";
 import { useLang } from "@/lib/i18n";
 
@@ -22,6 +23,23 @@ export default function Nav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { c } = useLang();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    let stop = false;
+    const check = () => {
+      api
+        .get("/auth/me")
+        .then(() => { if (!stop) setIsAdmin(true); })
+        .catch(() => { if (!stop) setIsAdmin(false); });
+    };
+    check();
+    window.addEventListener("gp-auth-changed", check);
+    return () => {
+      stop = true;
+      window.removeEventListener("gp-auth-changed", check);
+    };
+  }, [location.pathname]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -104,13 +122,15 @@ export default function Nav() {
 
           <div className="flex items-center gap-2 sm:gap-4">
             <LangSwitcher />
-            <button
-              data-testid="nav-cta-apply"
-              onClick={goApply}
-              className="hidden md:block font-display text-lg tracking-wider uppercase px-6 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
-            >
-              {c.nav.cta}
-            </button>
+            {!isAdmin && (
+              <button
+                data-testid="nav-cta-apply"
+                onClick={goApply}
+                className="hidden md:block font-display text-lg tracking-wider uppercase px-6 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+              >
+                {c.nav.cta}
+              </button>
+            )}
             <button
               data-testid="nav-menu-toggle"
               onClick={() => setOpen(true)}
@@ -217,37 +237,41 @@ export default function Nav() {
                 >
                   {c.footer.spacesTitle}
                 </motion.p>
-                <motion.button
-                  data-testid="nav-cta-apply-menu"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.45, duration: 0.7, ease: EASE }}
-                  onClick={goApply}
-                  className="relative w-full max-w-md font-display text-3xl sm:text-4xl tracking-wider uppercase py-5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_45px_rgba(212,175,55,0.5)] transition-all duration-300"
-                >
-                  {c.nav.cta}
-                </motion.button>
-                <motion.button
-                  data-testid="nav-link-status"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.55, duration: 0.7, ease: EASE }}
-                  onClick={location.pathname === "/suivi" ? undefined : goSuivi}
-                  aria-current={location.pathname === "/suivi" ? "page" : undefined}
-                  className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
-                    location.pathname === "/suivi"
-                      ? "border border-gold bg-gold/10 text-gold cursor-default"
-                      : "text-gold border border-gold/40 hover:bg-gold/10 hover:border-gold"
-                  }`}
-                >
-                  {location.pathname === "/suivi" ? (
-                    <>
-                      <MapPin className="w-4 h-4 shrink-0" /> {c.nav.suivi} — {c.nav.here}
-                    </>
-                  ) : (
-                    c.nav.suivi
-                  )}
-                </motion.button>
+                {!isAdmin && (
+                  <motion.button
+                    data-testid="nav-cta-apply-menu"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.45, duration: 0.7, ease: EASE }}
+                    onClick={goApply}
+                    className="relative w-full max-w-md font-display text-3xl sm:text-4xl tracking-wider uppercase py-5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_45px_rgba(212,175,55,0.5)] transition-all duration-300"
+                  >
+                    {c.nav.cta}
+                  </motion.button>
+                )}
+                {!isAdmin && (
+                  <motion.button
+                    data-testid="nav-link-status"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.55, duration: 0.7, ease: EASE }}
+                    onClick={location.pathname === "/suivi" ? undefined : goSuivi}
+                    aria-current={location.pathname === "/suivi" ? "page" : undefined}
+                    className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
+                      location.pathname === "/suivi"
+                        ? "border border-gold bg-gold/10 text-gold cursor-default"
+                        : "text-gold border border-gold/40 hover:bg-gold/10 hover:border-gold"
+                    }`}
+                  >
+                    {location.pathname === "/suivi" ? (
+                      <>
+                        <MapPin className="w-4 h-4 shrink-0" /> {c.nav.suivi} — {c.nav.here}
+                      </>
+                    ) : (
+                      c.nav.suivi
+                    )}
+                  </motion.button>
+                )}
                 <motion.button
                   data-testid="nav-link-admin"
                   initial={{ opacity: 0, y: 20 }}
