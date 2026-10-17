@@ -302,11 +302,11 @@ function AppRow({ app, onUpdate, onDelete, history }) {
         </div>
         <div className="hidden md:block md:col-span-2 min-w-0">
           <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">{d.troops}</p>
-          <p className="font-fell text-base text-bone/80 truncate">{app.troops}</p>
+          <p className="font-fell text-base text-bone/80 line-clamp-2">{app.troops}</p>
         </div>
         <div className="hidden lg:block lg:col-span-2 min-w-0">
           <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">{d.discord}</p>
-          <p className="font-fell text-base text-bone/80 truncate">{app.discord}</p>
+          <p className="font-fell text-base text-bone/80 line-clamp-2">{app.discord}</p>
         </div>
         <div className="col-span-12 sm:col-span-2 flex justify-end min-w-0" onClick={(e) => e.stopPropagation()}>
           <StatusBadge status={app.status} />
@@ -324,6 +324,20 @@ function AppRow({ app, onUpdate, onDelete, history }) {
           >
             <div className="px-4 sm:px-6 py-5 grid md:grid-cols-2 gap-5">
               <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{d.power}</p>
+                    <p className="font-fell text-base text-goldlight">{app.power}</p>
+                  </div>
+                  <div>
+                    <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{d.discord}</p>
+                    <p className="font-fell text-base text-bone/85 break-words">{app.discord}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{d.troops}</p>
+                  <p className="font-fell text-base text-bone/85 break-words">{app.troops}</p>
+                </div>
                 <div>
                   <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{d.activity}</p>
                   <p className="font-fell text-base text-bone/85">{app.activity}</p>
