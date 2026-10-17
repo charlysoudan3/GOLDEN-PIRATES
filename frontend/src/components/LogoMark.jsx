@@ -32,3 +32,17 @@ export default function LogoMark({ className = "w-10 h-10" }) {
     </svg>
   );
 }
+
+export const CompassRose = ({ className = "" }) => (
+  <svg viewBox="0 0 200 200" fill="none" className={className} aria-hidden="true">
+    <circle cx="100" cy="100" r="96" stroke="#D4AF37" strokeWidth="1" opacity="0.55" />
+    <circle cx="100" cy="100" r="78" stroke="#D4AF37" strokeWidth="0.6" opacity="0.35" />
+    <circle cx="100" cy="100" r="60" stroke="#D4AF37" strokeWidth="0.6" strokeDasharray="2 6" opacity="0.5" />
+    <path d="M100 8 L110 90 L100 100 L90 90 Z" fill="#D4AF37" />
+    <path d="M100 192 L90 110 L100 100 L110 110 Z" fill="#9A7B1C" opacity="0.8" />
+    <path d="M8 100 L90 90 L100 100 L90 110 Z" fill="#9A7B1C" opacity="0.8" />
+    <path d="M192 100 L110 110 L100 100 L110 90 Z" fill="#D4AF37" />
+    <circle cx="100" cy="100" r="14" fill="#06090E" stroke="#D4AF37" strokeWidth="1.5" />
+    <circle cx="100" cy="100" r="4" fill="#B91C1C" />
+  </svg>
+);

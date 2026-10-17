@@ -95,4 +95,15 @@
   .card-glow:hover {
     box-shadow: 0 14px 40px -12px rgba(212, 175, 55, 0.3);
   }
+  .rope-line {
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(212, 175, 55, 0.55) 0 6px,
+      rgba(154, 123, 28, 0.9) 6px 12px,
+      rgba(212, 175, 55, 0.25) 12px 18px,
+      rgba(90, 70, 20, 0.9) 18px 24px
+    );
+    border-top: 1px solid rgba(212, 175, 55, 0.35);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.35);
+  }
 }
