@@ -79,7 +79,8 @@ export default function ChatBox({ code, sender, testPrefix = "chat" }) {
       setText("");
       toast.success(s.sentToast);
     } catch (err) {
-      toast.error(formatApiError(err));
+      if (err?.response?.status === 429) toast.error(s.flood);
+      else toast.error(formatApiError(err));
     } finally {
       setSending(false);
     }

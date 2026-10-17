@@ -299,6 +299,7 @@ export default function Admin() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState("registry");
   const [activeConv, setActiveConv] = useState(null);
+  const [badges, setBadges] = useState({ unread: 0, pending: 0 });
 
   const loadAll = useCallback(async () => {
     try {
@@ -322,6 +323,30 @@ export default function Admin() {
       })
       .catch(() => setAuthed(false));
   }, [loadAll]);
+
+  useEffect(() => {
+    if (authed !== true) return;
+    let stop = false;
+    const load = async () => {
+      try {
+        const [convRes, statsRes] = await Promise.all([api.get("/admin/conversations"), api.get("/admin/stats")]);
+        if (stop) return;
+        setBadges({
+          unread: convRes.data.reduce((acc, x) => acc + (x.unread || 0), 0),
+          pending: statsRes.data.pending,
+        });
+        setStats(statsRes.data);
+      } catch {
+        /* polling silencieux — jamais de crash */
+      }
+    };
+    load();
+    const t = setInterval(load, 15000);
+    return () => {
+      stop = true;
+      clearInterval(t);
+    };
+  }, [authed]);
 
   const logout = async () => {
     try {
@@ -414,6 +439,14 @@ export default function Admin() {
                   >
                     {t.key === "messages" && <MessagesSquare className="w-4 h-4" />}
                     {t.label}
+                    {((t.key === "messages" && badges.unread > 0) || (t.key === "registry" && badges.pending > 0)) && (
+                      <span
+                        data-testid={`admin-tab-badge-${t.key}`}
+                        className="bg-blood text-bone font-mono2 text-[9px] tracking-[0.1em] px-1.5 py-0.5"
+                      >
+                        {t.key === "messages" ? badges.unread : badges.pending}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>

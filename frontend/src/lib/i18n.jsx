@@ -188,6 +188,16 @@ const fr = {
     loading: "ON DÉROULE LA CORDE…",
     newDivider: "NOUVEAUX MESSAGES",
     tickRead: "LU",
+    flood: "Du calme, moussaillon ! Trop de messages d'affilée — respire un coup.",
+  },
+  notif: {
+    title: "LA CORNE DU GUET",
+    empty: "Rien de neuf sur l'horizon, marin.",
+    newMsgs: (n) => n === 1 ? "1 message du Conseil t'attend dans la bouteille" : `${n} messages du Conseil t'attendent dans la bouteille`,
+    statusChanged: "Ton statut vient de changer — mets ton dossier à jour",
+    noteChanged: "Le Conseil a laissé une nouvelle note sur ton dossier",
+    updateBtn: "METTRE LE DOSSIER À JOUR",
+    newChip: "NOUVEAU",
   },
   admin: {
     loading: "OUVERTURE DU COFFRE…",
@@ -451,6 +461,16 @@ const en = {
     loading: "UNROLLING THE ROPE…",
     newDivider: "NEW MESSAGES",
     tickRead: "READ",
+    flood: "Steady, sailor! Too many messages in a row — take a breath.",
+  },
+  notif: {
+    title: "THE WATCH HORN",
+    empty: "Nothing new on the horizon, sailor.",
+    newMsgs: (n) => n === 1 ? "1 Council message awaits you in the bottle" : `${n} Council messages await you in the bottle`,
+    statusChanged: "Your status just changed — refresh your file",
+    noteChanged: "The Council left a new note on your file",
+    updateBtn: "REFRESH MY FILE",
+    newChip: "NEW",
   },
   admin: {
     loading: "OPENING THE CHEST…",

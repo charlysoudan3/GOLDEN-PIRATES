@@ -129,6 +129,8 @@ async def create_application(data: ApplicationCreate):
     doc["id"] = str(uuid.uuid4())
     doc["status"] = "pending"
     doc["note"] = ""
+    doc["seen_status"] = "pending"
+    doc["seen_note"] = ""
     doc["created_at"] = now_utc().isoformat()
     code = None
     for _ in range(6):
@@ -147,9 +149,17 @@ async def create_application(data: ApplicationCreate):
 
 @api_router.get("/applications/track/{code}")
 async def track_application(code: str):
-    doc = await db.applications.find_one({"tracking_code": code.strip().upper()})
+    code = code.strip().upper()
+    doc = await db.applications.find_one({"tracking_code": code})
     if not doc:
         raise HTTPException(status_code=404, detail="Aucun parchemin à ce code de suivi")
+    new_status = doc["status"] != doc.get("seen_status", doc["status"])
+    new_note = bool(doc.get("note")) and doc.get("note", "") != doc.get("seen_note", "")
+    if new_status or new_note:
+        await db.applications.update_one(
+            {"tracking_code": code},
+            {"$set": {"seen_status": doc["status"], "seen_note": doc.get("note", "")}},
+        )
     return {
         "tracking_code": doc["tracking_code"],
         "pseudo": doc["pseudo"],
@@ -162,6 +172,24 @@ async def track_application(code: str):
         "status": doc["status"],
         "note": doc.get("note", ""),
         "created_at": doc.get("created_at"),
+        "new_status": new_status,
+        "new_note": new_note,
+    }
+
+
+@api_router.get("/notifications/{code}")
+async def notifications(code: str):
+    code = code.strip().upper()
+    doc = await db.applications.find_one({"tracking_code": code}, {"status": 1, "note": 1, "seen_status": 1, "seen_note": 1})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
+    unread = await db.messages.count_documents({
+        "conv_code": code, "sender": "council", "deleted": False, "read_by_recruit": False,
+    })
+    return {
+        "unread_messages": unread,
+        "new_status": doc["status"] != doc.get("seen_status", doc["status"]),
+        "new_note": bool(doc.get("note")) and doc.get("note", "") != doc.get("seen_note", ""),
     }
 
 
@@ -277,6 +305,12 @@ async def send_message(code: str, data: MessageCreate):
     text = data.text.strip()
     if not text:
         raise HTTPException(status_code=400, detail="Message vide")
+    minute_ago = (now_utc() - timedelta(minutes=1)).isoformat()
+    recent = await db.messages.count_documents({
+        "conv_code": code, "sender": "recruit", "created_at": {"$gte": minute_ago},
+    })
+    if recent >= 10:
+        raise HTTPException(status_code=429, detail="Flood")
     doc = {
         "id": str(uuid.uuid4()),
         "conv_code": code,
@@ -356,6 +390,12 @@ async def admin_send_message(code: str, data: MessageCreate, _: str = Depends(re
     text = data.text.strip()
     if not text:
         raise HTTPException(status_code=400, detail="Message vide")
+    minute_ago = (now_utc() - timedelta(minutes=1)).isoformat()
+    recent = await db.messages.count_documents({
+        "conv_code": code, "sender": "council", "created_at": {"$gte": minute_ago},
+    })
+    if recent >= 10:
+        raise HTTPException(status_code=429, detail="Flood")
     doc = {
         "id": str(uuid.uuid4()),
         "conv_code": code,

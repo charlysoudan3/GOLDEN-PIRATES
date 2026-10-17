@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Compass, FileQuestion } from "lucide-react";
+import { Search, Compass, FileQuestion, Bell, RefreshCw, ScrollText, Anchor as AnchorIcon } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
@@ -15,6 +15,37 @@ export default function Suivi() {
   const [checking, setChecking] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [notif, setNotif] = useState(null);
+
+  useEffect(() => {
+    if (!result) {
+      setNotif(null);
+      return;
+    }
+    let stop = false;
+    const load = async () => {
+      try {
+        const { data } = await api.get(`/notifications/${result.tracking_code}`);
+        if (!stop) setNotif(data);
+      } catch {
+        if (!stop) setNotif(null);
+      }
+    };
+    load();
+    const t = setInterval(load, 10000);
+    return () => {
+      stop = true;
+      clearInterval(t);
+    };
+  }, [result]);
+
+  useEffect(() => {
+    const base = "GOLDEN PIRATES — Royaume 1023 | Call of Dragons";
+    document.title = notif?.unread_messages ? `(${notif.unread_messages}) ${base}` : base;
+    return () => {
+      document.title = base;
+    };
+  }, [notif?.unread_messages]);
 
   const check = async (e) => {
     e?.preventDefault();
@@ -52,6 +83,54 @@ export default function Suivi() {
             </h1>
             <p className="font-fell italic text-lg text-bone/75 max-w-xl mx-auto">{s.sub}</p>
           </div>
+
+          {notif && (notif.unread_messages > 0 || notif.new_status || notif.new_note) && (
+            <motion.div
+              data-testid="notif-panel"
+              initial={{ opacity: 0, y: -14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="mb-8 border border-blood/50 bg-blood/10 p-5 sm:p-6"
+            >
+              <p className="flex items-center gap-2 font-mono2 text-[10px] tracking-[0.35em] text-bloodglow mb-4">
+                <Bell className="w-4 h-4" />
+                {c.notif.title}
+                <span
+                  data-testid="notif-count"
+                  className="ml-auto bg-blood text-bone font-mono2 text-[9px] tracking-[0.2em] px-2 py-1"
+                >
+                  {(notif.unread_messages > 0 ? 1 : 0) + (notif.new_status ? 1 : 0) + (notif.new_note ? 1 : 0)}
+                </span>
+              </p>
+              <ul className="space-y-3">
+                {notif.unread_messages > 0 && (
+                  <li data-testid="notif-item-messages" className="font-fell text-base text-bone/90 flex items-center gap-2.5">
+                    <ScrollText className="w-4 h-4 text-gold shrink-0" />
+                    {c.notif.newMsgs(notif.unread_messages)}
+                  </li>
+                )}
+                {notif.new_status && (
+                  <li data-testid="notif-item-status" className="font-fell text-base text-bone/90 flex flex-wrap items-center gap-2.5">
+                    <RefreshCw className="w-4 h-4 text-gold shrink-0" />
+                    {c.notif.statusChanged}
+                    <button
+                      data-testid="notif-update-btn"
+                      onClick={() => check()}
+                      className="font-mono2 text-[9px] tracking-[0.25em] border border-gold/50 text-gold px-3 py-1.5 hover:bg-gold/10 transition-all"
+                    >
+                      {c.notif.updateBtn}
+                    </button>
+                  </li>
+                )}
+                {notif.new_note && (
+                  <li data-testid="notif-item-note" className="font-fell text-base text-bone/90 flex items-center gap-2.5">
+                    <AnchorIcon className="w-4 h-4 text-gold shrink-0" />
+                    {c.notif.noteChanged}
+                  </li>
+                )}
+              </ul>
+            </motion.div>
+          )}
 
           <form
             data-testid="status-check-form"
@@ -103,7 +182,17 @@ export default function Suivi() {
                     <p className="font-mono2 text-[9px] tracking-[0.3em] text-mist mb-1">{s.codeLabel}</p>
                     <p className="font-display text-3xl text-bone">{result.pseudo}</p>
                   </div>
+                  <div className="flex items-center gap-2">
                   <StatusBadge status={result.status} size="lg" />
+                  {result.new_status && (
+                    <span
+                      data-testid="status-new-chip"
+                      className="bg-blood text-bone font-mono2 text-[9px] tracking-[0.25em] px-2 py-1"
+                    >
+                      {c.notif.newChip}
+                    </span>
+                  )}
+                </div>
                 </div>
                 <div className="border-t border-gold/15 pt-5 space-y-5">
                   <p className="font-fell text-lg text-bone/85">{c.status[result.status]?.long || c.status.pending.long}</p>
@@ -146,6 +235,14 @@ export default function Suivi() {
                     <p className="font-fell italic text-base text-goldlight border-l-2 border-gold/40 pl-4">
                       {c.status.note}
                       {result.note}
+                      {result.new_note && (
+                        <span
+                          data-testid="note-new-chip"
+                          className="ml-2 bg-blood text-bone font-mono2 text-[9px] tracking-[0.25em] px-2 py-0.5"
+                        >
+                          {c.notif.newChip}
+                        </span>
+                      )}
                     </p>
                   ) : null}
 
