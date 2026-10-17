@@ -53,20 +53,20 @@ export default function Footer() {
             <ul className="space-y-3 font-fell text-base">
               <li>
                 <button
+                  data-testid="footer-apply-link"
+                  onClick={() => navigate("/#postuler")}
+                  className="text-gold hover:text-goldlight transition-colors"
+                >
+                  {s.applyLink}
+                </button>
+              </li>
+              <li>
+                <button
                   data-testid="footer-track-link"
                   onClick={() => navigate("/suivi")}
                   className="text-bone/75 hover:text-gold transition-colors"
                 >
                   {s.trackLink}
-                </button>
-              </li>
-              <li>
-                <button
-                  data-testid="footer-admin-link"
-                  onClick={() => navigate("/admin")}
-                  className="text-bone/75 hover:text-gold transition-colors"
-                >
-                  {s.adminLink}
                 </button>
               </li>
             </ul>
