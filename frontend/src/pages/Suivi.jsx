@@ -9,6 +9,8 @@ import ChatBox from "@/components/ChatBox";
 import api, { formatApiError } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 
+const DISCORD_URL = "https://discord.gg/dSzGk7PYUW";
+
 const EASE = [0.16, 1, 0.3, 1];
 const RACK_KEY = "gp_bottles";
 
@@ -452,6 +454,21 @@ export default function Suivi() {
                     >
                       {s.waitNote}
                     </p>
+                  )}
+                  {result.status === "accepted" && (
+                    <div data-testid="status-discord-cta" className="border border-emerald-500/40 bg-emerald-500/5 p-5">
+                      <p className="font-mono2 text-[9px] tracking-[0.3em] text-emerald-400 mb-2">{s.discordCta.eyebrow}</p>
+                      <p className="font-fell text-lg text-bone/90 mb-4">{s.discordCta.title}</p>
+                      <a
+                        href={DISCORD_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-testid="status-discord-link"
+                        className="inline-flex items-center gap-3 font-display text-xl tracking-wider px-6 py-3 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.35)] transition-all"
+                      >
+                        <AnchorIcon className="w-5 h-5" /> {s.discordCta.btn}
+                      </a>
+                    </div>
                   )}
 
                   <div data-testid="status-dossier" className="border border-gold/20 bg-ink/40 p-5">

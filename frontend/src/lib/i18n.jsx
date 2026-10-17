@@ -192,6 +192,11 @@ const fr = {
     reapplyLocked: (date) => `Refusé il y a peu — le Conseil rouvre les portes le ${date}. Prends ce temps pour muscler tes troupes et ta puissance, et reviens plus fort.`,
     dossierTitle: "TON DOSSIER DE RECRUE",
     waitNote: "RÉPONSE DU CONSEIL : SOUS 72 H APRÈS L'OUVERTURE — FIN DE SAISON 2",
+    discordCta: {
+      eyebrow: "TON ÉQUIPAGE T'ATTEND, CAPITAINE",
+      title: "Ta place est à bord ! Le quartier général de l'alliance vit sur Discord : c'est là que les campagnes et les défenses s'orchestrent.",
+      btn: "REJOINDRE LE DISCORD",
+    },
     noExp: "— aucune ligne dans le journal de bord —",
     fields: {
       pseudo: "PSEUDO",
@@ -535,6 +540,11 @@ const en = {
     reapplyLocked: (date) => `Recently rejected — the Council reopens the gates on ${date}. Use this time to strengthen your troops and your power, and come back stronger.`,
     dossierTitle: "YOUR RECRUIT FILE",
     waitNote: "COUNCIL'S ANSWER: WITHIN 72 H AFTER OPENING — END OF SEASON 2",
+    discordCta: {
+      eyebrow: "YOUR CREW AWAITS, CAPTAIN",
+      title: "Your place is aboard! The alliance's headquarters lives on Discord: campaigns and defenses are orchestrated there.",
+      btn: "JOIN THE DISCORD",
+    },
     noExp: "— no entry in the logbook —",
     fields: {
       pseudo: "USERNAME",
