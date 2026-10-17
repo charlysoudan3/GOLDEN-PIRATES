@@ -152,6 +152,7 @@ const fr = {
     filedOn: "DÉPOSÉE LE : ",
   },
   countdown: {
+    label: "LA SAISON 2 COMMENCE FIN OCTOBRE",
     lineLabel: "LA SAISON 2 COMMENCE FIN OCTOBRE :",
     days: "JOURS",
     hours: "HEURES",
@@ -510,6 +511,7 @@ const en = {
     filedOn: "FILED ON: ",
   },
   countdown: {
+    label: "SEASON 2 STARTS END OF OCTOBER",
     lineLabel: "SEASON 2 STARTS END OF OCTOBER:",
     days: "DAYS",
     hours: "HOURS",

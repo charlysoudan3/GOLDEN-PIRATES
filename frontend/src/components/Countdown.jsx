@@ -127,6 +127,9 @@ export default function Countdown({ variant = "hero", testid = "countdown" }) {
     <div data-testid={testid} className="relative overflow-hidden border border-gold/40 bg-deck/80 backdrop-blur p-5 sm:p-6">
       <Embers />
       <div className="relative z-10">
+        <p className="flex items-center gap-2 font-mono2 text-[9px] sm:text-[10px] tracking-[0.3em] text-gold mb-3">
+          <Flame className="w-4 h-4 text-bloodglow shrink-0 animate-pulse" /> {k.label}
+        </p>
         <div className="inline-flex items-stretch border border-gold/25 bg-ink/70 divide-x divide-gold/20">
           {cells.map(([v, label]) => (
             <Digit key={label} value={v} label={label} />
