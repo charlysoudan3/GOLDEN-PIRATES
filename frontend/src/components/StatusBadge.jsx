@@ -15,7 +15,7 @@ export default function StatusBadge({ status, testid = "status-badge", size = "s
   return (
     <span
       data-testid={testid}
-      className={`inline-flex items-center gap-2 border font-mono2 tracking-[0.25em] ${STYLE[status] || STYLE.pending} ${
+      className={`inline-flex items-center gap-2 whitespace-nowrap border font-mono2 tracking-[0.25em] ${STYLE[status] || STYLE.pending} ${
         size === "lg" ? "px-5 py-2 text-xs" : "px-2.5 py-1 text-[9px]"
       }`}
     >

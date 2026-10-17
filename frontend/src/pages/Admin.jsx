@@ -271,7 +271,7 @@ function AppRow({ app, onUpdate, onDelete, history }) {
       className="border border-gold/15 bg-deck/60 hover:border-gold/35 transition-colors"
     >
       <div className="grid grid-cols-12 gap-2 sm:gap-4 items-center px-4 sm:px-6 py-4 cursor-pointer" onClick={() => setOpen((v) => !v)}>
-        <div className="col-span-11 sm:col-span-3 flex items-center gap-3 min-w-0">
+        <div className="col-span-12 sm:col-span-3 flex items-center gap-3 min-w-0">
           <ChevronDown className={`w-4 h-4 text-gold shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
           <div className="min-w-0">
             <p className="font-display text-xl text-bone truncate">
@@ -296,19 +296,19 @@ function AppRow({ app, onUpdate, onDelete, history }) {
             <p className="font-mono2 text-[9px] tracking-[0.2em] text-gold">{app.tracking_code}</p>
           </div>
         </div>
-        <div className="hidden sm:block sm:col-span-2">
+        <div className="hidden sm:block sm:col-span-2 min-w-0">
           <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">{d.power}</p>
-          <p className="font-fell text-base text-goldlight">{app.power}</p>
+          <p className="font-fell text-base text-goldlight truncate">{app.power}</p>
         </div>
-        <div className="hidden md:block md:col-span-2">
+        <div className="hidden md:block md:col-span-2 min-w-0">
           <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">{d.troops}</p>
           <p className="font-fell text-base text-bone/80 truncate">{app.troops}</p>
         </div>
-        <div className="hidden lg:block lg:col-span-2">
+        <div className="hidden lg:block lg:col-span-2 min-w-0">
           <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">{d.discord}</p>
           <p className="font-fell text-base text-bone/80 truncate">{app.discord}</p>
         </div>
-        <div className="col-span-1 sm:col-span-1 flex justify-end" onClick={(e) => e.stopPropagation()}>
+        <div className="col-span-12 sm:col-span-2 flex justify-end min-w-0" onClick={(e) => e.stopPropagation()}>
           <StatusBadge status={app.status} />
         </div>
       </div>
