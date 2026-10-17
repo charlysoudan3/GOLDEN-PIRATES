@@ -148,6 +148,12 @@ async def track_application(code: str):
     return {
         "tracking_code": doc["tracking_code"],
         "pseudo": doc["pseudo"],
+        "power": doc.get("power", ""),
+        "troops": doc.get("troops", ""),
+        "activity": doc.get("activity", ""),
+        "experience": doc.get("experience", ""),
+        "discord": doc.get("discord", ""),
+        "message": doc.get("message", ""),
         "status": doc["status"],
         "note": doc.get("note", ""),
         "created_at": doc.get("created_at"),

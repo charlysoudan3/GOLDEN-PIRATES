@@ -26,6 +26,8 @@ Choix confirmés : thème « jamais vu » 100% pirates et impressionnant ; formu
 - **P0** : ajuster la puissance minimum (constante MIN_POWER dans PirateCode.jsx et ApplyForm.jsx — actuellement 100M, à confirmer par l'alliance).
 - **P1** : lien/invitation Discord officiel de l'alliance sur le site ; export CSV des candidatures.
 - **P2** : notification (email/Discord) à chaque nouvelle candidature ; ouverture/fermeture automatique du recrutement par date.
+- 2026-10-17 : Confirmation enrichie — le parchemin de remerciement affiche désormais : message personnalisé, numéro de suivi en grand avec légende « conserve-le précieusement », section ET MAINTENANT ? (3 actions à faire : garder le code, consulter l'Espace Recrue, garder Discord actif) et section TEMPS D'ATTENTE (réponse du Conseil sous 72 h après l'ouverture — fin de saison 2, candidatures anticipées prioritaires). Modale défilable sur petits écrans.
+- 2026-10-17 : Espace Recrue enrichi — le suivi affiche maintenant TOUT le dossier soumis (pseudo, puissance, troupes, activité, Discord, expérience, message) + statut + note du Conseil + date de dépôt + rappel du délai de réponse ; les champs vides affichent « aucune ligne dans le journal de bord ». API /track renvoie le dossier complet. Cycle complet vérifié : soumission → remerciement → suivi (toutes valeurs exactes, y compris cas sans expérience) → changement de statut admin → badge ACCEPTÉ À BORD + note visibles par la recrue, sur mobile et bureau.
 
 ## Tâches suivantes
 1. Confirmer la puissance minimum réelle et l'ajuster partout (2 constantes).

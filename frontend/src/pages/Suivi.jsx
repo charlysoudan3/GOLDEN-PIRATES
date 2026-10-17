@@ -104,14 +104,50 @@ export default function Suivi() {
                   </div>
                   <StatusBadge status={result.status} size="lg" />
                 </div>
-                <div className="border-t border-gold/15 pt-5 space-y-3">
+                <div className="border-t border-gold/15 pt-5 space-y-5">
                   <p className="font-fell text-lg text-bone/85">{c.status[result.status]?.long || c.status.pending.long}</p>
+                  <p
+                    data-testid="status-wait-note"
+                    className="font-mono2 text-[9px] tracking-[0.25em] text-gold border border-gold/25 bg-gold/5 px-3 py-2 inline-block"
+                  >
+                    {s.waitNote}
+                  </p>
+
+                  <div data-testid="status-dossier" className="border border-gold/20 bg-ink/40 p-5">
+                    <p className="font-mono2 text-[10px] tracking-[0.3em] text-gold mb-4">{s.dossierTitle}</p>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {[
+                        [s.fields.pseudo, result.pseudo],
+                        [s.fields.power, result.power],
+                        [s.fields.troops, result.troops],
+                        [s.fields.activity, result.activity],
+                        [s.fields.discord, result.discord],
+                      ].map(([label, value]) => (
+                        <div key={label}>
+                          <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{label}</p>
+                          <p className="font-fell text-base text-bone/85 break-words">{value || "—"}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4">
+                      <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{s.fields.experience}</p>
+                      <p className="font-fell text-base text-bone/85 whitespace-pre-wrap break-words">
+                        {result.experience || s.noExp}
+                      </p>
+                    </div>
+                    <div className="mt-4">
+                      <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{s.fields.message}</p>
+                      <p className="font-fell text-base text-bone/85 whitespace-pre-wrap break-words">{result.message}</p>
+                    </div>
+                  </div>
+
                   {result.note ? (
                     <p className="font-fell italic text-base text-goldlight border-l-2 border-gold/40 pl-4">
                       {c.status.note}
                       {result.note}
                     </p>
                   ) : null}
+
                   <div className="flex flex-wrap gap-x-8 gap-y-2 pt-2 font-mono2 text-[10px] tracking-[0.2em] text-mist">
                     <span>{c.status.code}<span className="text-gold">{result.tracking_code}</span></span>
                     {result.created_at ? (

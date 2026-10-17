@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Copy, Check, X, Anchor } from "lucide-react";
+import { Copy, Check, X, Anchor, ListChecks, Hourglass } from "lucide-react";
 import api, { formatApiError } from "@/lib/api";
 import { useLang, withPower } from "@/lib/i18n";
 
@@ -219,7 +219,7 @@ export default function ApplyForm() {
               exit={{ scale: 0.9, y: 20, opacity: 0 }}
               transition={{ duration: 0.5, ease: EASE }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-lg border-2 border-gold/60 bg-parch frame-plate p-8 sm:p-10 text-center"
+              className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto border-2 border-gold/60 bg-parch frame-plate p-8 sm:p-10 text-center"
             >
               <button
                 data-testid="success-modal-close"
@@ -233,12 +233,32 @@ export default function ApplyForm() {
                 <Check className="w-8 h-8 text-gold" />
               </div>
               <h3 className="font-display text-3xl sm:text-4xl text-gold mb-3">{s.modal.title(result.pseudo)}</h3>
-              <p className="font-fell text-base text-bone/80 mb-7">{s.modal.text}</p>
+              <p className="font-fell text-base text-bone/80 mb-6">{s.modal.text}</p>
               <div
                 data-testid="generated-tracking-code"
-                className="font-mono2 text-3xl sm:text-4xl tracking-[0.15em] text-goldlight bg-ink/60 border border-gold/40 px-6 py-4 mb-7 select-all"
+                className="font-mono2 text-3xl sm:text-4xl tracking-[0.15em] text-goldlight bg-ink/60 border border-gold/40 px-6 py-4 mb-2 select-all"
               >
                 {result.tracking_code}
+              </div>
+              <p className="font-mono2 text-[9px] tracking-[0.25em] text-mist mb-6">{s.modal.codeCaption}</p>
+              <div data-testid="modal-next-steps" className="text-left border border-gold/20 bg-deck/60 p-5 mb-4">
+                <p className="font-mono2 text-[10px] tracking-[0.3em] text-gold mb-3 flex items-center gap-2">
+                  <ListChecks className="w-4 h-4 shrink-0" /> {s.modal.nowTitle}
+                </p>
+                <ol className="space-y-2">
+                  {s.modal.next.map((n, i) => (
+                    <li key={n} className="flex gap-3 font-fell text-sm text-bone/80 leading-snug">
+                      <span className="font-mono2 text-xs text-gold mt-0.5 shrink-0">{i + 1}.</span>
+                      <span>{n}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div data-testid="modal-wait-time" className="text-left border border-gold/20 bg-deck/60 p-5 mb-6">
+                <p className="font-mono2 text-[10px] tracking-[0.3em] text-gold mb-2 flex items-center gap-2">
+                  <Hourglass className="w-4 h-4 shrink-0" /> {s.modal.waitTitle}
+                </p>
+                <p className="font-fell text-sm text-bone/80 leading-snug">{s.modal.wait}</p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
