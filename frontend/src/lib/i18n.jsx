@@ -240,6 +240,9 @@ const fr = {
     login: {
       title: "LE COFFRE DU CONSEIL",
       subtitle: "Salle des Capitaines — le registre, la messagerie et le butin vivent ici.",
+      checking: "Vérification de ta session…",
+      badSecret: "Secret refusé — le coffre reste verrouillé.",
+      storm: "La mer est agitée — vérifie ta connexion et réessaie.",
       zoneWarning: "ZONE CAPITAINES — TENTATIVES JOURNALISÉES",
       vaultCaption: "LA PORTE DU COFFRE",
       emailLabel: "COURRIER DU CAPITAINE",
@@ -580,6 +583,9 @@ const en = {
     login: {
       title: "THE COUNCIL'S CHEST",
       subtitle: "The Captains' hall — the register, the messages and the plunder live here.",
+      checking: "Checking your session…",
+      badSecret: "Secret refused — the chest stays locked.",
+      storm: "The sea is rough — check your connection and try again.",
       zoneWarning: "CAPTAINS' ZONE — ATTEMPTS ARE LOGGED",
       vaultCaption: "THE CHEST DOOR",
       emailLabel: "CAPTAIN'S COURIER",

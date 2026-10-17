@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { ChevronDown, LogOut, Search, Trash2, MessagesSquare, Anchor, Mail, KeyRound, Eye, EyeOff, Lock, Fingerprint, FileSpreadsheet, FileText } from "lucide-react";
+import { ChevronDown, LogOut, Search, Trash2, MessagesSquare, Anchor, Mail, KeyRound, Eye, EyeOff, Lock, Fingerprint, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
@@ -44,7 +44,7 @@ const KeyholeSVG = ({ className = "w-32 h-32" }) => (
   </svg>
 );
 
-function LoginScreen({ onAuthed }) {
+function LoginScreen({ onAuthed, checking = false }) {
   const { c } = useLang();
   const s = c.admin.login;
   const navigate = useNavigate();
@@ -53,10 +53,12 @@ function LoginScreen({ onAuthed }) {
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [fails, setFails] = useState(0);
+  const [error, setError] = useState("");
 
   const submit = async (e) => {
     e.preventDefault();
     if (busy) return;
+    setError("");
     setBusy(true);
     try {
       const { data } = await api.post("/admin/login", { email, password });
@@ -64,9 +66,12 @@ function LoginScreen({ onAuthed }) {
       onAuthed();
       window.dispatchEvent(new Event("gp-auth-changed"));
     } catch (err) {
-      if (err?.response?.status === 429) toast.error(s.sealed);
-      else if (err?.response?.status === 401) setFails((f) => Math.min(f + 1, 5));
-      else toast.error(formatApiError(err));
+      if (err?.response?.status === 429) setError(err?.response?.data?.detail || s.sealed);
+      else if (err?.response?.status === 401) {
+        setFails((f) => Math.min(f + 1, 5));
+        setError(s.badSecret);
+      } else if (err?.code === "ECONNABORTED" || err?.message === "Network Error") setError(s.storm);
+      else setError(formatApiError(err));
     } finally {
       setBusy(false);
     }
@@ -136,6 +141,14 @@ function LoginScreen({ onAuthed }) {
               </div>
               <h1 className="font-display text-3xl sm:text-4xl text-gold mb-2">{s.title}</h1>
               <p className="font-fell italic text-base text-bone/70">{s.subtitle}</p>
+              {checking && (
+                <p
+                  data-testid="admin-login-checking"
+                  className="mt-3 font-mono2 text-[9px] tracking-[0.3em] text-mist/70 animate-pulse"
+                >
+                  {s.checking}
+                </p>
+              )}
             </div>
 
             <label className="flex items-center gap-2 font-mono2 text-[10px] tracking-[0.3em] text-gold mb-2" htmlFor="admin-email">
@@ -144,8 +157,14 @@ function LoginScreen({ onAuthed }) {
             <input
               id="admin-email"
               data-testid="admin-login-input-email"
+              type="email"
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              autoFocus
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); setError(""); }}
               autoComplete="username"
               className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone focus:border-gold focus:shadow-[0_0_20px_rgba(212,175,55,0.15)] transition-all mb-5"
             />
@@ -159,7 +178,7 @@ function LoginScreen({ onAuthed }) {
                 data-testid="admin-login-input-password"
                 type={showPw ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setError(""); }}
                 placeholder={s.pwPh}
                 autoComplete="current-password"
                 className="w-full bg-ink/70 border border-gold/25 px-4 py-3 pr-12 font-fell text-base text-bone focus:border-gold focus:shadow-[0_0_20px_rgba(212,175,55,0.15)] transition-all"
@@ -175,7 +194,7 @@ function LoginScreen({ onAuthed }) {
               </button>
             </div>
 
-            {fails > 0 && (
+            {fails > 0 && !error && (
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -186,13 +205,30 @@ function LoginScreen({ onAuthed }) {
               </motion.p>
             )}
 
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                data-testid="admin-login-error"
+                className="mt-3 border border-bloodglow/45 bg-bloodglow/10 px-4 py-3 font-mono2 text-[10px] leading-relaxed tracking-[0.12em] text-bloodglow flex items-start gap-2"
+              >
+                <Lock className="w-3.5 h-3.5 shrink-0 mt-0.5" /> <span>{error}</span>
+              </motion.p>
+            )}
+
             <button
               type="submit"
               data-testid="admin-login-btn"
               disabled={busy}
-              className="mt-6 w-full font-display text-2xl tracking-wider py-3.5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_35px_rgba(212,175,55,0.4)] disabled:opacity-60 transition-all duration-300"
+              className="mt-6 w-full font-display text-2xl tracking-wider py-3.5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_35px_rgba(212,175,55,0.4)] disabled:opacity-60 disabled:cursor-wait transition-all duration-300"
             >
-              {busy ? s.submitting : s.submit}
+              {busy ? (
+                <span className="inline-flex items-center justify-center gap-3">
+                  <Loader2 className="w-5 h-5 animate-spin" /> {s.submitting}
+                </span>
+              ) : (
+                s.submit
+              )}
             </button>
           </motion.form>
 
@@ -512,7 +548,6 @@ export default function Admin() {
   const [activeConv, setActiveConv] = useState(null);
   const [badges, setBadges] = useState({ unread: 0, pending: 0 });
   const [exporting, setExporting] = useState(null);
-  const [splash, setSplash] = useState(true);
 
   // Lien direct du footer Conseil → onglet MESSAGERIE (/admin#messagerie)
   useEffect(() => {
@@ -541,13 +576,6 @@ export default function Admin() {
       })
       .catch(() => setAuthed(false));
   }, [loadAll]);
-
-  // Micro-écran d'ambiance (0,6 s max) : le Coffre s'affiche aussi vite que les
-  // autres boutons, pendant que la vérification de session continue en fond.
-  useEffect(() => {
-    const t = setTimeout(() => setSplash(false), 600);
-    return () => clearTimeout(t);
-  }, []);
 
   useEffect(() => {
     if (authed !== true) return;
@@ -664,10 +692,12 @@ export default function Admin() {
       <Nav />
       <main className="flex-1 pt-28 md:pt-36 pb-24" data-testid="admin-section">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          {authed !== true && splash && (
-            <p className="text-center font-mono2 text-xs tracking-[0.3em] text-mist pt-20">{a.loading}</p>
+          {authed !== true && (
+            <LoginScreen
+              checking={authed === null}
+              onAuthed={() => { setAuthed(true); loadAll(); }}
+            />
           )}
-          {authed !== true && !splash && <LoginScreen onAuthed={() => { setAuthed(true); loadAll(); }} />}
           {authed === true && (
             <>
               <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
