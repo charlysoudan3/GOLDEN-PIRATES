@@ -196,12 +196,14 @@ export default function Suivi() {
                 </div>
                 <div className="border-t border-gold/15 pt-5 space-y-5">
                   <p className="font-fell text-lg text-bone/85">{c.status[result.status]?.long || c.status.pending.long}</p>
-                  <p
-                    data-testid="status-wait-note"
-                    className="font-mono2 text-[9px] tracking-[0.25em] text-gold border border-gold/25 bg-gold/5 px-3 py-2 inline-block"
-                  >
-                    {s.waitNote}
-                  </p>
+                  {result.status === "pending" && (
+                    <p
+                      data-testid="status-wait-note"
+                      className="font-mono2 text-[9px] tracking-[0.25em] text-gold border border-gold/25 bg-gold/5 px-3 py-2 inline-block"
+                    >
+                      {s.waitNote}
+                    </p>
+                  )}
 
                   <div data-testid="status-dossier" className="border border-gold/20 bg-ink/40 p-5">
                     <p className="font-mono2 text-[10px] tracking-[0.3em] text-gold mb-4">{s.dossierTitle}</p>

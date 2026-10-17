@@ -15,6 +15,7 @@ const statCls = {
   total: "text-bone",
   pending: "text-gold",
   accepted: "text-emerald-400",
+  reserve: "text-amber-400",
   rejected: "text-bloodglow",
 };
 
@@ -203,6 +204,13 @@ function AppRow({ app, onUpdate, onDelete }) {
                     className="font-mono2 text-[10px] tracking-[0.2em] px-4 py-2.5 border border-gold/40 text-gold hover:bg-gold/10 transition-all"
                   >
                     {d.pending}
+                  </button>
+                  <button
+                    data-testid={`admin-action-reserve-${app.id}`}
+                    onClick={() => onUpdate(app, "reserve", note)}
+                    className="font-mono2 text-[10px] tracking-[0.2em] px-4 py-2.5 border border-amber-500/60 text-amber-400 hover:bg-amber-500/10 transition-all"
+                  >
+                    {d.reserve}
                   </button>
                   <button
                     data-testid={`admin-action-delete-${app.id}`}
@@ -534,7 +542,7 @@ export default function Admin() {
                 )
               ) : (
                 <>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10" data-testid="admin-dashboard">
+                  <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-10" data-testid="admin-dashboard">
                     {a.dash.stats.map((st) => (
                       <div key={st.key} data-testid={`admin-stat-${st.key}`} className="border border-gold/15 bg-deck/60 p-5">
                         <p className={`font-display text-4xl sm:text-5xl ${statCls[st.key]}`}>{stats?.[st.key] ?? 0}</p>

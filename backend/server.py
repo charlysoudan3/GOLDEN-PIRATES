@@ -243,13 +243,14 @@ async def admin_stats(_: str = Depends(require_admin)):
         "total": await db.applications.count_documents({}),
         "pending": await db.applications.count_documents({"status": "pending"}),
         "accepted": await db.applications.count_documents({"status": "accepted"}),
+        "reserve": await db.applications.count_documents({"status": "reserve"}),
         "rejected": await db.applications.count_documents({"status": "rejected"}),
     }
 
 
 @api_router.patch("/admin/applications/{app_id}")
 async def update_application(app_id: str, data: StatusUpdate, _: str = Depends(require_admin)):
-    if data.status not in ("pending", "accepted", "rejected"):
+    if data.status not in ("pending", "accepted", "rejected", "reserve"):
         raise HTTPException(status_code=400, detail="Statut invalide")
     doc = await db.applications.find_one_and_update(
         {"id": app_id},
@@ -263,9 +264,11 @@ async def update_application(app_id: str, data: StatusUpdate, _: str = Depends(r
 
 @api_router.delete("/admin/applications/{app_id}")
 async def delete_application(app_id: str, _: str = Depends(require_admin)):
-    result = await db.applications.delete_one({"id": app_id})
-    if result.deleted_count == 0:
+    doc = await db.applications.find_one({"id": app_id}, {"tracking_code": 1})
+    if not doc:
         raise HTTPException(status_code=404, detail="Candidature introuvable")
+    await db.messages.delete_many({"conv_code": doc["tracking_code"]})
+    await db.applications.delete_one({"id": app_id})
     return {"ok": True}
 
 
