@@ -134,6 +134,17 @@ async def root():
     return {"message": "Golden Pirates API — Royaume 1023", "status": "ok"}
 
 
+# Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+@api_router.post("/cron/keep-alive")
+async def cron_keep_alive(request: Request):
+    secret = os.environ.get("WEBHOOK_CRON_SECRET", "")
+    auth = request.headers.get("authorization", "")
+    if not secret or not secrets.compare_digest(auth, f"Bearer {secret}"):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    # Aucun travail à faire : ce ping maintient l'app en éveil (anti « réveiller le serveur »).
+    return {"ok": True, "ts": now_utc().isoformat()}
+
+
 REAPPLY_COOLDOWN_DAYS = 30
 IP_APPLICATIONS_PER_DAY = 6
 
