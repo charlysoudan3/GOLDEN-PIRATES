@@ -533,6 +533,14 @@ export default function Admin() {
       .catch(() => setAuthed(false));
   }, [loadAll]);
 
+  // Garde-fou anti-figage : jamais plus de 12 s sur « OUVERTURE DU COFFRE… » —
+  // une connexion lente affiche le Coffre (avec réessai possible) au lieu de bloquer.
+  useEffect(() => {
+    if (authed !== null) return;
+    const t = setTimeout(() => setAuthed(false), 12000);
+    return () => clearTimeout(t);
+  }, [authed]);
+
   useEffect(() => {
     if (authed !== true) return;
     let stop = false;
