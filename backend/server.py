@@ -102,7 +102,7 @@ class ApplicationCreate(BaseModel):
 class StatusUpdate(BaseModel):
     model_config = ConfigDict(extra="ignore")
     status: str
-    note: Optional[str] = None
+    note: Optional[str] = Field(default=None, max_length=2000)
 
 
 class LoginInput(BaseModel):
@@ -173,7 +173,7 @@ async def create_application(data: ApplicationCreate, request: Request):
             })
 
     # Garde 4 — limite anti-flood par appareil (IP)
-    ip = (request.headers.get("x-forwarded-for") or "").split(",")[-1].strip()
+    ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
     if not ip:
         ip = request.client.host if request.client else "unknown"
     day_ago = (now - timedelta(days=1)).isoformat()

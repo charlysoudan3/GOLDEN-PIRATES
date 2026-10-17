@@ -301,7 +301,7 @@ function AppRow({ app, onUpdate, onDelete, history }) {
                     data-testid={`admin-prev-decision-${app.id}`}
                     className="font-fell text-sm text-amber-400/90 border-l-2 border-amber-500/40 pl-3"
                   >
-                    {d.prevDecision} {c.status[history.prev.status]?.label} — {frDate(history.prev.created_at, locale)}
+                    {d.prevDecision} {c.status[history.prev.status]?.label || "—"} — {frDate(history.prev.created_at, locale)}
                   </p>
                 )}
               </div>
