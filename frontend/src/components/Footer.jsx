@@ -31,7 +31,7 @@ export default function Footer() {
               <LogoMark className="w-11 h-11" />
               <div className="leading-none">
                 <p className="font-display text-2xl text-gold">GOLDEN PIRATES</p>
-                <p className="font-mono2 text-[9px] tracking-[0.4em] text-mist mt-1">ROYAUME 1023</p>
+                <p className="font-mono2 text-[9px] tracking-[0.4em] text-mist mt-1">{c.nav.kingdom}</p>
               </div>
             </div>
             <p className="font-fell italic text-base text-bone/70 max-w-sm leading-relaxed">{s.tagline}</p>

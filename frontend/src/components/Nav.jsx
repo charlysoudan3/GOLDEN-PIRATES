@@ -99,7 +99,7 @@ export default function Nav() {
                 GOLDEN PIRATES
               </span>
               <span className="block font-mono2 text-[8px] sm:text-[10px] tracking-[0.4em] text-mist mt-1 whitespace-nowrap">
-                ROYAUME 1023
+                {c.nav.kingdom}
               </span>
             </span>
           </button>
@@ -280,7 +280,7 @@ export default function Nav() {
               className="relative z-10 shrink-0 border-t border-gold/15 bg-ink/80 backdrop-blur px-4 sm:px-8 py-3 flex items-center justify-between gap-4"
               style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
             >
-              <span className="font-mono2 text-[9px] tracking-[0.3em] text-mist">GOLDEN PIRATES — ROYAUME 1023</span>
+              <span className="font-mono2 text-[9px] tracking-[0.3em] text-mist">GOLDEN PIRATES — {c.nav.kingdom}</span>
               <SkullIcon className="w-4 h-4 text-blood/80 shrink-0" />
               <span className="hidden sm:block font-mono2 text-[9px] tracking-[0.3em] text-mist">{c.hero.chips[2]}</span>
             </div>

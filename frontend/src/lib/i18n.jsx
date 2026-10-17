@@ -14,6 +14,7 @@ const fr = {
     suiviShort: "Suivi",
     admin: "Espace Conseil",
     here: "VOUS Y ÊTES",
+    kingdom: "ROYAUME 1023",
     cta: "Postuler",
   },
   hero: {
@@ -334,6 +335,7 @@ const en = {
     suiviShort: "Tracking",
     admin: "Council Space",
     here: "YOU'RE HERE",
+    kingdom: "KINGDOM 1023",
     cta: "Apply",
   },
   hero: {
