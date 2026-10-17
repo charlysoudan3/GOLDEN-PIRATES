@@ -3,13 +3,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Shield } from "lucide-react";
 import LogoMark from "./LogoMark";
+import LangSwitcher from "./LangSwitcher";
 import { scrollToId } from "@/App";
+import { useLang } from "@/lib/i18n";
 
 const LINKS = [
-  { id: "alliance", label: "L'ALLIANCE", tid: "nav-link-manifesto" },
-  { id: "code", label: "LE CODE", tid: "nav-link-code" },
-  { id: "recit", label: "LE RÉCIT", tid: "nav-link-timeline" },
-  { id: "processus", label: "PROCESSUS", tid: "nav-link-process" },
+  { id: "alliance", key: "alliance", tid: "nav-link-manifesto" },
+  { id: "code", key: "code", tid: "nav-link-code" },
+  { id: "recit", key: "recit", tid: "nav-link-timeline" },
+  { id: "processus", key: "processus", tid: "nav-link-process" },
 ];
 
 export default function Nav() {
@@ -17,6 +19,7 @@ export default function Nav() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { c } = useLang();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -67,28 +70,29 @@ export default function Nav() {
             </span>
           </button>
 
-          <nav className="hidden lg:flex items-center gap-7">
+          <nav className="hidden lg:flex items-center gap-6">
             {LINKS.map((l) => (
               <button
                 key={l.id}
                 data-testid={l.tid}
                 onClick={() => go(l.id)}
-                className="font-mono2 text-[11px] tracking-[0.25em] text-bone/70 hover:text-gold transition-colors duration-300"
+                className="font-mono2 text-[11px] tracking-[0.25em] uppercase text-bone/70 hover:text-gold transition-colors duration-300"
               >
-                {l.label}
+                {c.nav[l.key]}
               </button>
             ))}
             <button
               data-testid="nav-link-status"
               onClick={() => navigate("/suivi")}
-              className="font-mono2 text-[11px] tracking-[0.25em] text-bone/70 hover:text-gold transition-colors duration-300"
+              className="font-mono2 text-[11px] tracking-[0.25em] uppercase text-bone/70 hover:text-gold transition-colors duration-300"
             >
-              SUIVRE MA CANDIDATURE
+              {c.nav.suivi}
             </button>
+            <LangSwitcher />
             <button
               data-testid="nav-link-admin"
               onClick={() => navigate("/admin")}
-              aria-label="Espace Conseil"
+              aria-label={c.nav.admin}
               className="p-2 text-bone/50 hover:text-gold transition-colors duration-300"
             >
               <Shield className="w-4 h-4" />
@@ -96,19 +100,20 @@ export default function Nav() {
             <button
               data-testid="nav-cta-apply"
               onClick={() => go("postuler")}
-              className="font-display text-lg tracking-wider px-6 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+              className="font-display text-lg tracking-wider uppercase px-6 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
             >
-              POSTULER
+              {c.nav.cta}
             </button>
           </nav>
 
           <div className="flex items-center gap-2 lg:hidden">
+            <LangSwitcher />
             <button
               data-testid="nav-cta-apply-mobile"
               onClick={() => go("postuler")}
-              className="font-display text-base tracking-wider px-4 py-1.5 bg-gold text-ink border border-gold"
+              className="font-display text-base tracking-wider uppercase px-4 py-1.5 bg-gold text-ink border border-gold"
             >
-              POSTULER
+              {c.nav.cta}
             </button>
             <button
               data-testid="nav-mobile-toggle"
@@ -141,7 +146,7 @@ export default function Nav() {
                 onClick={() => go(l.id)}
                 className="font-display text-4xl text-bone hover:text-gold transition-colors"
               >
-                {l.label.charAt(0) + l.label.slice(1).toLowerCase()}
+                {c.nav[l.key]}
               </motion.button>
             ))}
             <motion.button
@@ -153,23 +158,28 @@ export default function Nav() {
                 setOpen(false);
                 navigate("/suivi");
               }}
-              className="font-mono2 text-xs tracking-[0.3em] text-gold border border-gold/40 px-6 py-3"
+              className="font-mono2 text-xs tracking-[0.3em] text-gold border border-gold/40 px-6 py-3 uppercase"
             >
-              SUIVRE MA CANDIDATURE
+              {c.nav.suivi}
             </motion.button>
-            <motion.button
-              data-testid="nav-link-admin-mobile"
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.55 }}
-              onClick={() => {
-                setOpen(false);
-                navigate("/admin");
-              }}
-              className="font-mono2 text-[10px] tracking-[0.3em] text-mist flex items-center gap-2"
+              className="flex items-center gap-6"
             >
-              <Shield className="w-3.5 h-3.5" /> ESPACE CONSEIL
-            </motion.button>
+              <button
+                data-testid="nav-link-admin-mobile"
+                onClick={() => {
+                  setOpen(false);
+                  navigate("/admin");
+                }}
+                className="font-mono2 text-[10px] tracking-[0.3em] text-mist flex items-center gap-2 uppercase"
+              >
+                <Shield className="w-3.5 h-3.5" /> {c.nav.admin}
+              </button>
+              <LangSwitcher />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

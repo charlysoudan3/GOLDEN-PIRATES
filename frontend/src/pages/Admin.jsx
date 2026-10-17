@@ -6,19 +6,20 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
 import api, { formatApiError } from "@/lib/api";
+import { useLang } from "@/lib/i18n";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-const FILTERS = [
-  { key: "all", label: "TOUTES" },
-  { key: "pending", label: "EN EXAMEN" },
-  { key: "accepted", label: "ACCEPTÉES" },
-  { key: "rejected", label: "REFUSÉES" },
-];
+const statCls = {
+  total: "text-bone",
+  pending: "text-gold",
+  accepted: "text-emerald-400",
+  rejected: "text-bloodglow",
+};
 
-const frDate = (iso) =>
+const frDate = (iso, locale) =>
   iso
-    ? new Date(iso).toLocaleDateString("fr-FR", {
+    ? new Date(iso).toLocaleDateString(locale, {
         day: "numeric",
         month: "short",
         year: "numeric",
@@ -28,6 +29,8 @@ const frDate = (iso) =>
     : "—";
 
 function LoginScreen({ onAuthed }) {
+  const { c } = useLang();
+  const s = c.admin.login;
   const [email, setEmail] = useState("admin@goldenpirates.io");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -38,7 +41,7 @@ function LoginScreen({ onAuthed }) {
     setBusy(true);
     try {
       const { data } = await api.post("/admin/login", { email, password });
-      toast.success(`Bien le bonjour, Capitaine — ${data.email}`);
+      toast.success(c.admin.toast.welcome(data.email));
       onAuthed();
     } catch (err) {
       toast.error(formatApiError(err));
@@ -59,13 +62,11 @@ function LoginScreen({ onAuthed }) {
       >
         <div className="text-center mb-8">
           <Shield className="w-10 h-10 text-gold mx-auto mb-4" strokeWidth={1.4} />
-          <h1 className="font-display text-3xl sm:text-4xl text-gold mb-2">ESPACE CONSEIL</h1>
-          <p className="font-fell italic text-base text-bone/70">
-            Accès réservé aux Capitaines de la flotte.
-          </p>
+          <h1 className="font-display text-3xl sm:text-4xl text-gold mb-2">{s.title}</h1>
+          <p className="font-fell italic text-base text-bone/70">{s.sub}</p>
         </div>
         <label className="block font-mono2 text-[10px] tracking-[0.3em] text-gold mb-2" htmlFor="admin-email">
-          COURRIER DU CAPITAINE
+          {s.emailLabel}
         </label>
         <input
           id="admin-email"
@@ -75,7 +76,7 @@ function LoginScreen({ onAuthed }) {
           className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone focus:border-gold transition-all mb-5"
         />
         <label className="block font-mono2 text-[10px] tracking-[0.3em] text-gold mb-2" htmlFor="admin-password">
-          SECRET DU COFFRE
+          {s.pwLabel}
         </label>
         <input
           id="admin-password"
@@ -83,7 +84,7 @@ function LoginScreen({ onAuthed }) {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••••"
+          placeholder={s.pwPh}
           className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone focus:border-gold transition-all mb-7"
         />
         <button
@@ -92,7 +93,7 @@ function LoginScreen({ onAuthed }) {
           disabled={busy}
           className="w-full font-display text-2xl tracking-wider py-3.5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_35px_rgba(212,175,55,0.4)] disabled:opacity-60 transition-all duration-300"
         >
-          {busy ? "ON SONDE LA FONDE…" : "OUVRIR LE COFFRE"}
+          {busy ? s.submitting : s.submit}
         </button>
       </motion.form>
     </div>
@@ -100,6 +101,9 @@ function LoginScreen({ onAuthed }) {
 }
 
 function AppRow({ app, onUpdate, onDelete }) {
+  const { c, lang } = useLang();
+  const d = c.admin.dash;
+  const locale = lang === "fr" ? "fr-FR" : "en-GB";
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState(app.note || "");
 
@@ -120,15 +124,15 @@ function AppRow({ app, onUpdate, onDelete }) {
           </div>
         </div>
         <div className="hidden sm:block sm:col-span-2">
-          <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">PUISSANCE</p>
+          <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">{d.power}</p>
           <p className="font-fell text-base text-goldlight">{app.power}</p>
         </div>
         <div className="hidden md:block md:col-span-2">
-          <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">TROUPES</p>
+          <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">{d.troops}</p>
           <p className="font-fell text-base text-bone/80 truncate">{app.troops}</p>
         </div>
         <div className="hidden lg:block lg:col-span-2">
-          <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">DISCORD</p>
+          <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">{d.discord}</p>
           <p className="font-fell text-base text-bone/80 truncate">{app.discord}</p>
         </div>
         <div className="col-span-1 sm:col-span-1 flex justify-end" onClick={(e) => e.stopPropagation()}>
@@ -148,33 +152,33 @@ function AppRow({ app, onUpdate, onDelete }) {
             <div className="px-4 sm:px-6 py-5 grid md:grid-cols-2 gap-5">
               <div className="space-y-3">
                 <div>
-                  <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">ACTIVITÉ</p>
+                  <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{d.activity}</p>
                   <p className="font-fell text-base text-bone/85">{app.activity}</p>
                 </div>
                 <div>
-                  <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">EXPÉRIENCE</p>
+                  <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{d.experience}</p>
                   <p className="font-fell text-base text-bone/85 whitespace-pre-wrap">
-                    {app.experience || "— aucune ligne dans le journal de bord —"}
+                    {app.experience || d.noExp}
                   </p>
                 </div>
                 <div>
-                  <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">MESSAGE</p>
+                  <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{d.message}</p>
                   <p className="font-fell text-base text-bone/85 whitespace-pre-wrap">{app.message}</p>
                 </div>
                 <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">
-                  DÉPOSÉE LE {frDate(app.created_at).toUpperCase()}
+                  {d.filedOn}{frDate(app.created_at, locale).toUpperCase()}
                 </p>
               </div>
               <div>
                 <label className="block font-mono2 text-[9px] tracking-[0.2em] text-gold mb-2" htmlFor={`note-${app.id}`}>
-                  NOTE DU CONSEIL
+                  {d.noteLabel}
                 </label>
                 <textarea
                   id={`note-${app.id}`}
                   data-testid={`admin-note-input-${app.id}`}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="ex : Entretien Discord le vendredi — profil sérieux"
+                  placeholder={d.notePh}
                   className="w-full bg-ink/70 border border-gold/25 px-3 py-2.5 font-fell text-sm text-bone focus:border-gold transition-all min-h-[70px] resize-y mb-4"
                 />
                 <div className="flex flex-wrap gap-2">
@@ -183,28 +187,28 @@ function AppRow({ app, onUpdate, onDelete }) {
                     onClick={() => onUpdate(app, "accepted", note)}
                     className="font-mono2 text-[10px] tracking-[0.2em] px-4 py-2.5 border border-emerald-500/60 text-emerald-400 hover:bg-emerald-500/10 transition-all"
                   >
-                    ACCEPTER À BORD
+                    {d.accept}
                   </button>
                   <button
                     data-testid={`admin-action-reject-${app.id}`}
                     onClick={() => onUpdate(app, "rejected", note)}
                     className="font-mono2 text-[10px] tracking-[0.2em] px-4 py-2.5 border border-blood/60 text-bloodglow hover:bg-blood/10 transition-all"
                   >
-                    REFUSER
+                    {d.reject}
                   </button>
                   <button
                     data-testid={`admin-action-pending-${app.id}`}
                     onClick={() => onUpdate(app, "pending", note)}
                     className="font-mono2 text-[10px] tracking-[0.2em] px-4 py-2.5 border border-gold/40 text-gold hover:bg-gold/10 transition-all"
                   >
-                    REMETTRE EN EXAMEN
+                    {d.pending}
                   </button>
                   <button
                     data-testid={`admin-action-delete-${app.id}`}
                     onClick={() => onDelete(app)}
                     className="ml-auto inline-flex items-center gap-1.5 font-mono2 text-[10px] tracking-[0.2em] px-3 py-2.5 text-mist hover:text-bloodglow transition-all"
                   >
-                    <Trash2 className="w-3.5 h-3.5" /> BRÛLER
+                    <Trash2 className="w-3.5 h-3.5" /> {d.burn}
                   </button>
                 </div>
               </div>
@@ -217,6 +221,8 @@ function AppRow({ app, onUpdate, onDelete }) {
 }
 
 export default function Admin() {
+  const { c } = useLang();
+  const a = c.admin;
   const [authed, setAuthed] = useState(null);
   const [apps, setApps] = useState([]);
   const [stats, setStats] = useState(null);
@@ -253,41 +259,41 @@ export default function Admin() {
       setAuthed(false);
       setApps([]);
       setStats(null);
-      toast.success("Le coffre est refermé. Bon vent, Capitaine.");
+      toast.success(a.toast.logout);
     }
   };
 
   const onUpdate = async (app, status, note) => {
     try {
       const { data } = await api.patch(`/admin/applications/${app.id}`, { status, note });
-      setApps((list) => list.map((a) => (a.id === app.id ? data : a)));
+      setApps((list) => list.map((x) => (x.id === app.id ? data : x)));
       await loadAll();
-      toast.success(`${data.pseudo} — statut mis à jour.`);
+      toast.success(a.toast.updated(data.pseudo));
     } catch (err) {
       toast.error(formatApiError(err));
     }
   };
 
   const onDelete = async (app) => {
-    if (!window.confirm(`Brûler la candidature de ${app.pseudo} ? Cette besogne est irréversible.`)) return;
+    if (!window.confirm(a.toast.confirm(app.pseudo))) return;
     try {
       await api.delete(`/admin/applications/${app.id}`);
-      setApps((list) => list.filter((a) => a.id !== app.id));
+      setApps((list) => list.filter((x) => x.id !== app.id));
       await loadAll();
-      toast.success(`La candidature de ${app.pseudo} est réduite en cendres.`);
+      toast.success(a.toast.burned(app.pseudo));
     } catch (err) {
       toast.error(formatApiError(err));
     }
   };
 
-  const visible = apps.filter((a) => {
-    if (filter !== "all" && a.status !== filter) return false;
+  const visible = apps.filter((x) => {
+    if (filter !== "all" && x.status !== filter) return false;
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       return (
-        a.pseudo.toLowerCase().includes(q) ||
-        a.tracking_code.toLowerCase().includes(q) ||
-        a.discord.toLowerCase().includes(q)
+        x.pseudo.toLowerCase().includes(q) ||
+        x.tracking_code.toLowerCase().includes(q) ||
+        x.discord.toLowerCase().includes(q)
       );
     }
     return true;
@@ -299,42 +305,37 @@ export default function Admin() {
       <main className="flex-1 pt-28 md:pt-36 pb-24" data-testid="admin-section">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           {authed === null && (
-            <p className="text-center font-mono2 text-xs tracking-[0.3em] text-mist pt-20">OUVERTURE DU COFFRE…</p>
+            <p className="text-center font-mono2 text-xs tracking-[0.3em] text-mist pt-20">{a.loading}</p>
           )}
           {authed === false && <LoginScreen onAuthed={() => { setAuthed(true); loadAll(); }} />}
           {authed === true && (
             <>
               <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
                 <div>
-                  <p className="font-mono2 text-[11px] tracking-[0.35em] text-gold mb-3">CONSEIL DES CAPITAINES</p>
-                  <h1 className="font-display text-4xl sm:text-5xl text-bone">LE REGISTRE DES RECRUES</h1>
+                  <p className="font-mono2 text-[11px] tracking-[0.35em] text-gold mb-3">{a.dash.eyebrow}</p>
+                  <h1 className="font-display text-4xl sm:text-5xl text-bone">{a.dash.title}</h1>
                 </div>
                 <button
                   data-testid="admin-logout-btn"
                   onClick={logout}
                   className="inline-flex items-center gap-2 font-mono2 text-[10px] tracking-[0.25em] px-5 py-3 border border-gold/40 text-gold hover:bg-gold/10 transition-all"
                 >
-                  <LogOut className="w-4 h-4" /> REFERMER LE COFFRE
+                  <LogOut className="w-4 h-4" /> {a.dash.logout}
                 </button>
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10" data-testid="admin-dashboard">
-                {[
-                  { tid: "admin-stat-total", label: "CANDIDATURES", value: stats?.total ?? 0, cls: "text-bone" },
-                  { tid: "admin-stat-pending", label: "EN EXAMEN", value: stats?.pending ?? 0, cls: "text-gold" },
-                  { tid: "admin-stat-accepted", label: "ACCEPTÉES", value: stats?.accepted ?? 0, cls: "text-emerald-400" },
-                  { tid: "admin-stat-rejected", label: "REFUSÉES", value: stats?.rejected ?? 0, cls: "text-bloodglow" },
-                ].map((s) => (
-                  <div key={s.tid} data-testid={s.tid} className="border border-gold/15 bg-deck/60 p-5">
-                    <p className={`font-display text-4xl sm:text-5xl ${s.cls}`}>{s.value}</p>
-                    <p className="font-mono2 text-[9px] tracking-[0.3em] text-mist mt-2">{s.label}</p>
+                {a.dash.stats.map((st) => (
+                  <div key={st.key} data-testid={`admin-stat-${st.key}`} className="border border-gold/15 bg-deck/60 p-5">
+                    <p className={`font-display text-4xl sm:text-5xl ${statCls[st.key]}`}>{stats?.[st.key] ?? 0}</p>
+                    <p className="font-mono2 text-[9px] tracking-[0.3em] text-mist mt-2">{st.label}</p>
                   </div>
                 ))}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <div className="flex flex-wrap gap-2">
-                  {FILTERS.map((f) => (
+                  {a.dash.filters.map((f) => (
                     <button
                       key={f.key}
                       data-testid={`admin-filter-${f.key}`}
@@ -355,7 +356,7 @@ export default function Admin() {
                     data-testid="admin-search-input"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Pseudo, code ou Discord…"
+                    placeholder={a.dash.searchPh}
                     className="w-full bg-ink/70 border border-gold/25 pl-10 pr-4 py-2.5 font-fell text-sm text-bone placeholder:text-mist/50 focus:border-gold transition-all"
                   />
                 </div>
@@ -364,10 +365,8 @@ export default function Admin() {
               <div className="space-y-3">
                 {visible.length === 0 ? (
                   <div data-testid="admin-empty-state" className="border border-dashed border-gold/25 bg-deck/40 p-14 text-center">
-                    <p className="font-display text-2xl text-bone/70 mb-2">La mer est calme…</p>
-                    <p className="font-fell italic text-base text-mist">
-                      Aucune candidature ne correspond. Les recrues ne tarderont pas à frapper au pont.
-                    </p>
+                    <p className="font-display text-2xl text-bone/70 mb-2">{a.dash.emptyTitle}</p>
+                    <p className="font-fell italic text-base text-mist">{a.dash.emptyText}</p>
                   </div>
                 ) : (
                   visible.map((app) => (

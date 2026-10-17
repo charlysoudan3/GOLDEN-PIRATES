@@ -3,10 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Compass, FileQuestion } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import StatusBadge, { STATUS_META } from "@/components/StatusBadge";
+import StatusBadge from "@/components/StatusBadge";
 import api, { formatApiError } from "@/lib/api";
+import { useLang } from "@/lib/i18n";
 
 export default function Suivi() {
+  const { c, lang } = useLang();
+  const s = c.suivi;
   const [code, setCode] = useState("");
   const [checking, setChecking] = useState(false);
   const [result, setResult] = useState(null);
@@ -17,7 +20,7 @@ export default function Suivi() {
     if (checking) return;
     const clean = code.trim().toUpperCase();
     if (!clean) {
-      setError("Entre ton code de suivi — il ressemble à GP-1023-XXXX.");
+      setError(s.empty);
       setResult(null);
       return;
     }
@@ -28,13 +31,13 @@ export default function Suivi() {
       setResult(data);
     } catch (err) {
       setResult(null);
-      setError(formatApiError(err));
+      setError(err?.response?.status === 404 ? s.notFound : formatApiError(err));
     } finally {
       setChecking(false);
     }
   };
 
-  const meta = result ? STATUS_META[result.status] || STATUS_META.pending : null;
+  const locale = lang === "fr" ? "fr-FR" : "en-GB";
 
   return (
     <div className="bg-ink min-h-screen flex flex-col">
@@ -42,14 +45,11 @@ export default function Suivi() {
       <main className="flex-1 pt-28 md:pt-36 pb-24">
         <section data-testid="status-section" className="max-w-3xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-12">
-            <p className="font-mono2 text-[11px] tracking-[0.35em] text-gold mb-4">ESPACE RECRUE</p>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-bone leading-[1.02] mb-5">
-              SUIS TA <span className="text-gold">CANDIDATURE</span>
+            <p className="font-mono2 text-[11px] tracking-[0.35em] text-gold mb-4">{s.eyebrow}</p>
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-bone leading-[1.02] mb-5 uppercase">
+              {s.title1}<span className="text-gold">{s.titleGold}</span>
             </h1>
-            <p className="font-fell italic text-lg text-bone/75 max-w-xl mx-auto">
-              Le registre du Conseil n'a pas de secret pour toi : glisse ton code de suivi et
-              découvre où en est ton dossier.
-            </p>
+            <p className="font-fell italic text-lg text-bone/75 max-w-xl mx-auto">{s.sub}</p>
           </div>
 
           <form
@@ -58,7 +58,7 @@ export default function Suivi() {
             className="border border-gold/25 bg-parch/80 frame-plate p-6 sm:p-8"
           >
             <label className="block font-mono2 text-[10px] tracking-[0.3em] text-gold mb-2" htmlFor="track-code">
-              CODE DE SUIVI
+              {s.codeLabel}
             </label>
             <div className="flex flex-col sm:flex-row gap-3">
               <input
@@ -66,7 +66,7 @@ export default function Suivi() {
                 data-testid="status-input-code"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="GP-1023-XXXX"
+                placeholder={s.codePh}
                 maxLength={12}
                 className="flex-1 bg-ink/70 border border-gold/25 px-4 py-3.5 font-mono2 text-lg tracking-[0.2em] text-goldlight placeholder:text-mist/40 focus:border-gold transition-all"
               />
@@ -77,7 +77,7 @@ export default function Suivi() {
                 className="inline-flex items-center justify-center gap-2 font-display text-xl tracking-wider px-8 py-3.5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] disabled:opacity-60 transition-all duration-300"
               >
                 {checking ? <Compass className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-                {checking ? "LA ROSE VIRE…" : "INTERROGER LE REGISTRE"}
+                {checking ? s.checking : s.check}
               </button>
             </div>
             {error && (
@@ -88,7 +88,7 @@ export default function Suivi() {
           </form>
 
           <AnimatePresence>
-            {result && meta && (
+            {result && (
               <motion.div
                 data-testid="status-result-card"
                 initial={{ opacity: 0, y: 30 }}
@@ -99,25 +99,26 @@ export default function Suivi() {
               >
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                   <div>
-                    <p className="font-mono2 text-[9px] tracking-[0.3em] text-mist mb-1">RECRUE</p>
+                    <p className="font-mono2 text-[9px] tracking-[0.3em] text-mist mb-1">{s.codeLabel}</p>
                     <p className="font-display text-3xl text-bone">{result.pseudo}</p>
                   </div>
                   <StatusBadge status={result.status} size="lg" />
                 </div>
                 <div className="border-t border-gold/15 pt-5 space-y-3">
-                  <p className="font-fell text-lg text-bone/85">{meta.long}</p>
+                  <p className="font-fell text-lg text-bone/85">{c.status[result.status]?.long || c.status.pending.long}</p>
                   {result.note ? (
                     <p className="font-fell italic text-base text-goldlight border-l-2 border-gold/40 pl-4">
-                      Note du Conseil : {result.note}
+                      {c.status.note}
+                      {result.note}
                     </p>
                   ) : null}
                   <div className="flex flex-wrap gap-x-8 gap-y-2 pt-2 font-mono2 text-[10px] tracking-[0.2em] text-mist">
-                    <span>CODE : <span className="text-gold">{result.tracking_code}</span></span>
+                    <span>{c.status.code}<span className="text-gold">{result.tracking_code}</span></span>
                     {result.created_at ? (
                       <span>
-                        DÉPOSÉE LE :{" "}
+                        {c.status.filedOn}
                         <span className="text-bone/80">
-                          {new Date(result.created_at).toLocaleDateString("fr-FR", {
+                          {new Date(result.created_at).toLocaleDateString(locale, {
                             day: "numeric",
                             month: "long",
                             year: "numeric",

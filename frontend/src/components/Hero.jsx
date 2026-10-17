@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { scrollToId } from "@/App";
+import { useLang } from "@/lib/i18n";
 
 const EASE = [0.16, 1, 0.3, 1];
 const HERO_BG =
@@ -43,6 +44,8 @@ const RevealLine = ({ children, delay, className = "" }) => (
 );
 
 export default function Hero() {
+  const { c } = useLang();
+  const s = c.hero;
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
@@ -72,7 +75,7 @@ export default function Hero() {
       <motion.div className="absolute inset-0" style={{ y: bgY, scale: bgScale }}>
         <img
           src={HERO_BG}
-          alt="Navire pirate sous un ciel d'orage"
+          alt={s.imgAlt}
           className="w-full h-full object-cover"
           loading="eager"
         />
@@ -108,10 +111,10 @@ export default function Hero() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-bloodglow opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blood" />
               </span>
-              PRÉ-KVK — SAISON 2
+              {s.badge}
             </span>
             <span className="hidden sm:inline-block border border-bone/20 bg-ink/60 backdrop-blur px-4 py-1.5 font-mono2 text-[10px] sm:text-xs tracking-[0.3em] text-bone/70">
-              RECRUTEMENT : FIN DE SAISON 2
+              {s.badge2}
             </span>
           </div>
         </RevealLine>
@@ -127,8 +130,7 @@ export default function Hero() {
 
         <RevealLine delay={0.6}>
           <p data-testid="hero-subtitle" className="font-fell italic text-base sm:text-xl md:text-2xl text-bone/90 mt-6 md:mt-8 max-w-2xl">
-            L'alliance souveraine du Royaume 1023 — <span className="text-gold">Call of Dragons</span>.
-            L'or de la victoire ne coule que pour les équipages soudés.
+            {s.sub}
           </p>
         </RevealLine>
 
@@ -141,17 +143,17 @@ export default function Hero() {
           <button
             data-testid="hero-cta-apply"
             onClick={() => scrollToId("postuler")}
-            className="group relative font-display text-2xl tracking-wider px-10 py-4 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_45px_rgba(212,175,55,0.5)] transition-all duration-300"
+            className="group relative font-display text-2xl tracking-wider uppercase px-10 py-4 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_45px_rgba(212,175,55,0.5)] transition-all duration-300"
           >
-            REJOINDRE L'ÉQUIPAGE
+            {s.ctaApply}
             <span className="absolute inset-0 border border-goldlight/60 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
           <Link
             data-testid="hero-cta-track"
             to="/suivi"
-            className="font-display text-2xl tracking-wider px-10 py-4 border border-gold/50 text-gold hover:border-gold hover:bg-gold/10 transition-all duration-300 text-center"
+            className="font-display text-2xl tracking-wider uppercase px-10 py-4 border border-gold/50 text-gold hover:border-gold hover:bg-gold/10 transition-all duration-300 text-center"
           >
-            SUIVRE MA CANDIDATURE
+            {s.ctaTrack}
           </Link>
         </motion.div>
       </motion.div>
@@ -164,18 +166,18 @@ export default function Hero() {
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between gap-4">
           <div className="hidden sm:flex items-center gap-6 font-mono2 text-[10px] tracking-[0.35em] text-bone/50">
-            <span>ROYAUME 1023</span>
+            <span>{s.chips[0]}</span>
             <span className="text-gold/50">✦</span>
-            <span>CALL OF DRAGONS</span>
+            <span>{s.chips[1]}</span>
             <span className="text-gold/50">✦</span>
-            <span>UNE SEULE FLOTTE, UN SEUL BUTIN</span>
+            <span>{s.chips[2]}</span>
           </div>
           <button
             data-testid="hero-scroll-cue"
             onClick={() => scrollToId("alliance")}
-            className="flex items-center gap-2 font-mono2 text-[10px] tracking-[0.35em] text-gold/80 hover:text-gold transition-colors mx-auto sm:mx-0"
+            className="flex items-center gap-2 font-mono2 text-[10px] tracking-[0.35em] uppercase text-gold/80 hover:text-gold transition-colors mx-auto sm:mx-0"
           >
-            DÉROULER LA CARTE
+            {s.scroll}
             <ChevronDown className="w-4 h-4 animate-bounce" />
           </button>
         </div>

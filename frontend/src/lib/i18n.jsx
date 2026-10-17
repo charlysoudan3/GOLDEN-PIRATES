@@ -1,0 +1,463 @@
+import { createContext, useContext, useEffect, useState } from "react";
+
+export const MIN_POWER = "100M";
+export const withPower = (s) => s.replace("{POWER}", MIN_POWER);
+
+const fr = {
+  nav: {
+    alliance: "L'alliance",
+    code: "Le Code",
+    recit: "Le Récit",
+    processus: "Processus",
+    suivi: "Suivre ma candidature",
+    admin: "Espace Conseil",
+    cta: "Postuler",
+  },
+  hero: {
+    badge: "PRÉ-KVK — SAISON 2",
+    badge2: "RECRUTEMENT : FIN DE SAISON 2",
+    sub: "L'alliance souveraine du Royaume 1023 — Call of Dragons. L'or de la victoire ne coule que pour les équipages soudés.",
+    ctaApply: "Rejoindre l'équipage",
+    ctaTrack: "Suivre ma candidature",
+    chips: ["ROYAUME 1023", "CALL OF DRAGONS", "UNE SEULE FLOTTE, UN SEUL BUTIN"],
+    scroll: "Dérouler la carte",
+    imgAlt: "Navire pirate sous un ciel d'orage",
+  },
+  marquee: ["Royaume 1023", "Golden Pirates", "Pré-KVK", "Saison 2", "Fraternité d'acier", "Le butin est à nous", "Recrutement — fin de saison 2"],
+  manifesto: {
+    eyebrow: "La ligne flottante — 01",
+    title1: "Une légende se forge ",
+    titleGold: "dans l'encre et l'or",
+    p1: "Les GOLDEN PIRATES ne recrutent pas des soldats. Nous recrutons des marins que la mer n'a pas encore domptés. Dans le Royaume 1023, notre pavillon noir ne flotte pas par hasard : il flotte parce que derrière lui, chaque membre tire dans le même sens.",
+    p2: "La Saison 1 est derrière nous, la Saison 2 s'annonce comme une marée d'or. Si tu lis ces lignes avec l'envie de te battre au bon endroit, au bon moment, avec les bonnes personnes — alors continue ta lecture, recrue.",
+    quote: "On ne rate jamais une saison avec un équipage qui a du cœur, des troupes et du trésor.",
+    quoteBy: "— LE CONSEIL DES CAPITAINES, G.P. 1023",
+    imgCaption: "Le vaisseau amiral",
+    imgTag: "G.P. — 1023",
+    imgAlt: "Trois-mâts de guerre sous voiles",
+    values: [
+      { title: "Fraternité d'acier", text: "Ici, personne ne rallie seul. Dons, entraide, rassemblements : l'équipage veille sur le sien." },
+      { title: "Rigueur stratégique", text: "Chaque bataille se prépare. Objectifs clairs, ordres nets, exécution chirurgicale en KvK." },
+      { title: "Suprématie KvK", text: "La Conquête du Royaume est notre terroir. On y monte, on y tient, on n'y dort jamais." },
+    ],
+  },
+  code: {
+    eyebrow: "Les conditions d'embarquement — 02",
+    title1: "Le Code des ",
+    titleGold: "Pirates",
+    sub: "Tout équipage qui dure a ses articles. Signe les nôtres en connaissant la chanson — aucun capitaine n'aime les surprises à bord.",
+    imgCaption: "LE BUTIN DE LA DERNIÈRE TRAVERSÉE",
+    imgAlt: "Pièces d'or du butin",
+    articles: [
+      { num: "I", title: "Puissance minimum", value: "{POWER} de puissance", tag: "OBLIGATOIRE", text: "La puissance reflète la discipline d'un marin. Les profils proches du seuil sont étudiés avec attention : le Conseil tranche en âme et conscience." },
+      { num: "II", title: "Troupes de guerre", value: "T4 exigé — T5 priorisé", tag: "OBLIGATOIRE", text: "Behemoths, sièges et passages n'attendent pas. Tes troupes doivent suivre le rythme de la flotte." },
+      { num: "III", title: "Discord & vocal", value: "Présence au rassemblement", tag: "OBLIGATOIRE", text: "Les ordres de bataille se crient, pas s'écrivent. Discord et vocal sont obligatoires pendant les Behemoths et les guerres." },
+      { num: "IV", title: "Activité quotidienne", value: "Connexion régulière", tag: "SURVEILLÉ", text: "Un pirate absent affaiblit tout l'équipage. On ne te demandera pas d'y passer tes nuits — mais on te demandera d'être là." },
+      { num: "V", title: "Fraternité d'acier", value: "Dons & respect des ordres", tag: "HONNEUR", text: "Le butin se partage, les ordres se suivent, l'équipage se protège. La loyauté est notre seule monnaie qui ne perd jamais de valeur." },
+    ],
+  },
+  timeline: {
+    eyebrow: "Le récit des saisons — 03",
+    title1: "Nous sommes en ",
+    titleGold: "Pré-KvK",
+    steps: [
+      { season: "SAISON 1", title: "L'épreuve du feu", status: "TERMINÉE", text: "La première KvK est passée par là. L'équipage en est ressorti plus soudé, plus dur, plus doré que jamais." },
+      { season: "PRÉ-KVK — SAISON 2", title: "Mobilisation générale", status: "EN COURS — NOUS SOMMES ICI", text: "La Saison 2 arrive : on renforce les troupes, on remplit les greniers, on aiguise la stratégie. Chaque marin compte." },
+      { season: "SAISON 2 — KVK", title: "La bataille des terres", status: "À VENIR", text: "La Conquête du Royaume démarre. Batailles de territoires, Behemoths, sièges : la mer sera rouge — et l'or, nôtre." },
+      { season: "FIN DE SAISON 2", title: "Ouverture du recrutement", status: "C'EST ICI QU'ON VOUS ATTEND", text: "Comme le veut la loi de Call of Dragons, les nouvelles recrues montent à bord en fin de saison. Dépose ta candidature dès maintenant : elle sera traitée en priorité." },
+    ],
+  },
+  process: {
+    eyebrow: "La route de la recrue — 04",
+    title1: "Du quai au ",
+    titleGold: "pont supérieur",
+    steps: [
+      { title: "Dépose ta candidature", text: "Remplis les articles du formulaire en bas de page. Deux minutes chrono, sans encre ni serment de sang." },
+      { title: "Reçois ton code de suivi", text: "Un code unique du style GP-1023-XXXX te confie l'état de ton dossier. Conserve-le précieusement." },
+      { title: "Entretien avec le Conseil", text: "En fin de saison 2, le Conseil des Capitaines t'invite sur Discord pour jaser autour du tavernain." },
+      { title: "Embarque au Royaume 1023", text: "Pavillon hissé, cap sur l'or : tu intègres la flotte et tu prends part à la prochaine KvK." },
+    ],
+  },
+  apply: {
+    eyebrow: "Signer les articles — 05",
+    title1: "Monte à bord, ",
+    titleGold: "marin",
+    intro: "Le recrutement officiel s'ouvre à la fin de la Saison 2 — c'est la règle du Royaume. Mais les candidatures déposées dès maintenant passent la Barbene en premier : le Conseil les examine en priorité dès l'ouverture.",
+    bullets: [
+      "Puissance minimum : {POWER} (Article I du Code)",
+      "Réponse du Conseil après entretien Discord",
+      "Un code de suivi t'est remis dès l'envoi — garde-le sur toi",
+    ],
+    labels: {
+      pseudo: "PSEUDO CALL OF DRAGONS *",
+      power: "PUISSANCE ACTUELLE *",
+      troops: "NIVEAU DE TROUPES *",
+      activity: "ACTIVITÉ QUOTIDIENNE *",
+      discord: "TAG DISCORD *",
+      experience: "EXPÉRIENCE — KVK & ALLIANCES PRÉCÉDENTES",
+      message: "TON MESSAGE AU CONSEIL *",
+    },
+    ph: {
+      pseudo: "ex : KrakenDuNord",
+      power: "ex : 120M (min. {POWER})",
+      discord: "ex : krakendunord",
+      experience: "Saisons jouées, rôles tenus, faits d'armes dont tu es fier…",
+      message: "Pourquoi les GOLDEN PIRATES ? Qu'est-ce que tu apportes à l'équipage ?",
+    },
+    troopsOptions: ["T5 — L'élite de la flotte", "T4/T5 — Mixte", "T4 — Vétéran", "T3 et moins — En progression"],
+    activityOptions: ["Quotidienne — 1 h / jour", "Régulière — 2-3 h / jour", "Intensive — 4 h et plus / jour", "Soirs & week-ends"],
+    submit: "Signer les articles de l'équipage",
+    submitting: "La cire fond…",
+    oathNote: "EN SIGNANT, TU JURES LOYAUTÉ À L'ÉQUIPAGE — ARTICLE V DU CODE",
+    errors: {
+      pseudo: "Ton pseudo de marin est requis (2 caractères minimum).",
+      power: "Indique ta puissance (minimum requis : {POWER}).",
+      discord: "Ton tag Discord est requis — c'est là que le Conseil t'appellera.",
+      message: "Laisse un message de 10 caractères minimum — fais bonne impression !",
+      copyFail: "Copie impossible — recopie le code à la main, moussaillon.",
+    },
+    toastSuccess: (code) => `Candidature déposée — code ${code}`,
+    modal: {
+      title: (pseudo) => `Bien à bord, ${pseudo} !`,
+      text: "Ta candidature est scellée dans le registre du Conseil. Voici ton code de suivi unique — garde-le précieusement pour suivre son examen.",
+      copy: "COPIER LE CODE",
+      copied: "COPIÉ",
+      follow: "SUIVRE MA CANDIDATURE",
+    },
+  },
+  status: {
+    pending: { label: "EN EXAMEN", long: "En cours d'examen par le Conseil des Capitaines" },
+    accepted: { label: "ACCEPTÉ À BORD", long: "Accepté — convocation Discord imminente, prépare tes affaires" },
+    rejected: { label: "REFUSÉ", long: "Refusé — bon vent, marin. Le porte-hélice te souhaite une meilleure traversée" },
+    note: "Note du Conseil : ",
+    code: "CODE : ",
+    filedOn: "DÉPOSÉE LE : ",
+  },
+  suivi: {
+    eyebrow: "ESPACE RECRUE",
+    title1: "Suis ta ",
+    titleGold: "candidature",
+    sub: "Le registre du Conseil n'a pas de secret pour toi : glisse ton code de suivi et découvre où en est ton dossier.",
+    codeLabel: "CODE DE SUIVI",
+    codePh: "GP-1023-XXXX",
+    check: "INTERROGER LE REGISTRE",
+    checking: "LA ROSE VIRE…",
+    notFound: "Aucun parchemin à ce code — vérifie ta lettre.",
+    empty: "Entre ton code de suivi — il ressemble à GP-1023-XXXX.",
+  },
+  admin: {
+    loading: "OUVERTURE DU COFFRE…",
+    login: {
+      title: "Espace Conseil",
+      sub: "Accès réservé aux Capitaines de la flotte.",
+      emailLabel: "COURRIER DU CAPITAINE",
+      pwLabel: "SECRET DU COFFRE",
+      pwPh: "••••••••••",
+      submit: "OUVRIR LE COFFRE",
+      submitting: "ON SONDE LA FONDE…",
+    },
+    dash: {
+      eyebrow: "CONSEIL DES CAPITAINES",
+      title: "Le registre des recrues",
+      logout: "REFERMER LE COFFRE",
+      stats: [
+        { key: "total", label: "CANDIDATURES" },
+        { key: "pending", label: "EN EXAMEN" },
+        { key: "accepted", label: "ACCEPTÉES" },
+        { key: "rejected", label: "REFUSÉES" },
+      ],
+      filters: [
+        { key: "all", label: "TOUTES" },
+        { key: "pending", label: "EN EXAMEN" },
+        { key: "accepted", label: "ACCEPTÉES" },
+        { key: "rejected", label: "REFUSÉES" },
+      ],
+      searchPh: "Pseudo, code ou Discord…",
+      emptyTitle: "La mer est calme…",
+      emptyText: "Aucune candidature ne correspond. Les recrues ne tarderont pas à frapper au pont.",
+      noteLabel: "NOTE DU CONSEIL",
+      notePh: "ex : Entretien Discord le vendredi — profil sérieux",
+      accept: "ACCEPTER À BORD",
+      reject: "REFUSER",
+      pending: "REMETTRE EN EXAMEN",
+      burn: "BRÛLER",
+      power: "PUISSANCE",
+      troops: "TROUPES",
+      discord: "DISCORD",
+      activity: "ACTIVITÉ",
+      experience: "EXPÉRIENCE",
+      message: "MESSAGE",
+      noExp: "— aucune ligne dans le journal de bord —",
+      filedOn: "DÉPOSÉE LE ",
+    },
+    toast: {
+      welcome: (email) => `Bien le bonjour, Capitaine — ${email}`,
+      updated: (pseudo) => `${pseudo} — statut mis à jour.`,
+      burned: (pseudo) => `La candidature de ${pseudo} est réduite en cendres.`,
+      logout: "Le coffre est refermé. Bon vent, Capitaine.",
+      confirm: (pseudo) => `Brûler la candidature de ${pseudo} ? Cette besogne est irréversible.`,
+    },
+  },
+  footer: {
+    tagline: "L'alliance souveraine de Call of Dragons. L'or de la victoire ne coule que pour les équipages soudés.",
+    navTitle: "NAVIGATION",
+    links: [
+      { id: "alliance", label: "L'alliance" },
+      { id: "code", label: "Le Code des Pirates" },
+      { id: "recit", label: "Le récit des saisons" },
+      { id: "postuler", label: "Postuler" },
+    ],
+    spacesTitle: "LES ESPACES",
+    trackLink: "Espace Recrue — suivre ma candidature",
+    adminLink: "Espace Conseil — accès Capitaines",
+    backTop: "HISSER LA VOILE",
+    disclaimer: "© GOLDEN PIRATES — ROYAUME 1023 · SITE COMMUNAUTAIRE DE FANS, NON AFFILIÉ À CALL OF DRAGONS",
+    madeWith: "FABRIQUÉ AU CREUX DE LA HUNE",
+  },
+};
+
+const en = {
+  nav: {
+    alliance: "The Alliance",
+    code: "The Code",
+    recit: "The Saga",
+    processus: "Process",
+    suivi: "Track my application",
+    admin: "Council Space",
+    cta: "Apply",
+  },
+  hero: {
+    badge: "PRE-KVK — SEASON 2",
+    badge2: "RECRUITMENT: END OF SEASON 2",
+    sub: "The sovereign alliance of Kingdom 1023 — Call of Dragons. Victory's gold flows only to crews that stand as one.",
+    ctaApply: "Join the crew",
+    ctaTrack: "Track my application",
+    chips: ["KINGDOM 1023", "CALL OF DRAGONS", "ONE FLEET, ONE BOOTY"],
+    scroll: "Unroll the map",
+    imgAlt: "Pirate ship under a stormy sky",
+  },
+  marquee: ["Kingdom 1023", "Golden Pirates", "Pre-KvK", "Season 2", "Brotherhood of steel", "The booty is ours", "Recruitment — end of season 2"],
+  manifesto: {
+    eyebrow: "The floating line — 01",
+    title1: "A legend is forged ",
+    titleGold: "in ink and gold",
+    p1: "The GOLDEN PIRATES don't recruit soldiers. We recruit sailors the sea hasn't tamed yet. In Kingdom 1023, our black flag doesn't fly by accident: it flies because every member behind it pulls in the same direction.",
+    p2: "Season 1 is behind us, and Season 2 is shaping up to be a golden tide. If you're reading these lines with the urge to fight in the right place, at the right time, with the right people — then keep reading, recruit.",
+    quote: "You never waste a season with a crew that has heart, troops and treasure.",
+    quoteBy: "— THE COUNCIL OF CAPTAINS, G.P. 1023",
+    imgCaption: "The flagship",
+    imgTag: "G.P. — 1023",
+    imgAlt: "Warship under full sail",
+    values: [
+      { title: "Brotherhood of steel", text: "Here, no one sails alone. Donations, mutual aid, musters: the crew watches over its own." },
+      { title: "Strategic rigor", text: "Every battle is prepared. Clear goals, crisp orders, surgical execution in KvK." },
+      { title: "KvK supremacy", text: "The Kingdom's Conquest is our home ground. We climb it, we hold it, we never sleep on it." },
+    ],
+  },
+  code: {
+    eyebrow: "Boarding requirements — 02",
+    title1: "The Pirates' ",
+    titleGold: "Code",
+    sub: "Every crew that lasts has its articles. Sign ours knowing the tune — no captain likes surprises on board.",
+    imgCaption: "THE PLUNDER OF THE LAST CROSSING",
+    imgAlt: "Gold coins of the plunder",
+    articles: [
+      { num: "I", title: "Minimum power", value: "{POWER} power", tag: "REQUIRED", text: "Power reflects a sailor's discipline. Profiles near the threshold are reviewed with care: the Council makes the final call." },
+      { num: "II", title: "War troops", value: "T4 required — T5 preferred", tag: "REQUIRED", text: "Behemoths, sieges and marches wait for no one. Your troops must keep pace with the fleet." },
+      { num: "III", title: "Discord & voice", value: "Present at musters", tag: "REQUIRED", text: "Battle orders are shouted, not written. Discord and voice are mandatory during Behemoths and wars." },
+      { num: "IV", title: "Daily activity", value: "Regular connection", tag: "WATCHED", text: "An absent pirate weakens the whole crew. We won't ask for your nights — we will ask you to show up." },
+      { num: "V", title: "Brotherhood of steel", value: "Donations & following orders", tag: "HONOUR", text: "Booty is shared, orders are followed, the crew is protected. Loyalty is the only currency that never loses value." },
+    ],
+  },
+  timeline: {
+    eyebrow: "The saga of seasons — 03",
+    title1: "We are in ",
+    titleGold: "Pre-KvK",
+    steps: [
+      { season: "SEASON 1", title: "Trial by fire", status: "COMPLETED", text: "The first KvK came through. The crew came out of it tighter, tougher and more golden than ever." },
+      { season: "PRE-KVK — SEASON 2", title: "General mobilization", status: "ONGOING — WE ARE HERE", text: "Season 2 is coming: troops are hardened, granaries are filled, strategy is sharpened. Every sailor counts." },
+      { season: "SEASON 2 — KVK", title: "The battle for the land", status: "UPCOMING", text: "The Kingdom's Conquest begins. Territory battles, Behemoths, sieges: the sea will run red — and the gold will be ours." },
+      { season: "END OF SEASON 2", title: "Recruitment opens", status: "THIS IS WHERE WE WAIT FOR YOU", text: "As Call of Dragons' law goes, new recruits board at the end of the season. Submit your application now: it will be reviewed first." },
+    ],
+  },
+  process: {
+    eyebrow: "The recruit's route — 04",
+    title1: "From the quay to the ",
+    titleGold: "upper deck",
+    steps: [
+      { title: "Submit your application", text: "Fill in the articles of the form at the bottom of the page. Two minutes flat, no ink or blood oath." },
+      { title: "Receive your tracking code", text: "A unique code like GP-1023-XXXX unlocks your file's status. Keep it safe." },
+      { title: "Interview with the Council", text: "At the end of Season 2, the Council of Captains invites you on Discord for a chat." },
+      { title: "Board at Kingdom 1023", text: "Flag raised, heading for gold: you join the fleet and take part in the next KvK." },
+    ],
+  },
+  apply: {
+    eyebrow: "Sign the articles — 05",
+    title1: "Come aboard, ",
+    titleGold: "sailor",
+    intro: "Official recruitment opens at the end of Season 2 — that's the Kingdom's rule. But applications filed now jump the queue: the Council reviews them first the moment it opens.",
+    bullets: [
+      "Minimum power: {POWER} (Article I of the Code)",
+      "Council's answer after a Discord interview",
+      "You're handed a tracking code upon sending — keep it close",
+    ],
+    labels: {
+      pseudo: "CALL OF DRAGONS USERNAME *",
+      power: "CURRENT POWER *",
+      troops: "TROOP LEVEL *",
+      activity: "DAILY ACTIVITY *",
+      discord: "DISCORD TAG *",
+      experience: "EXPERIENCE — PAST KVK & ALLIANCES",
+      message: "YOUR MESSAGE TO THE COUNCIL *",
+    },
+    ph: {
+      pseudo: "e.g. KrakenDuNord",
+      power: "e.g. 120M (min. {POWER})",
+      discord: "e.g. krakendunord",
+      experience: "Seasons played, roles held, deeds you're proud of…",
+      message: "Why the GOLDEN PIRATES? What do you bring to the crew?",
+    },
+    troopsOptions: ["T5 — Fleet elite", "T4/T5 — Mixed", "T4 — Veteran", "T3 or less — In progress"],
+    activityOptions: ["Daily — 1 h / day", "Regular — 2-3 h / day", "Intensive — 4+ h / day", "Evenings & weekends"],
+    submit: "Sign the crew's articles",
+    submitting: "The wax is melting…",
+    oathNote: "BY SIGNING, YOU SWEAR LOYALTY TO THE CREW — ARTICLE V OF THE CODE",
+    errors: {
+      pseudo: "Your sailor name is required (2 characters minimum).",
+      power: "Tell us your power (minimum required: {POWER}).",
+      discord: "Your Discord tag is required — it's where the Council will call you.",
+      message: "Leave a message of at least 10 characters — make it count!",
+      copyFail: "Copy failed — write the code down by hand, sailor.",
+    },
+    toastSuccess: (code) => `Application submitted — code ${code}`,
+    modal: {
+      title: (pseudo) => `Welcome aboard, ${pseudo}!`,
+      text: "Your application is sealed in the Council's register. Here is your unique tracking code — keep it safe to follow its review.",
+      copy: "COPY THE CODE",
+      copied: "COPIED",
+      follow: "TRACK MY APPLICATION",
+    },
+  },
+  status: {
+    pending: { label: "UNDER REVIEW", long: "Under review by the Council of Captains" },
+    accepted: { label: "ACCEPTED ABOARD", long: "Accepted — Discord summons incoming, pack your gear" },
+    rejected: { label: "REJECTED", long: "Rejected — fair winds, sailor. We wish you a better crossing" },
+    note: "Council's note: ",
+    code: "CODE: ",
+    filedOn: "FILED ON: ",
+  },
+  suivi: {
+    eyebrow: "RECRUIT SPACE",
+    title1: "Track your ",
+    titleGold: "application",
+    sub: "The Council's register holds no secrets from you: drop your tracking code and see where your file stands.",
+    codeLabel: "TRACKING CODE",
+    codePh: "GP-1023-XXXX",
+    check: "QUERY THE REGISTER",
+    checking: "THE ROSE IS TURNING…",
+    notFound: "No parchment for that code — double-check your letter.",
+    empty: "Enter your tracking code — it looks like GP-1023-XXXX.",
+  },
+  admin: {
+    loading: "OPENING THE CHEST…",
+    login: {
+      title: "Council Space",
+      sub: "Reserved for the fleet's Captains.",
+      emailLabel: "CAPTAIN'S COURIER",
+      pwLabel: "CHEST SECRET",
+      pwPh: "••••••••••",
+      submit: "OPEN THE CHEST",
+      submitting: "SOUNDING THE LEAD…",
+    },
+    dash: {
+      eyebrow: "COUNCIL OF CAPTAINS",
+      title: "The recruits' register",
+      logout: "LOCK THE CHEST",
+      stats: [
+        { key: "total", label: "APPLICATIONS" },
+        { key: "pending", label: "UNDER REVIEW" },
+        { key: "accepted", label: "ACCEPTED" },
+        { key: "rejected", label: "REJECTED" },
+      ],
+      filters: [
+        { key: "all", label: "ALL" },
+        { key: "pending", label: "UNDER REVIEW" },
+        { key: "accepted", label: "ACCEPTED" },
+        { key: "rejected", label: "REJECTED" },
+      ],
+      searchPh: "Username, code or Discord…",
+      emptyTitle: "The sea is calm…",
+      emptyText: "No matching application. Recruits will soon come knocking on the hull.",
+      noteLabel: "COUNCIL'S NOTE",
+      notePh: "e.g. Discord interview on Friday — solid profile",
+      accept: "ACCEPT ABOARD",
+      reject: "REJECT",
+      pending: "BACK TO REVIEW",
+      burn: "BURN",
+      power: "POWER",
+      troops: "TROOPS",
+      discord: "DISCORD",
+      activity: "ACTIVITY",
+      experience: "EXPERIENCE",
+      message: "MESSAGE",
+      noExp: "— no entry in the logbook —",
+      filedOn: "FILED ON ",
+    },
+    toast: {
+      welcome: (email) => `Greetings, Captain — ${email}`,
+      updated: (pseudo) => `${pseudo} — status updated.`,
+      burned: (pseudo) => `${pseudo}'s application has been burned to ashes.`,
+      logout: "The chest is locked. Fair winds, Captain.",
+      confirm: (pseudo) => `Burn ${pseudo}'s application? This cannot be undone.`,
+    },
+  },
+  footer: {
+    tagline: "The sovereign Call of Dragons alliance. Victory's gold flows only to crews that stand as one.",
+    navTitle: "NAVIGATION",
+    links: [
+      { id: "alliance", label: "The Alliance" },
+      { id: "code", label: "The Pirates' Code" },
+      { id: "recit", label: "The saga of seasons" },
+      { id: "postuler", label: "Apply" },
+    ],
+    spacesTitle: "SPACES",
+    trackLink: "Recruit Space — track my application",
+    adminLink: "Council Space — Captains only",
+    backTop: "RAISE THE SAIL",
+    disclaimer: "© GOLDEN PIRATES — KINGDOM 1023 · FAN-MADE COMMUNITY SITE, NOT AFFILIATED WITH CALL OF DRAGONS",
+    madeWith: "CRAFTED IN THE CROW'S NEST",
+  },
+};
+
+export const LANGS = { fr, en };
+
+const LangContext = createContext(null);
+
+export function LangProvider({ children }) {
+  const [lang, setLangState] = useState(() => {
+    try {
+      return localStorage.getItem("gp_lang") === "en" ? "en" : "fr";
+    } catch {
+      return "fr";
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("gp_lang", lang);
+    } catch {
+      /* navigation privée : on garde la langue en mémoire seulement */
+    }
+    document.documentElement.lang = lang;
+  }, [lang]);
+
+  const value = {
+    lang,
+    setLang: (l) => setLangState(l === "en" ? "en" : "fr"),
+    c: LANGS[lang],
+  };
+
+  return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
+}
+
+export const useLang = () => useContext(LangContext);

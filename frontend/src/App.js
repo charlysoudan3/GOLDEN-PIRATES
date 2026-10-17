@@ -3,6 +3,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Lenis from "lenis";
 import { Toaster } from "@/components/ui/sonner";
+import { LangProvider } from "@/lib/i18n";
 import Grain from "@/components/Grain";
 import Home from "@/pages/Home";
 import Suivi from "@/pages/Suivi";
@@ -28,7 +29,7 @@ class ErrorBoundary extends Component {
         <div className="min-h-screen bg-ink text-bone flex flex-col items-center justify-center gap-6 p-8 text-center">
           <p className="font-display text-4xl sm:text-5xl text-gold">La tempête a emporté la page…</p>
           <a href="/" className="font-mono2 text-xs tracking-[0.3em] text-gold underline underline-offset-8">
-            REVENIR AU QUAI
+            REVENIR AU QUAI / BACK TO THE QUAY
           </a>
         </div>
       );
@@ -76,28 +77,30 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <ScrollManager />
-        <Grain />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/suivi" element={<Suivi />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <Toaster
-          position="top-center"
-          theme="dark"
-          toastOptions={{
-            style: {
-              background: "#0F1722",
-              border: "1px solid rgba(212,175,55,0.35)",
-              color: "#E8D8C8",
-              fontFamily: "'IM Fell English', Georgia, serif",
-            },
-          }}
-        />
-      </BrowserRouter>
+      <LangProvider>
+        <BrowserRouter>
+          <ScrollManager />
+          <Grain />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/suivi" element={<Suivi />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          <Toaster
+            position="top-center"
+            theme="dark"
+            toastOptions={{
+              style: {
+                background: "#0F1722",
+                border: "1px solid rgba(212,175,55,0.35)",
+                color: "#E8D8C8",
+                fontFamily: "'IM Fell English', Georgia, serif",
+              },
+            }}
+          />
+        </BrowserRouter>
+      </LangProvider>
     </ErrorBoundary>
   );
 }
