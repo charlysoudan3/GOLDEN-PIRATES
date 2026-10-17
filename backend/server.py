@@ -1,0 +1,279 @@
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
+from dotenv import load_dotenv
+from starlette.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import ReturnDocument
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional
+import os
+import jwt
+import bcrypt
+import uuid
+import secrets
+from datetime import datetime, timezone, timedelta
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
+
+MONGO_URL = os.environ['MONGO_URL']
+DB_NAME = os.environ['DB_NAME']
+client = AsyncIOMotorClient(MONGO_URL)
+db = client[DB_NAME]
+
+JWT_SECRET = os.environ['JWT_SECRET']
+JWT_ALGORITHM = "HS256"
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@goldenpirates.io').strip().lower()
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'Capitaine1023!')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+
+app = FastAPI(title="Golden Pirates — Royaume 1023")
+api_router = APIRouter(prefix="/api")
+
+
+def now_utc():
+    return datetime.now(timezone.utc)
+
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    except Exception:
+        return False
+
+
+def make_token(email: str, minutes: int) -> str:
+    payload = {"sub": email, "exp": now_utc() + timedelta(minutes=minutes)}
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+def set_auth_cookies(response: Response, email: str):
+    token = make_token(email, 60 * 12)
+    response.set_cookie(
+        key="access_token", value=token, httponly=True, secure=True,
+        samesite="none", max_age=60 * 60 * 12, path="/",
+    )
+
+
+def clean_doc(doc: dict) -> dict:
+    doc = dict(doc)
+    doc.pop("_id", None)
+    return doc
+
+
+async def require_admin(request: Request) -> str:
+    token = request.cookies.get("access_token")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+    if not token:
+        raise HTTPException(status_code=401, detail="Non authentifié")
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Session expirée")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Session invalide")
+    email = (payload.get("sub") or "").strip().lower()
+    user = await db.users.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=401, detail="Compte introuvable")
+    return email
+
+
+# ---------------- Models ----------------
+
+class ApplicationCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    pseudo: str = Field(min_length=2, max_length=32)
+    power: str = Field(min_length=1, max_length=16)
+    troops: str = Field(min_length=2, max_length=60)
+    activity: str = Field(min_length=2, max_length=60)
+    experience: str = Field(default="", max_length=1200)
+    discord: str = Field(min_length=2, max_length=60)
+    message: str = Field(min_length=10, max_length=2000)
+
+
+class StatusUpdate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    status: str
+    note: Optional[str] = None
+
+
+class LoginInput(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    email: str
+    password: str
+
+
+# ---------------- Public routes ----------------
+
+@api_router.get("/")
+async def root():
+    return {"message": "Golden Pirates API — Royaume 1023", "status": "ok"}
+
+
+@api_router.post("/applications")
+async def create_application(data: ApplicationCreate):
+    doc = data.model_dump()
+    doc["id"] = str(uuid.uuid4())
+    doc["status"] = "pending"
+    doc["note"] = ""
+    doc["created_at"] = now_utc().isoformat()
+    code = None
+    for _ in range(6):
+        candidate = "GP-1023-" + "".join(
+            secrets.choice("23456789ABCDEFGHJKMNPQRSTUVWXYZ") for _ in range(4)
+        )
+        if not await db.applications.find_one({"tracking_code": candidate}):
+            code = candidate
+            break
+    if not code:
+        raise HTTPException(status_code=500, detail="Génération du code impossible")
+    doc["tracking_code"] = code
+    await db.applications.insert_one(doc)
+    return {"id": doc["id"], "tracking_code": code, "pseudo": doc["pseudo"]}
+
+
+@api_router.get("/applications/track/{code}")
+async def track_application(code: str):
+    doc = await db.applications.find_one({"tracking_code": code.strip().upper()})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Aucun parchemin à ce code de suivi")
+    return {
+        "tracking_code": doc["tracking_code"],
+        "pseudo": doc["pseudo"],
+        "status": doc["status"],
+        "note": doc.get("note", ""),
+        "created_at": doc.get("created_at"),
+    }
+
+
+# ---------------- Auth / Admin routes ----------------
+
+@api_router.post("/admin/login")
+async def admin_login(data: LoginInput, request: Request, response: Response):
+    email = data.email.strip().lower()
+    ident = f"{request.client.host if request.client else 'unknown'}:{email}"
+    attempt = await db.login_attempts.find_one({"identifier": ident})
+    if attempt and attempt.get("locked_until"):
+        try:
+            if datetime.fromisoformat(attempt["locked_until"]) > now_utc():
+                raise HTTPException(status_code=429, detail="Trop de tentatives — réessayez dans 15 minutes")
+        except ValueError:
+            pass
+    user = await db.users.find_one({"email": email})
+    if not user or not verify_password(data.password, user.get("password_hash", "")):
+        fails = (attempt.get("fails", 0) if attempt else 0) + 1
+        update = {"$inc": {"fails": 1}}
+        if fails >= 5:
+            update["$set"] = {"locked_until": (now_utc() + timedelta(minutes=15)).isoformat()}
+        await db.login_attempts.update_one({"identifier": ident}, update, upsert=True)
+        raise HTTPException(status_code=401, detail="Identifiants incorrects")
+    await db.login_attempts.delete_one({"identifier": ident})
+    set_auth_cookies(response, email)
+    return {"email": email, "role": user.get("role", "admin")}
+
+
+@api_router.post("/auth/logout")
+async def logout(response: Response):
+    response.delete_cookie("access_token", path="/")
+    return {"ok": True}
+
+
+@api_router.get("/auth/me")
+async def me(email: str = Depends(require_admin)):
+    return {"email": email, "role": "admin"}
+
+
+@api_router.get("/admin/applications")
+async def list_applications(status: Optional[str] = None, _: str = Depends(require_admin)):
+    query = {"status": status} if status else {}
+    docs = await db.applications.find(query).sort("created_at", -1).to_list(500)
+    return [clean_doc(d) for d in docs]
+
+
+@api_router.get("/admin/stats")
+async def admin_stats(_: str = Depends(require_admin)):
+    return {
+        "total": await db.applications.count_documents({}),
+        "pending": await db.applications.count_documents({"status": "pending"}),
+        "accepted": await db.applications.count_documents({"status": "accepted"}),
+        "rejected": await db.applications.count_documents({"status": "rejected"}),
+    }
+
+
+@api_router.patch("/admin/applications/{app_id}")
+async def update_application(app_id: str, data: StatusUpdate, _: str = Depends(require_admin)):
+    if data.status not in ("pending", "accepted", "rejected"):
+        raise HTTPException(status_code=400, detail="Statut invalide")
+    doc = await db.applications.find_one_and_update(
+        {"id": app_id},
+        {"$set": {"status": data.status, "note": data.note or ""}},
+        return_document=ReturnDocument.AFTER,
+    )
+    if not doc:
+        raise HTTPException(status_code=404, detail="Candidature introuvable")
+    return clean_doc(doc)
+
+
+@api_router.delete("/admin/applications/{app_id}")
+async def delete_application(app_id: str, _: str = Depends(require_admin)):
+    result = await db.applications.delete_one({"id": app_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Candidature introuvable")
+    return {"ok": True}
+
+
+# ---------------- Startup seed ----------------
+
+async def seed():
+    await db.users.create_index("email", unique=True)
+    await db.applications.create_index("tracking_code", unique=True)
+    await db.login_attempts.create_index("identifier")
+    admin = await db.users.find_one({"email": ADMIN_EMAIL})
+    if admin is None:
+        await db.users.insert_one({
+            "email": ADMIN_EMAIL,
+            "password_hash": hash_password(ADMIN_PASSWORD),
+            "role": "admin",
+            "created_at": now_utc().isoformat(),
+        })
+    elif not verify_password(ADMIN_PASSWORD, admin.get("password_hash", "")):
+        await db.users.update_one(
+            {"email": ADMIN_EMAIL},
+            {"$set": {"password_hash": hash_password(ADMIN_PASSWORD)}},
+        )
+
+
+@app.on_event("startup")
+async def startup():
+    await seed()
+
+
+app.include_router(api_router)
+
+origins = [
+    o.strip() for o in os.environ.get('CORS_ORIGINS', '').split(',')
+    if o.strip() and o.strip() != '*'
+]
+if FRONTEND_URL not in origins:
+    origins.append(FRONTEND_URL)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    client.close()
