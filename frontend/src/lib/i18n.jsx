@@ -159,6 +159,11 @@ const fr = {
     hours: "HEURES",
     minutes: "MIN",
     seconds: "SEC",
+    caption: "Chaque marée rapproche l'heure — grée ton navire : la Saison 2 s'achève et l'équipage se forge.",
+    fuseLabel: "LA MÈCHE SE CONSUME",
+    openEyebrow: "LES PORTES DU QUARTIER GÉNÉRAL SONT OUVERTES",
+    openTitle: "La Saison 2 touche à sa fin — c'est MAINTENANT que l'équipage se forge. Signe les articles et prends ta place avant que les ponts ne se remplissent.",
+    openCta: "POSTULER MAINTENANT",
     open: "LA SAISON EST OUVERTE — À VOS POSTES !",
   },
   suivi: {
@@ -516,6 +521,11 @@ const en = {
     hours: "HOURS",
     minutes: "MIN",
     seconds: "SEC",
+    caption: "Every tide brings it closer — rig your ship: Season 2 is ending and the crew is being forged.",
+    fuseLabel: "THE FUSE IS BURNING",
+    openEyebrow: "THE HEADQUARTERS GATES ARE OPEN",
+    openTitle: "Season 2 is drawing to its end — NOW is when the crew is forged. Sign the articles and take your place before the decks fill up.",
+    openCta: "APPLY NOW",
     open: "THE SEASON IS OPEN — TO YOUR POSTS!",
   },
   suivi: {
