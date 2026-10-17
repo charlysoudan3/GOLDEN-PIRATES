@@ -161,15 +161,23 @@ async def create_application(data: ApplicationCreate, request: Request):
             "msg": "Tu fais déjà partie de l'équipage, marin — vérifie ton dossier dans l'Espace Recrue.",
         })
 
-    # Garde 3 — délai de reflection après un refus (pas de repostage-instantané)
-    last_rejected = await db.applications.find_one(
-        {"pseudo_lower": pseudo_key, "status": "rejected"},
-        sort=[("created_at", -1)],
-    )
-    if last_rejected:
-        base = last_rejected.get("status_changed_at") or last_rejected.get("created_at")
+    # Garde 3 — délai de réflexion après un refus (pas de repostage-instantané).
+    # Source 1 : le sanctuaire des refus (survit au brûlage du dossier).
+    cooldown_base = None
+    rejected_rec = await db.rejections.find_one({"pseudo_lower": pseudo_key})
+    if rejected_rec:
+        cooldown_base = rejected_rec.get("rejected_at")
+    # Source 2 (repli) : dernier dossier refusé encore au registre.
+    if not cooldown_base:
+        last_rejected = await db.applications.find_one(
+            {"pseudo_lower": pseudo_key, "status": "rejected"},
+            sort=[("created_at", -1)],
+        )
+        if last_rejected:
+            cooldown_base = last_rejected.get("status_changed_at") or last_rejected.get("created_at")
+    if cooldown_base:
         try:
-            base_dt = datetime.fromisoformat(base)
+            base_dt = datetime.fromisoformat(cooldown_base)
         except (TypeError, ValueError):
             base_dt = None
         if base_dt and base_dt.tzinfo is None:
@@ -641,13 +649,25 @@ async def export_pdf(_: str = Depends(require_admin)):
 async def update_application(app_id: str, data: StatusUpdate, _: str = Depends(require_admin)):
     if data.status not in ("pending", "accepted", "rejected", "reserve"):
         raise HTTPException(status_code=400, detail="Statut invalide")
-    current = await db.applications.find_one({"id": app_id}, {"status": 1})
+    current = await db.applications.find_one({"id": app_id}, {"status": 1, "pseudo_lower": 1, "pseudo": 1})
     if not current:
         raise HTTPException(status_code=404, detail="Candidature introuvable")
     update = {"note": data.note or ""}
     if current["status"] != data.status:
         update["status"] = data.status
-        update["status_changed_at"] = now_utc().isoformat()
+        now_iso = now_utc().isoformat()
+        update["status_changed_at"] = now_iso
+        pkey = current.get("pseudo_lower") or (current.get("pseudo") or "").strip().lower()
+        if pkey and data.status == "rejected":
+            # Le refus est inscrit au sanctuaire : il survit au brûlage du dossier.
+            await db.rejections.update_one(
+                {"pseudo_lower": pkey},
+                {"$set": {"pseudo_lower": pkey, "rejected_at": now_iso}},
+                upsert=True,
+            )
+        elif pkey:
+            # Pardon explicite : repasser le dossier en examen/accepté/réserve lève le sanctuaire.
+            await db.rejections.delete_one({"pseudo_lower": pkey})
     doc = await db.applications.find_one_and_update(
         {"id": app_id},
         {"$set": update},
@@ -846,6 +866,20 @@ async def seed():
             "status_changed_at": "$created_at",
         }}],
     )
+    # Sanctuaire des refus : le délai de re-postulation survit au brûlage.
+    await db.rejections.create_index("pseudo_lower", unique=True)
+    async for rej_doc in db.applications.find(
+        {"status": "rejected"},
+        {"pseudo": 1, "pseudo_lower": 1, "status_changed_at": 1, "created_at": 1},
+    ).sort("created_at", 1):
+        rej_key = rej_doc.get("pseudo_lower") or (rej_doc.get("pseudo") or "").strip().lower()
+        if not rej_key:
+            continue
+        await db.rejections.update_one(
+            {"pseudo_lower": rej_key},
+            {"$set": {"rejected_at": rej_doc.get("status_changed_at") or rej_doc.get("created_at")}},
+            upsert=True,
+        )
     await db.login_attempts.create_index("identifier")
     await db.messages.create_index([("conv_code", 1), ("created_at", 1)])
     admin = await db.users.find_one({"email": ADMIN_EMAIL})

@@ -94,6 +94,7 @@ def _cleanup_test_data():
         {"pseudo_lower": {"$regex": f"^{TEST_PREFIX.lower()}"}},
         {"tracking_code": {"$regex": "^GP-TST-"}},
     ]})
+    db.rejections.delete_many({"pseudo_lower": {"$regex": f"^{TEST_PREFIX.lower()}"}})
 
 
 # ---------------- Health ----------------
@@ -197,6 +198,58 @@ def test_cooldown_allows_after_30_days():
     assert body["tracking_code"].startswith("GP-1023-")
     # cleanup the newly created doc
     db.applications.delete_one({"id": body["id"]})
+
+
+# ---------------- Guard: ip_limit (6 per 24h) ----------------
+
+def test_cooldown_survives_burn(admin_session):
+    """Le Conseil brûle un dossier refusé : le délai de 30 jours SURVIT au
+    brûlage (pas de re-postulation instantanée qui réouvrirait le spam).
+    Le pardon passe par REMETTRE EN EXAMEN, pas par la corbeille."""
+    pseudo = f"{TEST_PREFIX}Burned"
+    payload = {
+        "pseudo": pseudo,
+        "power": "100M", "troops": "Marine", "activity": "Quotidien",
+        "experience": "", "discord": "x#burn",
+        "message": "TEST dossier refusé puis brûlé — le cooldown doit survivre",
+    }
+    r = requests.post(f"{BASE_URL}/api/applications", json=payload, timeout=15)
+    assert r.status_code == 200, r.text
+    app_id = r.json()["id"]
+    r = admin_session.patch(f"{BASE_URL}/api/admin/applications/{app_id}",
+                            json={"status": "rejected", "note": ""}, timeout=15)
+    assert r.status_code == 200, r.text
+    r = admin_session.delete(f"{BASE_URL}/api/admin/applications/{app_id}", timeout=15)
+    assert r.status_code == 200, r.text
+    r = requests.post(f"{BASE_URL}/api/applications", json=payload, timeout=15)
+    assert r.status_code == 429, r.text
+    assert r.json()["detail"]["code"] == "cooldown"
+
+
+def test_cooldown_lifted_by_explicit_pardon(admin_session):
+    """Pardon explicite : REMETTRE EN EXAMEN lève le sanctuaire — après
+    brûlage du dossier pardonné, la recrue peut reposter immédiatement."""
+    pseudo = f"{TEST_PREFIX}Pardon"
+    payload = {
+        "pseudo": pseudo,
+        "power": "100M", "troops": "Marine", "activity": "Quotidien",
+        "experience": "", "discord": "x#pardon",
+        "message": "TEST refusé puis pardonné — repostage immédiat attendu",
+    }
+    r = requests.post(f"{BASE_URL}/api/applications", json=payload, timeout=15)
+    assert r.status_code == 200, r.text
+    app_id = r.json()["id"]
+    r = admin_session.patch(f"{BASE_URL}/api/admin/applications/{app_id}",
+                            json={"status": "rejected", "note": ""}, timeout=15)
+    assert r.status_code == 200, r.text
+    r = admin_session.patch(f"{BASE_URL}/api/admin/applications/{app_id}",
+                            json={"status": "pending", "note": ""}, timeout=15)
+    assert r.status_code == 200, r.text
+    r = admin_session.delete(f"{BASE_URL}/api/admin/applications/{app_id}", timeout=15)
+    assert r.status_code == 200, r.text
+    r = requests.post(f"{BASE_URL}/api/applications", json=payload, timeout=15)
+    assert r.status_code == 200, r.text
+    db.applications.delete_one({"id": r.json()["id"]})
 
 
 # ---------------- Guard: ip_limit (6 per 24h) ----------------
