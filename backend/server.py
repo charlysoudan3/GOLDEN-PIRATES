@@ -291,7 +291,10 @@ async def notifications(code: str):
 @api_router.post("/admin/login")
 async def admin_login(data: LoginInput, request: Request, response: Response):
     email = data.email.strip().lower()
-    ident = f"{request.client.host if request.client else 'unknown'}:{email}"
+    # Derrière l'ingress, request.client.host est l'IP d'un proxy interne (variable) :
+    # identifier basé sur la VRAIE IP client (première entrée de X-Forwarded-For).
+    ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
+    ident = f"{ip or (request.client.host if request.client else 'unknown')}:{email}"
     attempt = await db.login_attempts.find_one({"identifier": ident})
     if attempt and attempt.get("locked_until"):
         try:
