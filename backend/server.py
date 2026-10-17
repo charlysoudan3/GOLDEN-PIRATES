@@ -13,7 +13,7 @@ import bcrypt
 import uuid
 import secrets
 import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
@@ -357,12 +357,32 @@ STATUS_FR = {
     "rejected": "REFUSÉ",
 }
 
-STATUS_COLORS = {
+NAVY_HEX = "#0B192C"
+GOLD_HEX = "#D4AF37"
+GRAY_HEX = "#5C6B7E"
+
+STATUS_TINT = {  # fonds clairs (Excel sans #, PDF avec #)
+    "pending": "FFF4CC",
+    "accepted": "DCF3E8",
+    "reserve": "FEF3C7",
+    "rejected": "FEE2E2",
+}
+
+STATUS_HEX = {  # textes colorés
     "pending": "#B8860B",
     "accepted": "#1B7F4C",
     "reserve": "#B45309",
     "rejected": "#B91C1C",
 }
+
+
+def fmt_dt(v):
+    if not v:
+        return ""
+    try:
+        return datetime.fromisoformat(v).strftime("%d/%m/%Y %H:%M")
+    except (TypeError, ValueError):
+        return str(v)
 
 
 def fmt_row(doc):
@@ -383,34 +403,78 @@ def fmt_row(doc):
 @api_router.get("/admin/export/xlsx")
 async def export_xlsx(_: str = Depends(require_admin)):
     docs = await db.applications.find({}).sort("created_at", -1).to_list(2000)
+    thin = Side(style="thin", color="D8DEE8")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
     wb = openpyxl.Workbook()
+
+    # Feuille 1 — Synthèse décorée
     ws = wb.active
-    ws.title = "Registre"
-    ws.append([h for _, h in EXPORT_COLUMNS])
-    for cell in ws[1]:
+    ws.title = "Synthèse"
+    ws.merge_cells("A1:D1")
+    for col in "ABCD":
+        ws[f"{col}1"].fill = PatternFill("solid", fgColor="0B192C")
+    c = ws["A1"]
+    c.value = "GOLDEN PIRATES — REGISTRE DES RECRUES"
+    c.font = Font(color="D4AF37", bold=True, size=16)
+    c.alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 34
+    ws.merge_cells("A2:D2")
+    c = ws["A2"]
+    c.value = f"Royaume 1023 · Call of Dragons · édité le {fmt_dt(now_utc().isoformat())}"
+    c.font = Font(color="5C6B7E", italic=True, size=10)
+    c.alignment = Alignment(horizontal="center", vertical="center")
+    kpis = [
+        ("Total", len(docs), "0B192C", "D4AF37"),
+        ("En examen", sum(1 for d in docs if d.get("status") == "pending"), "FFF4CC", "B8860B"),
+        ("Acceptées", sum(1 for d in docs if d.get("status") == "accepted"), "DCF3E8", "1B7F4C"),
+        ("En réserve", sum(1 for d in docs if d.get("status") == "reserve"), "FEF3C7", "B45309"),
+        ("Refusées", sum(1 for d in docs if d.get("status") == "rejected"), "FEE2E2", "B91C1C"),
+    ]
+    r = 4
+    for label, count, tint, hexc in kpis:
+        lc = ws.cell(row=r, column=1, value=label)
+        lc.font = Font(bold=True, size=11, color="1A2433")
+        lc.border = border
+        vc = ws.cell(row=r, column=2, value=count)
+        vc.font = Font(bold=True, size=11, color=hexc)
+        vc.fill = PatternFill("solid", fgColor=tint)
+        vc.alignment = Alignment(horizontal="center", vertical="center")
+        vc.border = border
+        r += 1
+    ws.column_dimensions["A"].width = 24
+    ws.column_dimensions["B"].width = 14
+
+    # Feuille 2 — Registre complet
+    ws2 = wb.create_sheet("Registre")
+    ws2.append([h for _, h in EXPORT_COLUMNS])
+    for cell in ws2[1]:
         cell.fill = PatternFill("solid", fgColor="0B192C")
-        cell.font = Font(color="D4AF37", bold=True)
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-    fills = {"pending": "FFF4CC", "accepted": "DCF3E8", "reserve": "FEF3C7", "rejected": "FEE2E2"}
+        cell.font = Font(color="D4AF37", bold=True, size=10)
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        cell.border = border
+    ws2.row_dimensions[1].height = 24
     status_idx = [k for k, _ in EXPORT_COLUMNS].index("status") + 1
-    for d in docs:
-        ws.append(fmt_row(d))
-        fill = fills.get(d.get("status"))
-        if fill:
-            ws.cell(row=ws.max_row, column=status_idx).fill = PatternFill("solid", fgColor=fill)
-    for i, w in enumerate([15, 18, 11, 20, 24, 18, 15, 34, 17, 42, 52], 1):
-        ws.column_dimensions[get_column_letter(i)].width = w
-    ws.freeze_panes = "A2"
-    ws2 = wb.create_sheet("Synthèse")
-    ws2["A1"] = "SYNTHÈSE DU REGISTRE — GOLDEN PIRATES (ROYAUME 1023)"
-    ws2["A1"].font = Font(color="D4AF37", bold=True, size=13)
-    ws2.append([])
-    ws2.append(["Édité le", now_utc().strftime("%d/%m/%Y %H:%M")])
-    for key, label in [("pending", "En examen"), ("accepted", "Acceptées"), ("reserve", "En réserve"), ("rejected", "Refusées")]:
-        ws2.append([label, sum(1 for d in docs if d.get("status") == key)])
-    ws2.append(["Total", len(docs)])
-    ws2.column_dimensions["A"].width = 32
-    ws2.column_dimensions["B"].width = 14
+    wrap_idx = {[k for k, _ in EXPORT_COLUMNS].index(k) + 1 for k in ("experience", "message", "note", "activity")}
+    for n, d in enumerate(docs):
+        ws2.append(fmt_row(d))
+        rn = ws2.max_row
+        for i in range(1, len(EXPORT_COLUMNS) + 1):
+            cell = ws2.cell(row=rn, column=i)
+            cell.border = border
+            cell.alignment = Alignment(vertical="top", wrap_text=i in wrap_idx)
+            if n % 2 == 1:
+                cell.fill = PatternFill("solid", fgColor="F7F9FC")
+        sc = ws2.cell(row=rn, column=status_idx)
+        sc.fill = PatternFill("solid", fgColor=STATUS_TINT.get(d.get("status"), "FFFFFF"))
+        sc.font = Font(bold=True, color=STATUS_HEX.get(d.get("status"), "#1A2433").lstrip("#"))
+        sc.alignment = Alignment(horizontal="center", vertical="top")
+    if not docs:
+        ws2.append(["La mer est calme — aucune candidature enregistrée pour l'instant."])
+    for i, w in enumerate([15, 20, 12, 20, 24, 18, 15, 36, 17, 42, 52], 1):
+        ws2.column_dimensions[get_column_letter(i)].width = w
+    ws2.freeze_panes = "A2"
+    ws2.auto_filter.ref = ws2.dimensions
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
@@ -427,40 +491,143 @@ async def export_pdf(_: str = Depends(require_admin)):
     docs = await db.applications.find({}).sort("created_at", -1).to_list(2000)
     buf = io.BytesIO()
     doc_pdf = SimpleDocTemplate(
-        buf, pagesize=landscape(A4),
-        topMargin=14 * mm, bottomMargin=12 * mm, leftMargin=12 * mm, rightMargin=12 * mm,
+        buf, pagesize=A4,
+        topMargin=14 * mm, bottomMargin=20 * mm, leftMargin=15 * mm, rightMargin=15 * mm,
+        title="Golden Pirates — Registre des recrues",
+        author="Conseil des Capitaines — Golden Pirates",
     )
-    title_style = ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=15, textColor=colors.HexColor("#D4AF37"), spaceAfter=2)
-    sub_style = ParagraphStyle("sub", fontName="Helvetica", fontSize=8.5, textColor=colors.HexColor("#5C6B7E"))
-    cell_style = ParagraphStyle("cell", fontName="Helvetica", fontSize=7, leading=9)
-    head_style = ParagraphStyle("head", fontName="Helvetica-Bold", fontSize=7.2, leading=9, textColor=colors.HexColor("#D4AF37"))
-    edited = now_utc().strftime("%d/%m/%Y à %H:%M")
-    flow = [
-        Paragraph("GOLDEN PIRATES — REGISTRE DES RECRUES", title_style),
-        Paragraph(f"Royaume 1023 · Call of Dragons · édité le {edited} · {len(docs)} candidature(s)", sub_style),
-        Spacer(1, 5 * mm),
+    W = A4[0] - 30 * mm
+
+    band_title = ParagraphStyle("bt", fontName="Helvetica-Bold", fontSize=19, leading=23, textColor=colors.HexColor(GOLD_HEX))
+    band_sub = ParagraphStyle("bs", fontName="Helvetica", fontSize=9, leading=13, textColor=colors.HexColor("#C9D3E0"))
+    kpi_num = ParagraphStyle("kn", fontName="Helvetica-Bold", fontSize=16, leading=19, alignment=1)
+    kpi_lab = ParagraphStyle("kl", fontName="Helvetica", fontSize=7, leading=9, alignment=1, textColor=colors.HexColor(GRAY_HEX))
+    lab = ParagraphStyle("cl", fontName="Helvetica-Bold", fontSize=6.8, leading=9, textColor=colors.HexColor(GRAY_HEX))
+    val = ParagraphStyle("cv", fontName="Helvetica", fontSize=9.5, leading=12.5, textColor=colors.HexColor("#1A2433"))
+    empty_style = ParagraphStyle("es", fontName="Helvetica-Oblique", fontSize=11, leading=16, alignment=1, textColor=colors.HexColor(GRAY_HEX))
+
+    band_inner = [
+        Paragraph("GOLDEN PIRATES", band_title),
+        Paragraph("REGISTRE DES RECRUES — ROYAUME 1023 · CALL OF DRAGONS", band_sub),
+        Paragraph(f"Édité le {fmt_dt(now_utc().isoformat())} · {len(docs)} candidature(s) au registre", band_sub),
     ]
+    band = Table([[band_inner]], colWidths=[W])
+    band.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(NAVY_HEX)),
+        ("LINEBELOW", (0, 0), (-1, -1), 2, colors.HexColor(GOLD_HEX)),
+        ("LEFTPADDING", (0, 0), (-1, -1), 14),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 14),
+        ("TOPPADDING", (0, 0), (-1, -1), 12),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+    ]))
+    flow = [band, Spacer(1, 6 * mm)]
+
+    counts = {k: sum(1 for d in docs if d.get("status") == k) for k in STATUS_FR}
+    kpis = [
+        ("Total", len(docs), NAVY_HEX, "#E8ECF2"),
+        ("En examen", counts["pending"], STATUS_HEX["pending"], "#" + STATUS_TINT["pending"]),
+        ("Acceptées", counts["accepted"], STATUS_HEX["accepted"], "#" + STATUS_TINT["accepted"]),
+        ("En réserve", counts["reserve"], STATUS_HEX["reserve"], "#" + STATUS_TINT["reserve"]),
+        ("Refusées", counts["rejected"], STATUS_HEX["rejected"], "#" + STATUS_TINT["rejected"]),
+    ]
+    kpi_cells = []
+    for i, (label, count, hexc, tint) in enumerate(kpis):
+        num_style = ParagraphStyle(f"kn{i}", parent=kpi_num, textColor=colors.HexColor(hexc))
+        kpi_cells.append([Paragraph(str(count), num_style), Paragraph(label.upper(), kpi_lab)])
+    kpi_table = Table([kpi_cells], colWidths=[W / 5] * 5)
+    kpi_style = [
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#D8DEE8")),
+    ]
+    for i, (_, _, _, tint) in enumerate(kpis):
+        kpi_style.append(("BACKGROUND", (i, 0), (i, 0), colors.HexColor(tint)))
+    kpi_table.setStyle(TableStyle(kpi_style))
+    flow += [kpi_table, Spacer(1, 7 * mm)]
+
+    def build_card(d, numero):
+        status = d.get("status", "pending")
+        tint = "#" + STATUS_TINT.get(status, "FFFFFF")
+        meta = Paragraph(
+            f'<font color="{GOLD_HEX}" size="7.5">DOSSIER N° {numero:02d}</font>'
+            f'&nbsp;&nbsp;·&nbsp;&nbsp;<font color="#8FA3BC" size="8.5">{escape(d.get("tracking_code", ""))}</font>',
+            ParagraphStyle(f"hm{numero}", fontName="Helvetica", leading=10),
+        )
+        pseudo_p = Paragraph(
+            f'<font color="#FFFFFF" size="14"><b>{escape(d.get("pseudo", ""))}</b></font>',
+            ParagraphStyle(f"hp{numero}", fontName="Helvetica", leading=17),
+        )
+        chip = Paragraph(
+            f'<b>{escape(STATUS_FR.get(status, status))}</b>',
+            ParagraphStyle(f"hr{numero}", fontName="Helvetica", fontSize=10, leading=13, alignment=1,
+                           textColor=colors.HexColor(STATUS_HEX.get(status, "#1A2433"))),
+        )
+        rows = [
+            [meta, "", "", ""],
+            [pseudo_p, "", "", chip],
+            [Paragraph("PUISSANCE", lab), Paragraph(escape(d.get("power", "")) or "—", val),
+             Paragraph("TROUPES", lab), Paragraph(escape(d.get("troops", "")) or "—", val)],
+            [Paragraph("ACTIVITÉ", lab), Paragraph(escape(d.get("activity", "")) or "—", val),
+             Paragraph("DISCORD", lab), Paragraph(escape(d.get("discord", "")) or "—", val)],
+            [Paragraph("DÉPOSÉE LE", lab), Paragraph(fmt_dt(d.get("created_at")) or "—", val), "", ""],
+            [Paragraph("EXPÉRIENCE", lab), Paragraph(escape(d.get("experience", "")) or "— aucune ligne dans le journal de bord —", val), "", ""],
+            [Paragraph("MESSAGE", lab), Paragraph(escape(d.get("message", "")) or "—", val), "", ""],
+        ]
+        if d.get("note"):
+            rows.append([Paragraph("NOTE DU CONSEIL", lab), Paragraph(escape(d["note"]), val), "", ""])
+        t = Table(rows, colWidths=[0.15 * W, 0.35 * W, 0.15 * W, 0.35 * W])
+        style = [
+            ("SPAN", (0, 0), (3, 0)),
+            ("SPAN", (0, 1), (2, 1)),
+            ("BACKGROUND", (0, 0), (3, 0), colors.HexColor(NAVY_HEX)),
+            ("BACKGROUND", (0, 1), (2, 1), colors.HexColor(NAVY_HEX)),
+            ("BACKGROUND", (3, 1), (3, 1), colors.HexColor(tint)),
+            ("BACKGROUND", (0, 2), (0, -1), colors.HexColor("#F4F6F9")),
+            ("BACKGROUND", (2, 2), (2, 3), colors.HexColor("#F4F6F9")),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#D8DEE8")),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 7),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]
+        for r in (4, 5, 6):
+            style.append(("SPAN", (1, r), (3, r)))
+        if d.get("note"):
+            style.append(("SPAN", (1, 7), (3, 7)))
+        t.setStyle(TableStyle(style))
+        return t
+
     if docs:
-        status_idx = [k for k, _ in EXPORT_COLUMNS].index("status")
-        data = [[Paragraph(escape(h), head_style) for _, h in EXPORT_COLUMNS]]
-        for d in docs:
-            vals = fmt_row(d)
-            color = STATUS_COLORS.get(d.get("status"), "#111111")
-            vals[status_idx] = f'<font color="{color}"><b>{escape(vals[status_idx])}</b></font>'
-            data.append([Paragraph(escape(v) if i != status_idx else v, cell_style) for i, v in enumerate(vals)])
-        table = Table(data, colWidths=[56, 72, 42, 66, 74, 68, 52, 90, 60, 90, 96], repeatRows=1)
-        table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0B192C")),
-            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#2A3A50")),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F4F6F9")]),
-            ("TOPPADDING", (0, 0), (-1, -1), 3),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-        ]))
-        flow.append(table)
+        for i, d in enumerate(docs, 1):
+            flow.append(build_card(d, i))
+            flow.append(Spacer(1, 5 * mm))
     else:
-        flow.append(Paragraph("Aucune candidature enregistrée pour l'instant.", sub_style))
-    doc_pdf.build(flow)
+        mer = Table([[Paragraph(
+            "La mer est calme — aucune candidature enregistrée pour l'instant.<br/>Les recrues ne tarderont pas à frapper au pont.",
+            empty_style,
+        )]], colWidths=[W])
+        mer.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F4F6F9")),
+            ("BOX", (0, 0), (-1, -1), 0.8, colors.HexColor(GOLD_HEX)),
+            ("TOPPADDING", (0, 0), (-1, -1), 24),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 24),
+        ]))
+        flow.append(mer)
+
+    def _footer(canv, _d):
+        canv.saveState()
+        canv.setStrokeColor(colors.HexColor("#D8DEE8"))
+        canv.setLineWidth(0.5)
+        canv.line(15 * mm, 13.5 * mm, A4[0] - 15 * mm, 13.5 * mm)
+        canv.setFont("Helvetica", 7.5)
+        canv.setFillColor(colors.HexColor(GRAY_HEX))
+        canv.drawString(15 * mm, 9.5 * mm, "GOLDEN PIRATES — CONSEIL DES CAPITAINES · ROYAUME 1023 · CALL OF DRAGONS")
+        canv.drawRightString(A4[0] - 15 * mm, 9.5 * mm, f"Page {canv.getPageNumber()}")
+        canv.restoreState()
+
+    doc_pdf.build(flow, onFirstPage=_footer, onLaterPages=_footer)
     buf.seek(0)
     stamp = now_utc().strftime("%Y-%m-%d")
     return StreamingResponse(
