@@ -106,16 +106,13 @@ export default function Hero() {
         className="relative z-10 max-w-7xl mx-auto w-full px-5 sm:px-8 pt-24 md:pt-16"
       >
         <RevealLine delay={0.15}>
-          <div className="flex flex-wrap items-center gap-3 mb-6 md:mb-8" data-testid="hero-badge-kvk">
+          <div className="flex items-center mb-6 md:mb-8" data-testid="hero-badge-kvk">
             <span className="inline-flex items-center gap-2 border border-gold/40 bg-ink/60 backdrop-blur px-4 py-1.5 font-mono2 text-[10px] sm:text-xs tracking-[0.3em] text-gold">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-bloodglow opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blood" />
               </span>
-              {s.badge}
-            </span>
-            <span className="border border-bone/20 bg-ink/60 backdrop-blur px-4 py-1.5 font-mono2 text-[10px] sm:text-xs tracking-[0.3em] text-bone/70">
-              {s.badge2}
+              {s.ribbon}
             </span>
           </div>
         </RevealLine>

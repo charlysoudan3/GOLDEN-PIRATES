@@ -1,234 +1,80 @@
 {
-  "project_title": "GOLDEN PIRATES - Alliance Recruitment Portal (Call of Dragons - Royaume 1023)",
-  "language": "fr",
-  "theme": "Dark Naval Opus / 100% Pirate",
-  "emotional_tone": "Dominant, Legendary, Sovereign, Mysterious, Brutalist Pirate Era",
+  "project_name": "GOLDEN PIRATES - Kingdom 1023 Recruitment Hero",
+  "context": "Hero section reorganization for the GOLDEN PIRATES alliance recruitment portal (Kingdom 1023, Call of Dragons). Eliminates sticker clutter and scattered badges to deliver a highly strategic, 100% pirate visual hierarchy where the October season countdown serves as the 'secret weapon' focal point for visitors, recruits, and administrators.",
+  "theme": "Dark Pirate War Room (#06090E ink, burnished gold #D4AF37, parchment bone #E8D8C8, blood red #B91C1C)",
   "typography": {
-    "font_sources": [
-      "Google Fonts link tag to be added to public/index.html:",
-      "<link href='https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel+Decorative:wght@700;900&family=IM+Fell+English:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap' rel='stylesheet'>"
-    ],
-    "headings": {
-      "display_hero": "Pirata One, serif, 'Cinzel Decorative', cursive",
-      "display_section": "Cinzel Decorative, Pirata One, serif",
-      "subheadings": "IM Fell English, serif",
-      "h1_max_size": "text-4xl sm:text-6xl lg:text-7xl uppercase tracking-wider font-extrabold text-[#F3E5AB]",
-      "h2_section_size": "text-2xl sm:text-4xl lg:text-5xl uppercase tracking-wide font-bold text-[#E5C158]",
-      "h3_card_size": "text-xl sm:text-2xl font-serif text-[#D6C2A5]"
-    },
-    "body": {
-      "family": "IM Fell English, Georgia, serif",
-      "size": "text-base sm:text-lg leading-relaxed text-[#D0C4B4]"
-    },
-    "mono_labels": {
-      "family": "JetBrains Mono, monospace",
-      "style": "uppercase text-xs sm:text-sm tracking-[0.2em] text-[#C59B27]"
+    "display": "\"Pirata One\", \"Cinzel Decorative\", serif",
+    "decor": "\"Cinzel Decorative\", serif",
+    "body_serif": "\"IM Fell English\", Georgia, serif",
+    "mono": "\"JetBrains Mono\", monospace",
+    "hierarchy": {
+      "hero_title": "text-[clamp(3.5rem,10vw,7.5rem)] leading-[0.9] tracking-tight font-display text-gold drop-shadow-[0_0_35px_rgba(212,175,55,0.35)]",
+      "hero_title_stroke": "text-[clamp(3.5rem,10vw,7.5rem)] leading-[0.9] tracking-tight font-display text-stroke-gold",
+      "hero_subtitle": "text-base sm:text-lg md:text-xl font-fell italic text-bone/90 max-w-xl mx-auto leading-relaxed",
+      "command_badge": "font-mono text-[10px] sm:text-xs tracking-[0.25em] uppercase text-gold",
+      "countdown_digits": "font-display text-3xl sm:text-4xl text-gold tabular-nums",
+      "cta_button": "font-display text-lg sm:text-xl tracking-widest uppercase px-8 sm:px-10 py-3.5 sm:py-4 transition-all duration-300"
     }
   },
   "colors": {
-    "background_base": "#06090E",
-    "background_elevated": "#0A0F18",
-    "background_card": "#0F1722",
-    "background_parchment_tint": "#161D27",
+    "background_ink": "#06090E",
+    "surface_deep": "#0A0F18",
+    "surface_deck": "#0F1722",
+    "surface_parchment": "#161D27",
     "gold_primary": "#D4AF37",
     "gold_light": "#F5D77F",
     "gold_dark": "#9A7B1C",
-    "blood_red": "#B91C1C",
-    "blood_red_glow": "#DC2626",
-    "deep_sea_blue": "#0B192C",
-    "parchment_text": "#E8D8C8",
-    "muted_text": "#94A3B8",
-    "borders": "rgba(212, 175, 55, 0.25)",
-    "borders_hover": "rgba(245, 215, 127, 0.6)"
+    "bone_text": "#E8D8C8",
+    "mist_muted": "#94A3B8",
+    "blood_accent": "#B91C1C",
+    "blood_glow": "#DC2626",
+    "border_gold_subtle": "rgba(212, 175, 55, 0.25)",
+    "border_gold_strong": "rgba(212, 175, 55, 0.6)"
   },
   "visual_enhancers": {
-    "textures": [
-      "SVG Noise/Grain overlay fixed over viewport (`opacity-15 pointer-events-none`)",
-      "Aged parchment border framing with gold foil inner lines (`shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]`)",
-      "Spotlight vignette background gradient (`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#172538] via-[#0A0F18] to-[#040609]`)",
-      "Custom pirate skull & crossed swords compass cursor"
-    ],
-    "animations": {
-      "hero_reveal": "Framer motion staggered line-by-line clip-path masked text reveal",
-      "smooth_scroll": "Lenis smooth scrolling engine integration",
-      "marquee": "Slow organic drift ribbon (react-fast-marquee or CSS keyframes, speed 25s, gold text with skull separators)",
-      "interactive_compass": "Interactive 3D tilt compass element responding to mouse hover / gyroscope on mobile",
-      "hover_states": "Gold glow blur behind buttons, border shimmer, card lift with box-shadow `0 10px 30px -10px rgba(212,175,55,0.3)`"
-    }
+    "glassmorphism": "backdrop-blur-md bg-ink/75 border border-gold/30 shadow-[0_10px_30px_rgba(0,0,0,0.8)]",
+    "frame_plate": "box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.8)",
+    "glow_fuse": "drop-shadow-[0_0_12px_rgba(220,38,38,0.8)]",
+    "embers": "floating ambient gold particles rising from the countdown weapon plate",
+    "compass_rose": "subtle rotatable 3D compass rose background element responding to mouse hover perspective"
   },
-  "image_urls": {
-    "hero_ship_bg": "https://images.unsplash.com/photo-1741148708837-2787681d24b8?crop=entropy&cs=srgb&fm=jpg&q=85",
-    "pirate_flag": "https://images.pexels.com/photos/9570297/pexels-photo-9570297.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
-    "pirate_vessel_sea": "https://images.pexels.com/photos/5794275/pexels-photo-5794275.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
-    "compass_sand_map": "https://images.pexels.com/photos/12940795/pexels-photo-12940795.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
-    "antique_telescope_map": "https://images.pexels.com/photos/10728155/pexels-photo-10728155.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
-    "gold_treasure_coins": "https://images.unsplash.com/photo-1691404819847-dab7d769aca7?crop=entropy&cs=srgb&fm=jpg&q=85"
+  "grids_and_layouts": {
+    "hero_structure": "Centrally orchestrated single-column War Room hero (max-w-5xl) eliminating sticker clutter. 5-Stage Strategic Hierarchy: Stage 1 (Tactical Status Command Ribbon) -> Stage 2 (Dominant GOLDEN PIRATES Title) -> Stage 3 (Evocative Lore Subtitle) -> Stage 4 (The Secret Weapon: Illuminated Countdown Relic) -> Stage 5 (Strategic CTAs & Ticker Bar).",
+    "countdown_relic_layout": "Horizontal framed brass-and-wood chest plate containing 4 tabular countdown blocks (JOURS / HEURES / MIN / SEC) with real-time flip motion, an animated burning fuse bar, and active ember sparks."
   },
-  "sections_breakdown": [
-    {
-      "section_id": "header",
-      "description": "Sticky dark crystal glass header with gold trim, logo with skull icon, navigation links, Kingdom badge (1023), sound effect toggle, and CTA 'POSTULER'.",
-      "data_testids": [
-        "nav-header",
-        "nav-logo",
-        "nav-link-manifesto",
-        "nav-link-code",
-        "nav-link-timeline",
-        "nav-link-process",
-        "nav-link-status",
-        "nav-link-admin",
-        "nav-cta-apply",
-        "sound-toggle-btn"
-      ]
-    },
-    {
-      "section_id": "hero",
-      "description": "Kinetic Hero with line-by-line masked text reveal. Title: 'GOLDEN PIRATES'. Tagline: 'L'Alliance Souveraine du Royaume 1023 — Call of Dragons'. Status badge: 'PRÉ-KVK / SAISON 2 - RECRUTEMENT OUVERT'. Quick stats grid (Puissance totale, Territoire, Membres, Winrate KvK). CTAs: 'Rejoindre l'Équipage' and 'Vérifier Candidature'.",
-      "data_testids": [
-        "hero-section",
-        "hero-badge-kvk",
-        "hero-title",
-        "hero-subtitle",
-        "hero-cta-apply",
-        "hero-cta-track",
-        "hero-stat-power",
-        "hero-stat-members",
-        "hero-stat-winrate"
-      ]
-    },
-    {
-      "section_id": "editorial_marquee",
-      "description": "Slow drift editorial ribbon with low-contrast aged gold text: 'ROYAUME 1023 ☠ GOLDEN PIRATES ☠ CONQUÊTE DU KVK ☠ DISCIPLINE & TERREUR ☠ AUCUNE PITIÉ ☠ FRATERNITÉ D'ACIER ☠ LE BUTIN EST À NOUS'.",
-      "data_testids": [
-        "editorial-marquee"
-      ]
-    },
-    {
-      "section_id": "manifesto",
-      "description": "Alliance Manifesto section. Narrative scrollytelling with high contrast serif text, background spotlight on ghost ship image, interactive quote from the High Captain, core values (Fraternité, Rigueur Stratégique, Suprématie KvK).",
-      "data_testids": [
-        "manifesto-section",
-        "manifesto-title",
-        "manifesto-quote",
-        "manifesto-card-fraternity",
-        "manifesto-card-rigor",
-        "manifesto-card-supremacy"
-      ]
-    },
-    {
-      "section_id": "pirate_code",
-      "description": "'Le Code des Pirates' — Join Requirements. Interactive cards presenting hard requirements: Puissance Minimum (e.g. 25M+ / T5 priorisés), Présence Discord & Vocal obligatoire lors des Behemoths & War, Troupes T4/T5 requises, Esprit d'équipe & Don d'alliance quotidien, Respect de la hiérarchie de flotte.",
-      "data_testids": [
-        "code-section",
-        "code-title",
-        "code-req-power",
-        "code-req-discord",
-        "code-req-[#code-item-id]",
-        "code-calculator-widget"
-      ]
-    },
-    {
-      "section_id": "season_timeline",
-      "description": "Season Timeline horizontal/vertical interactive stepper. Milestones: (1) Saison 1 — Conquête Impériale [Terminée], (2) PRÉ-KVK Saison 2 — Mobilisation & Recrutement [EN COURS], (3) Démarrage KvK Saison 2 — Bataille des Terres Sacrées, (4) Fin de Saison 2 — Prochaine Vague de Recrutement.",
-      "data_testids": [
-        "timeline-section",
-        "timeline-step-s1",
-        "timeline-step-prekvk",
-        "timeline-step-s2",
-        "timeline-step-s2end"
-      ]
-    },
-    {
-      "section_id": "recruitment_process",
-      "description": "4-step recruitment process roadmap: (1) Dépôt de candidature en ligne, (2) Attribution du code de suivi pirate unique, (3) Entretien vocal Discord avec le Capitaine du Recrutement, (4) Intégration dans le Royaume 1023.",
-      "data_testids": [
-        "process-section",
-        "process-step-1",
-        "process-step-2",
-        "process-step-3",
-        "process-step-4"
-      ]
-    },
-    {
-      "section_id": "application_form",
-      "description": "Pirate Guild Application Form with real-time validation, parchment input styling, custom select inputs, military troop breakdown sliders/inputs. Fields: Pseudo Call of Dragons, Puissance actuelle (en Millions), Niveau de Mairie, Niveau de Troupes (T4 / T5), Activité quotidienne (Heures/jour), Expérience KvK & Alliances précédentes, Discord Tag, Message de motivation. Generates a unique Tracking Code (e.g. GP-1023-894F) stored in local state/backend.",
-      "data_testids": [
-        "application-section",
-        "application-form",
-        "input-pseudo",
-        "input-power",
-        "input-city-hall",
-        "select-troops",
-        "input-activity",
-        "input-discord",
-        "textarea-experience",
-        "textarea-message",
-        "submit-application-btn",
-        "application-success-modal",
-        "generated-tracking-code"
-      ]
-    },
-    {
-      "section_id": "user_status_checker",
-      "description": "User Space — Portal to check application status using tracking code. Displays status: 'En cours d'examen par le Conseil des Capitaines', 'Accepté — Convocation Discord', or 'Refusé'. Includes pre-filled quick search button for demo codes.",
-      "data_testids": [
-        "status-section",
-        "status-input-code",
-        "status-check-btn",
-        "status-result-card",
-        "status-badge"
-      ]
-    },
-    {
-      "section_id": "admin_portal",
-      "description": "Admin Space — Password protected management portal (default password: '1023' or 'pirates1023'). Features dashboard with table of submitted applications, filter by status (Toutes, En attente, Approuvées, Rejetées), action buttons to Approve/Reject with custom note, statistics overview, search bar.",
-      "data_testids": [
-        "admin-section",
-        "admin-login-input-password",
-        "admin-login-btn",
-        "admin-dashboard",
-        "admin-filter-select",
-        "admin-app-row-[app-id]",
-        "admin-action-approve-[app-id]",
-        "admin-action-reject-[app-id]",
-        "admin-logout-btn"
-      ]
-    },
-    {
-      "section_id": "footer",
-      "description": "Deep naval dark footer with massive display type 'GOLDEN PIRATES 1023', quick links, Discord server link, Call of Dragons fan project disclaimer, copyright, back-to-top button with compass arrow.",
-      "data_testids": [
-        "footer",
-        "footer-logo",
-        "footer-discord-link",
-        "footer-back-to-top"
-      ]
-    }
+  "motion": {
+    "entrance": "Framer Motion staggered reveal with smooth cubic-bezier easing [0.16, 1, 0.3, 1]",
+    "parallax_bg": "Scroll-based background y-translation and subtle zoom scale",
+    "compass_tilt": "Spring-based 3D rotation tracking mouse coordinates",
+    "digit_flip": "AnimatePresence y-axis slice transition for per-second digit updates",
+    "fuse_burn": "Dynamic percentage progress line with glowing flame icon and rising ember particles"
+  },
+  "accessibility": {
+    "contrast": "APCA high-contrast compliance with bone/gold text over deep ink background",
+    "test_ids": "Every key element MUST retain data-testid attributes: hero-section, hero-badge-kvk, hero-title, hero-subtitle, hero-countdown-wrap, hero-countdown, hero-cta-apply, hero-cta-track, hero-scroll-cue",
+    "reduced_motion": "Respect user prefers-reduced-motion settings by dampening parallax and flame animations"
+  },
+  "media": {
+    "hero_bg": "https://images.pexels.com/photos/38427508/pexels-photo-38427508.jpeg?auto=compress&cs=tinysrgb&w=1800",
+    "compass_svg": "Embedded precision SVG Compass Rose component with cardinal points and gold/blood red accents"
+  },
+  "component_paths": [
+    "/app/frontend/src/components/Hero.jsx",
+    "/app/frontend/src/components/Countdown.jsx"
   ],
   "instructions_to_main_agent": [
-    "1. Replace font links in public/index.html to import 'Pirata One', 'Cinzel Decorative', 'IM Fell English', and 'JetBrains Mono'.",
-    "2. Maintain dark pirate aesthetic with deep navy/sea black backgrounds (#06090E, #0A0F18), rich antique gold highlights (#D4AF37, #F5D77F), and blood-red accents (#B91C1C).",
-    "3. Use `framer-motion` for scroll animations, line-by-line hero text reveal, tab transitions, and modal popups.",
-    "4. Ensure Lenis smooth scroll is enabled for liquid smooth scrolling effect.",
-    "5. Every single interactive element (buttons, tabs, inputs, cards, links, admin actions) MUST have a `data-testid` attribute matching the design guidelines.",
-    "6. Include mock initial applications in local state/storage so the Admin Space has immediate data to test (e.g. 3-4 candidate profiles with different statuses).",
-    "7. Provide sound ambience toggle button in header (simulated audio wave with pirate tavern/sea sound toggle visual feedback).",
-    "8. Ensure 100% French language throughout all copy, labels, tooltips, and toasts.",
-    "9. Make form submission auto-generate a unique pirate code (e.g. `GP-1023-XXXX`) and display a parchment scroll confirmation modal with copy-to-clipboard button.",
-    "10. All components must be responsive across mobile, tablet, and desktop screens without text clipping or horizontal overflow."
+    "Reorganize Hero.jsx to eliminate scattered sticker/badge bloat. Replace the multiple separate badges with a single unified 'Command Ribbon' at the top containing kingdom & season status with a pulsing blood red indicator.",
+    "Promote the Countdown timer in Hero.jsx as the undeniable 'Secret Weapon' focal point: frame it inside an elegant pirate relic plate with glowing embers and burning fuse.",
+    "Center align the main Hero text column to create a majestic, balanced, cinematic focal point.",
+    "Ensure all data-testid attributes are strictly preserved for test automation compatibility.",
+    "Maintain backward compatibility for the compact Countdown variants (`variant='line'`) used in forms and recruit tracking views.",
+    "Follow JS format (React .jsx files) as specified in project structure."
   ],
   "UNIVERSAL GUIDELINES FOR MAIN AGENT": {
-    "do_not": [
-      "DO NOT use generic centered Inter/Roboto typography for headings",
-      "DO NOT use raw transparent backgrounds on sticky headers or overlays",
-      "DO NOT leave inputs or buttons without explicit hover/focus state styling",
-      "DO NOT omit data-testid attributes"
-    ],
-    "do_always": [
-      "Layer noise and grain textures to ground the pirate aesthetic",
-      "Use APCA high-contrast text color combinations (gold or pale parchment over deep navy)",
-      "Keep all code in clean modular React components in src/components/",
-      "Test responsive layouts down to 360px viewport width"
-    ]
+    "anti_slop": "Avoid generic centered white/gray SaaS designs. Maintain deep immersive pirate storytelling with rich textures, gold accents, gothic typography, and atmospheric lighting.",
+    "spacing": "Maintain generous vertical breathing room between section elements (py-16 to py-24).",
+    "transitions": "Never use transition: all. Specify individual properties like transform, opacity, background-color.",
+    "interactive_contrast": "Ensure buttons and links have distinct hover states with glow/shadow effects and high contrast text.",
+    "test_ids": "All interactive and key informational elements MUST include a data-testid attribute in kebab-case."
   }
 }
