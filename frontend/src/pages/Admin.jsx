@@ -606,7 +606,8 @@ export default function Admin() {
     if (exporting) return;
     setExporting(fmt);
     try {
-      const { data } = await api.get(`/admin/export/${fmt}`, { responseType: "blob" });
+      // Délai étendu : un gros registre sur réseau lent ne doit pas casser l'export
+      const { data } = await api.get(`/admin/export/${fmt}`, { responseType: "blob", timeout: 120000 });
       const url = URL.createObjectURL(data);
       const link = document.createElement("a");
       link.href = url;
