@@ -131,7 +131,7 @@ export default function Nav() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: EASE }}
-            className="fixed inset-0 z-[85] bg-ink overflow-hidden"
+            className="fixed inset-0 z-[85] bg-ink overflow-hidden flex flex-col"
           >
             <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_20%,rgba(11,25,44,0.9),transparent_60%)]" />
@@ -167,8 +167,8 @@ export default function Nav() {
               </div>
             </div>
 
-            <div className="relative z-10 h-[calc(100%-4rem)] md:h-[calc(100%-5rem)] flex flex-col lg:flex-row overflow-y-auto">
-              <div className="lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10">
+            <div className="relative z-10 flex-1 min-h-0 flex flex-col lg:flex-row overflow-y-auto">
+              <div className="lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 pb-14">
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -208,7 +208,7 @@ export default function Nav() {
                 />
               </div>
 
-              <div className="lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 gap-6">
+              <div className="lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 pb-14 gap-6">
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -250,7 +250,10 @@ export default function Nav() {
               </div>
             </div>
 
-            <div className="absolute bottom-0 inset-x-0 z-10 border-t border-gold/15 bg-ink/80 backdrop-blur px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
+            <div
+              className="relative z-10 shrink-0 border-t border-gold/15 bg-ink/80 backdrop-blur px-4 sm:px-8 py-3 flex items-center justify-between gap-4"
+              style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+            >
               <span className="font-mono2 text-[9px] tracking-[0.3em] text-mist">GOLDEN PIRATES — ROYAUME 1023</span>
               <SkullIcon className="w-4 h-4 text-blood/80 shrink-0" />
               <span className="hidden sm:block font-mono2 text-[9px] tracking-[0.3em] text-mist">{c.hero.chips[2]}</span>
