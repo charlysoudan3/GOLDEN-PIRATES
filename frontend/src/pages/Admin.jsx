@@ -721,7 +721,7 @@ export default function Admin() {
                     ))}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-4 mb-8">
                     <div className="flex flex-wrap gap-2">
                       {a.dash.filters.map((f) => (
                         <button
@@ -738,35 +738,37 @@ export default function Admin() {
                         </button>
                       ))}
                     </div>
-                    <div className="flex gap-2 sm:ml-auto" data-testid="admin-export-cluster">
-                      <button
-                        data-testid="admin-export-xlsx"
-                        onClick={() => downloadExport("xlsx")}
-                        disabled={exporting !== null}
-                        className="inline-flex items-center gap-2 font-mono2 text-[10px] tracking-[0.25em] px-4 py-2.5 border border-gold/30 text-gold hover:bg-gold/10 hover:border-gold/60 disabled:opacity-50 transition-all"
-                      >
-                        <FileSpreadsheet className="w-4 h-4 shrink-0" />
-                        {exporting === "xlsx" ? a.dash.exportBusy : a.dash.exportXlsx}
-                      </button>
-                      <button
-                        data-testid="admin-export-pdf"
-                        onClick={() => downloadExport("pdf")}
-                        disabled={exporting !== null}
-                        className="inline-flex items-center gap-2 font-mono2 text-[10px] tracking-[0.25em] px-4 py-2.5 border border-gold/30 text-gold hover:bg-gold/10 hover:border-gold/60 disabled:opacity-50 transition-all"
-                      >
-                        <FileText className="w-4 h-4 shrink-0" />
-                        {exporting === "pdf" ? a.dash.exportBusy : a.dash.exportPdf}
-                      </button>
-                    </div>
-                    <div className="relative sm:w-72">
-                      <Search className="w-4 h-4 text-mist absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        data-testid="admin-search-input"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder={a.dash.searchPh}
-                        className="w-full bg-ink/70 border border-gold/25 pl-10 pr-4 py-2.5 font-fell text-sm text-bone placeholder:text-mist/50 focus:border-gold transition-all"
-                      />
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:ml-auto">
+                      <div className="flex gap-2" data-testid="admin-export-cluster">
+                        <button
+                          data-testid="admin-export-xlsx"
+                          onClick={() => downloadExport("xlsx")}
+                          disabled={exporting !== null}
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-mono2 text-[10px] tracking-[0.2em] px-3.5 py-2.5 border border-gold/30 text-gold hover:bg-gold/10 hover:border-gold/60 disabled:opacity-50 transition-all"
+                        >
+                          <FileSpreadsheet className="w-4 h-4 shrink-0" />
+                          {exporting === "xlsx" ? a.dash.exportBusy : a.dash.exportXlsx}
+                        </button>
+                        <button
+                          data-testid="admin-export-pdf"
+                          onClick={() => downloadExport("pdf")}
+                          disabled={exporting !== null}
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-mono2 text-[10px] tracking-[0.2em] px-3.5 py-2.5 border border-gold/30 text-gold hover:bg-gold/10 hover:border-gold/60 disabled:opacity-50 transition-all"
+                        >
+                          <FileText className="w-4 h-4 shrink-0" />
+                          {exporting === "pdf" ? a.dash.exportBusy : a.dash.exportPdf}
+                        </button>
+                      </div>
+                      <div className="relative sm:w-72 shrink-0">
+                        <Search className="w-4 h-4 text-mist absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          data-testid="admin-search-input"
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          placeholder={a.dash.searchPh}
+                          className="w-full bg-ink/70 border border-gold/25 pl-10 pr-4 py-2.5 font-fell text-sm text-bone placeholder:text-mist/50 focus:border-gold transition-all"
+                        />
+                      </div>
                     </div>
                   </div>
 
