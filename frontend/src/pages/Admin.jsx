@@ -240,6 +240,14 @@ function AppRow({ app, onUpdate, onDelete, history }) {
           <div className="min-w-0">
             <p className="font-display text-xl text-bone truncate">
               {app.pseudo}
+              {app.code_recovered_at && (
+                <span
+                  data-testid={`admin-recovered-badge-${app.id}`}
+                  className="ml-2 inline-block align-middle border border-amber-500/50 bg-amber-500/10 text-amber-400 font-mono2 text-[8px] tracking-[0.2em] px-1.5 py-0.5"
+                >
+                  {d.recoveredBadge}
+                </span>
+              )}
               {history && (
                 <span
                   data-testid={`admin-attempt-badge-${app.id}`}

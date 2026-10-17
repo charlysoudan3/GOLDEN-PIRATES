@@ -40,7 +40,8 @@ export default function Suivi() {
   const [notif, setNotif] = useState(null);
   const [rack, setRack] = useState(loadRack);
   const [showRecover, setShowRecover] = useState(false);
-  const [rec, setRec] = useState({ pseudo: "", discord: "" });
+  const [recRoute, setRecRoute] = useState("discord");
+  const [rec, setRec] = useState({ pseudo: "", discord: "", power: "" });
   const [recRes, setRecRes] = useState(null);
   const [recErr, setRecErr] = useState("");
   const [recBusy, setRecBusy] = useState(false);
@@ -149,19 +150,24 @@ export default function Suivi() {
   const recover = async (e) => {
     e?.preventDefault();
     if (recBusy) return;
-    if (!rec.pseudo.trim() || !rec.discord.trim()) {
-      setRecErr(s.recoverHint);
+    const payload = recRoute === "discord"
+      ? { pseudo: rec.pseudo, discord: rec.discord }
+      : { pseudo: rec.pseudo, power: rec.power };
+    if (!payload.pseudo?.trim() || (!payload.discord?.trim() && !payload.power?.trim())) {
+      setRecErr(s.recoverNeedOne);
       return;
     }
     setRecBusy(true);
     setRecErr("");
     try {
-      const { data } = await api.post("/applications/recover", { pseudo: rec.pseudo, discord: rec.discord });
+      const { data } = await api.post("/applications/recover", payload);
       setRecRes(data);
       saveToRack(data.tracking_code, data.pseudo, data.status);
     } catch (err) {
       const code = err?.response?.data?.detail?.code;
-      setRecErr(code === "recover_limit" ? s.recoverLimit : s.recoverFail);
+      if (code === "recover_limit") setRecErr(s.recoverLimit);
+      else if (code === "recover_need_one") setRecErr(s.recoverNeedOne);
+      else setRecErr(s.recoverFail);
     } finally {
       setRecBusy(false);
     }
@@ -264,6 +270,24 @@ export default function Suivi() {
                 <div data-testid="recover-form" className="space-y-3">
                   <p className="font-mono2 text-[10px] tracking-[0.3em] text-gold">{s.recoverTitle}</p>
                   <p className="font-fell italic text-sm text-mist">{s.recoverHint}</p>
+                  <div className="flex flex-wrap gap-2" data-testid="recover-routes">
+                    <button
+                      type="button"
+                      data-testid="recover-route-discord"
+                      onClick={() => setRecRoute("discord")}
+                      className={`font-mono2 text-[9px] tracking-[0.25em] px-3.5 py-2 border transition-all ${recRoute === "discord" ? "border-gold text-gold bg-gold/10" : "border-gold/20 text-mist hover:border-gold/50 hover:text-gold"}`}
+                    >
+                      {s.recoverRouteDiscord}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="recover-route-power"
+                      onClick={() => setRecRoute("power")}
+                      className={`font-mono2 text-[9px] tracking-[0.25em] px-3.5 py-2 border transition-all ${recRoute === "power" ? "border-gold text-gold bg-gold/10" : "border-gold/20 text-mist hover:border-gold/50 hover:text-gold"}`}
+                    >
+                      {s.recoverRoutePower}
+                    </button>
+                  </div>
                   <div className="grid sm:grid-cols-2 gap-3">
                     <input
                       data-testid="recover-input-pseudo"
@@ -272,13 +296,23 @@ export default function Suivi() {
                       placeholder={s.recoverPseudo}
                       className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone placeholder:text-mist/40 focus:border-gold transition-all"
                     />
-                    <input
-                      data-testid="recover-input-discord"
-                      value={rec.discord}
-                      onChange={(e) => setRec({ ...rec, discord: e.target.value })}
-                      placeholder={s.recoverDiscord}
-                      className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone placeholder:text-mist/40 focus:border-gold transition-all"
-                    />
+                    {recRoute === "discord" ? (
+                      <input
+                        data-testid="recover-input-discord"
+                        value={rec.discord}
+                        onChange={(e) => setRec({ ...rec, discord: e.target.value })}
+                        placeholder={s.recoverDiscord}
+                        className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone placeholder:text-mist/40 focus:border-gold transition-all"
+                      />
+                    ) : (
+                      <input
+                        data-testid="recover-input-power"
+                        value={rec.power}
+                        onChange={(e) => setRec({ ...rec, power: e.target.value })}
+                        placeholder={s.recoverPowerPh}
+                        className="w-full bg-ink/70 border border-gold/25 px-4 py-3 font-fell text-base text-bone placeholder:text-mist/40 focus:border-gold transition-all"
+                      />
+                    )}
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <button

@@ -346,7 +346,8 @@ async def admin_stats(_: str = Depends(require_admin)):
 class RecoveryCreate(BaseModel):
     model_config = ConfigDict(extra="ignore")
     pseudo: str = Field(min_length=2, max_length=32)
-    discord: str = Field(min_length=2, max_length=32)
+    discord: Optional[str] = Field(default=None, max_length=60)
+    power: Optional[str] = Field(default=None, max_length=16)
 
 
 RECOVERY_PER_HOUR = 5
@@ -354,8 +355,9 @@ RECOVERY_PER_HOUR = 5
 
 @api_router.post("/applications/recover")
 async def recover_tracking_code(data: RecoveryCreate, request: Request):
-    """La bouteille perdue : la recrue retrouve son code avec son pseudo ET son
-    Discord (les deux doivent correspondre — jamais l'un sans l'autre)."""
+    """La bouteille perdue : la recrue retrouve son code avec son pseudo + UNE
+    clé d'identité — son Discord (semi-privé) OU sa puissance exacte (pour les
+    joueurs privés de Discord par les blocages pays)."""
     now = now_utc()
     ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
     if not ip:
@@ -370,19 +372,34 @@ async def recover_tracking_code(data: RecoveryCreate, request: Request):
     await db.recovery_attempts.insert_one({"ip": ip, "at": now})
 
     pseudo_key = data.pseudo.strip().lower()
-    discord_pattern = f"^{re.escape(data.discord.strip())}$"
-    doc = await db.applications.find_one(
-        {
-            "pseudo_lower": pseudo_key,
-            "discord": {"$regex": discord_pattern, "$options": "i"},
-        },
-        sort=[("created_at", -1)],
+    docs = await db.applications.find({"pseudo_lower": pseudo_key}).sort("created_at", -1).to_list(50)
+
+    def norm(v):
+        return re.sub(r"\s+", "", (v or "")).lower()
+
+    target_discord = norm(data.discord)
+    target_power = norm(data.power)
+    if not target_discord and not target_power:
+        raise HTTPException(status_code=400, detail={
+            "code": "recover_need_one",
+            "msg": "Donne ton Discord OU ta puissance exacte pour retrouver ta bouteille.",
+        })
+    doc = next(
+        (d for d in docs
+         if (target_discord and norm(d.get("discord")) == target_discord)
+         or (target_power and norm(d.get("power")) == target_power)),
+        None,
     )
     if not doc:
         raise HTTPException(status_code=404, detail={
             "code": "recover_not_found",
-            "msg": "Aucune bouteille au nom de ce pseudo et ce Discord — vérifie l'orthographe exacte de ta candidature.",
+            "msg": "Aucune bouteille au nom de ce pseudo avec ces infos — vérifie l'orthographe exacte de ta candidature.",
         })
+    # Visibilité Conseil : toute récupération de code est horodatée sur le dossier.
+    await db.applications.update_one(
+        {"_id": doc["_id"]},
+        {"$set": {"code_recovered_at": now.isoformat()}},
+    )
     return {
         "tracking_code": doc["tracking_code"],
         "pseudo": doc["pseudo"],
