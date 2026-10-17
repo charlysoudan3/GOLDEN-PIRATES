@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Copy, Check, X, Anchor, ListChecks, Hourglass, Megaphone } from "lucide-react";
 import api, { formatApiError } from "@/lib/api";
 import { useLang, fmtPower } from "@/lib/i18n";
+import Countdown from "@/components/Countdown";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -98,6 +99,9 @@ export default function ApplyForm() {
               <Megaphone className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{fmtPower(s.migrationBanner)}</span>
             </p>
+            <div className="mb-6" data-testid="apply-countdown-wrap">
+              <Countdown variant="line" testid="apply-countdown" />
+            </div>
             <p className="font-fell text-lg text-bone/80 leading-relaxed mb-6">{s.intro}</p>
             <ul className="space-y-4 border-l-2 border-gold/30 pl-5">
               {s.bullets.map((item) => (

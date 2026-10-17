@@ -152,6 +152,15 @@ const fr = {
     code: "CODE : ",
     filedOn: "DÉPOSÉE LE : ",
   },
+  countdown: {
+    label: "OUVERTURE DE LA SAISON — FIN OCTOBRE",
+    lineLabel: "LA SAISON COMMENCE FIN OCTOBRE :",
+    days: "JOURS",
+    hours: "HEURES",
+    minutes: "MIN",
+    seconds: "SEC",
+    open: "LA SAISON EST OUVERTE — À VOS POSTES !",
+  },
   suivi: {
     eyebrow: "ESPACE RECRUE",
     title1: "Suis ta ",
@@ -499,6 +508,15 @@ const en = {
     note: "Council's note: ",
     code: "CODE: ",
     filedOn: "FILED ON: ",
+  },
+  countdown: {
+    label: "SEASON OPENING — END OF OCTOBER",
+    lineLabel: "THE SEASON STARTS END OF OCTOBER:",
+    days: "DAYS",
+    hours: "HOURS",
+    minutes: "MIN",
+    seconds: "SEC",
+    open: "THE SEASON IS OPEN — TO YOUR POSTS!",
   },
   suivi: {
     eyebrow: "RECRUIT SPACE",

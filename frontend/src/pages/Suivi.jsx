@@ -8,6 +8,7 @@ import StatusBadge from "@/components/StatusBadge";
 import ChatBox from "@/components/ChatBox";
 import api, { formatApiError } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
+import Countdown from "@/components/Countdown";
 
 const DISCORD_URL = "https://discord.gg/dSzGk7PYUW";
 
@@ -206,6 +207,9 @@ export default function Suivi() {
               <span className="text-gold">{s.titleGold}</span>
             </h1>
             <p className="font-fell italic text-lg text-bone/75 max-w-xl mx-auto">{s.sub}</p>
+            <div className="mt-6" data-testid="suivi-countdown-wrap">
+              <Countdown variant="line" testid="suivi-countdown" />
+            </div>
           </div>
 
           <form
