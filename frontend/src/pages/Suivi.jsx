@@ -4,6 +4,7 @@ import { Search, Compass, FileQuestion } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
+import ChatBox from "@/components/ChatBox";
 import api, { formatApiError } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 
@@ -167,6 +168,18 @@ export default function Suivi() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {result && (
+            <motion.div
+              data-testid="chat-section"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-10"
+            >
+              <ChatBox code={result.tracking_code} sender="recruit" testPrefix="chat" />
+            </motion.div>
+          )}
         </section>
       </main>
       <Footer />

@@ -111,6 +111,11 @@ class LoginInput(BaseModel):
     password: str
 
 
+class MessageCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    text: str = Field(min_length=1, max_length=2000)
+
+
 # ---------------- Public routes ----------------
 
 @api_router.get("/")
@@ -236,12 +241,147 @@ async def delete_application(app_id: str, _: str = Depends(require_admin)):
     return {"ok": True}
 
 
+# ---------------- Messaging (La Bouteille à la Mer) ----------------
+
+def clean_msg(doc: dict) -> dict:
+    doc = dict(doc)
+    doc.pop("_id", None)
+    return doc
+
+
+@api_router.get("/messages/{code}")
+async def get_messages(code: str):
+    code = code.strip().upper()
+    if not await db.applications.find_one({"tracking_code": code}):
+        raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
+    docs = await db.messages.find({"conv_code": code}).sort("created_at", 1).to_list(1000)
+    return [clean_msg(d) for d in docs]
+
+
+@api_router.post("/messages/{code}")
+async def send_message(code: str, data: MessageCreate):
+    code = code.strip().upper()
+    if not await db.applications.find_one({"tracking_code": code}):
+        raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
+    text = data.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Message vide")
+    doc = {
+        "id": str(uuid.uuid4()),
+        "conv_code": code,
+        "sender": "recruit",
+        "text": text[:2000],
+        "created_at": now_utc().isoformat(),
+        "deleted": False,
+        "read_by_council": False,
+    }
+    await db.messages.insert_one(doc)
+    return clean_msg(doc)
+
+
+@api_router.delete("/messages/{code}/{message_id}")
+async def delete_message(code: str, message_id: str):
+    code = code.strip().upper()
+    res = await db.messages.find_one_and_update(
+        {"id": message_id, "conv_code": code, "sender": "recruit"},
+        {"$set": {"deleted": True, "text": ""}},
+        return_document=ReturnDocument.AFTER,
+    )
+    if not res:
+        raise HTTPException(status_code=404, detail="Message introuvable")
+    return clean_msg(res)
+
+
+@api_router.get("/admin/conversations")
+async def admin_conversations(_: str = Depends(require_admin)):
+    msgs = await db.messages.find({}).sort("created_at", 1).to_list(5000)
+    convs = {}
+    for m in msgs:
+        conv = convs.setdefault(m["conv_code"], {"last": None, "last_at": "", "unread": 0, "total": 0})
+        conv["total"] += 1
+        conv["last_at"] = m["created_at"]
+        conv["last"] = m
+        if m["sender"] == "recruit" and not m.get("deleted") and not m.get("read_by_council"):
+            conv["unread"] += 1
+    codes = list(convs.keys())
+    pseudo_by = {}
+    if codes:
+        apps = await db.applications.find({"tracking_code": {"$in": codes}}).to_list(200)
+        pseudo_by = {a["tracking_code"]: a["pseudo"] for a in apps}
+    out = []
+    for code, cv in convs.items():
+        last = cv["last"] or {}
+        out.append({
+            "code": code,
+            "pseudo": pseudo_by.get(code, code),
+            "last_text": "" if last.get("deleted") else last.get("text", ""),
+            "last_sender": last.get("sender", ""),
+            "last_at": cv["last_at"],
+            "unread": cv["unread"],
+            "total": cv["total"],
+        })
+    out.sort(key=lambda x: x["last_at"], reverse=True)
+    return out
+
+
+@api_router.get("/admin/conversations/{code}")
+async def admin_thread(code: str, _: str = Depends(require_admin)):
+    code = code.strip().upper()
+    docs = await db.messages.find({"conv_code": code}).sort("created_at", 1).to_list(1000)
+    return [clean_msg(d) for d in docs]
+
+
+@api_router.post("/admin/conversations/{code}")
+async def admin_send_message(code: str, data: MessageCreate, _: str = Depends(require_admin)):
+    code = code.strip().upper()
+    if not await db.applications.find_one({"tracking_code": code}):
+        raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
+    text = data.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Message vide")
+    doc = {
+        "id": str(uuid.uuid4()),
+        "conv_code": code,
+        "sender": "council",
+        "text": text[:2000],
+        "created_at": now_utc().isoformat(),
+        "deleted": False,
+        "read_by_council": True,
+    }
+    await db.messages.insert_one(doc)
+    return clean_msg(doc)
+
+
+@api_router.delete("/admin/conversations/{code}/{message_id}")
+async def admin_delete_message(code: str, message_id: str, _: str = Depends(require_admin)):
+    code = code.strip().upper()
+    res = await db.messages.find_one_and_update(
+        {"id": message_id, "conv_code": code, "sender": "council"},
+        {"$set": {"deleted": True, "text": ""}},
+        return_document=ReturnDocument.AFTER,
+    )
+    if not res:
+        raise HTTPException(status_code=404, detail="Message introuvable")
+    return clean_msg(res)
+
+
+@api_router.post("/admin/conversations/{code}/read")
+async def admin_mark_read(code: str, _: str = Depends(require_admin)):
+    code = code.strip().upper()
+    await db.messages.update_many(
+        {"conv_code": code, "sender": "recruit"},
+        {"$set": {"read_by_council": True}},
+    )
+    return {"ok": True}
+
+
 # ---------------- Startup seed ----------------
 
 async def seed():
     await db.users.create_index("email", unique=True)
     await db.applications.create_index("tracking_code", unique=True)
     await db.login_attempts.create_index("identifier")
+    await db.messages.create_index([("conv_code", 1), ("created_at", 1)])
     admin = await db.users.find_one({"email": ADMIN_EMAIL})
     if admin is None:
         await db.users.insert_one({

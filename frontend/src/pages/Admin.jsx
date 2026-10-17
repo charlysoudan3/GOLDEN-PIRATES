@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { ChevronDown, LogOut, Search, Shield, Trash2 } from "lucide-react";
+import { ChevronDown, LogOut, Search, Shield, Trash2, MessagesSquare, Anchor } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
+import ChatBox from "@/components/ChatBox";
 import api, { formatApiError } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 
@@ -220,6 +221,74 @@ function AppRow({ app, onUpdate, onDelete }) {
   );
 }
 
+function ConvList({ onOpen }) {
+  const { c, lang } = useLang();
+  const d = c.admin.dash;
+  const [convs, setConvs] = useState(null);
+  const locale = lang === "fr" ? "fr-FR" : "en-GB";
+
+  const load = useCallback(async () => {
+    try {
+      const { data } = await api.get("/admin/conversations");
+      setConvs(data);
+    } catch (err) {
+      toast.error(formatApiError(err));
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 8000);
+    return () => clearInterval(t);
+  }, [load]);
+
+  if (convs === null) {
+    return <p className="text-center font-mono2 text-xs tracking-[0.3em] text-mist pt-14">{c.admin.loading}</p>;
+  }
+  if (convs.length === 0) {
+    return (
+      <div data-testid="admin-conv-empty" className="border border-dashed border-gold/25 bg-deck/40 p-14 text-center">
+        <Anchor className="w-8 h-8 text-gold/60 mx-auto mb-4" />
+        <p className="font-display text-2xl text-bone/70 mb-2">{d.emptyTitle}</p>
+        <p className="font-fell italic text-base text-mist">{d.convEmpty}</p>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-3">
+      {convs.map((cv) => (
+        <button
+          key={cv.code}
+          data-testid={`admin-conv-${cv.code}`}
+          onClick={() => onOpen(cv)}
+          className="w-full text-left border border-gold/15 bg-deck/60 hover:border-gold/45 hover:bg-deck transition-all p-5 flex items-center justify-between gap-4"
+        >
+          <div className="min-w-0">
+            <p className="font-display text-xl text-bone truncate">
+              {cv.pseudo}{" "}
+              <span className="font-mono2 text-[9px] tracking-[0.2em] text-gold ml-1">{cv.code}</span>
+            </p>
+            <p className="font-fell text-sm text-bone/70 truncate">
+              {cv.last_text ? `${cv.last_sender === "council" ? "⚖ " : ""}${cv.last_text}` : "…"}
+            </p>
+            <p className="font-mono2 text-[8px] tracking-[0.2em] text-mist mt-1">
+              {frDate(cv.last_at, locale).toUpperCase()}
+            </p>
+          </div>
+          {cv.unread > 0 && (
+            <span
+              data-testid={`admin-conv-unread-${cv.code}`}
+              className="shrink-0 bg-blood text-bone font-mono2 text-[9px] tracking-[0.2em] px-2.5 py-1.5"
+            >
+              {cv.unread} {d.unread}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function Admin() {
   const { c } = useLang();
   const a = c.admin;
@@ -228,6 +297,8 @@ export default function Admin() {
   const [stats, setStats] = useState(null);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [view, setView] = useState("registry");
+  const [activeConv, setActiveConv] = useState(null);
 
   const loadAll = useCallback(async () => {
     try {
@@ -259,6 +330,8 @@ export default function Admin() {
       setAuthed(false);
       setApps([]);
       setStats(null);
+      setActiveConv(null);
+      setView("registry");
       toast.success(a.toast.logout);
     }
   };
@@ -310,7 +383,7 @@ export default function Admin() {
           {authed === false && <LoginScreen onAuthed={() => { setAuthed(true); loadAll(); }} />}
           {authed === true && (
             <>
-              <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
+              <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
                 <div>
                   <p className="font-mono2 text-[11px] tracking-[0.35em] text-gold mb-3">{a.dash.eyebrow}</p>
                   <h1 className="font-display text-4xl sm:text-5xl text-bone">{a.dash.title}</h1>
@@ -324,56 +397,102 @@ export default function Admin() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10" data-testid="admin-dashboard">
-                {a.dash.stats.map((st) => (
-                  <div key={st.key} data-testid={`admin-stat-${st.key}`} className="border border-gold/15 bg-deck/60 p-5">
-                    <p className={`font-display text-4xl sm:text-5xl ${statCls[st.key]}`}>{stats?.[st.key] ?? 0}</p>
-                    <p className="font-mono2 text-[9px] tracking-[0.3em] text-mist mt-2">{st.label}</p>
-                  </div>
+              <div className="flex flex-wrap gap-2 mb-10" data-testid="admin-tabs">
+                {a.dash.tabs.map((t) => (
+                  <button
+                    key={t.key}
+                    data-testid={`admin-tab-${t.key}`}
+                    onClick={() => {
+                      setView(t.key);
+                      setActiveConv(null);
+                    }}
+                    className={`inline-flex items-center gap-2 font-mono2 text-[10px] tracking-[0.25em] px-5 py-3 border transition-all ${
+                      view === t.key
+                        ? "border-gold text-gold bg-gold/10"
+                        : "border-gold/20 text-mist hover:border-gold/50 hover:text-gold"
+                    }`}
+                  >
+                    {t.key === "messages" && <MessagesSquare className="w-4 h-4" />}
+                    {t.label}
+                  </button>
                 ))}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <div className="flex flex-wrap gap-2">
-                  {a.dash.filters.map((f) => (
-                    <button
-                      key={f.key}
-                      data-testid={`admin-filter-${f.key}`}
-                      onClick={() => setFilter(f.key)}
-                      className={`font-mono2 text-[10px] tracking-[0.25em] px-4 py-2.5 border transition-all ${
-                        filter === f.key
-                          ? "border-gold text-gold bg-gold/10"
-                          : "border-gold/20 text-mist hover:border-gold/50 hover:text-gold"
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="relative sm:ml-auto sm:w-72">
-                  <Search className="w-4 h-4 text-mist absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    data-testid="admin-search-input"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder={a.dash.searchPh}
-                    className="w-full bg-ink/70 border border-gold/25 pl-10 pr-4 py-2.5 font-fell text-sm text-bone placeholder:text-mist/50 focus:border-gold transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {visible.length === 0 ? (
-                  <div data-testid="admin-empty-state" className="border border-dashed border-gold/25 bg-deck/40 p-14 text-center">
-                    <p className="font-display text-2xl text-bone/70 mb-2">{a.dash.emptyTitle}</p>
-                    <p className="font-fell italic text-base text-mist">{a.dash.emptyText}</p>
+              {view === "messages" ? (
+                activeConv ? (
+                  <div data-testid="admin-thread">
+                    <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                      <div>
+                        <p className="font-display text-2xl sm:text-3xl text-bone">{activeConv.pseudo}</p>
+                        <p className="font-mono2 text-[9px] tracking-[0.25em] text-gold">{activeConv.code}</p>
+                      </div>
+                      <button
+                        data-testid="admin-thread-back"
+                        onClick={() => setActiveConv(null)}
+                        className="font-mono2 text-[10px] tracking-[0.25em] px-4 py-2.5 border border-gold/40 text-gold hover:bg-gold/10 transition-all"
+                      >
+                        {a.dash.convBack}
+                      </button>
+                    </div>
+                    <ChatBox code={activeConv.code} sender="council" testPrefix="admin-chat" />
                   </div>
                 ) : (
-                  visible.map((app) => (
-                    <AppRow key={app.id} app={app} onUpdate={onUpdate} onDelete={onDelete} />
-                  ))
-                )}
-              </div>
+                  <ConvList onOpen={setActiveConv} />
+                )
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10" data-testid="admin-dashboard">
+                    {a.dash.stats.map((st) => (
+                      <div key={st.key} data-testid={`admin-stat-${st.key}`} className="border border-gold/15 bg-deck/60 p-5">
+                        <p className={`font-display text-4xl sm:text-5xl ${statCls[st.key]}`}>{stats?.[st.key] ?? 0}</p>
+                        <p className="font-mono2 text-[9px] tracking-[0.3em] text-mist mt-2">{st.label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                    <div className="flex flex-wrap gap-2">
+                      {a.dash.filters.map((f) => (
+                        <button
+                          key={f.key}
+                          data-testid={`admin-filter-${f.key}`}
+                          onClick={() => setFilter(f.key)}
+                          className={`font-mono2 text-[10px] tracking-[0.25em] px-4 py-2.5 border transition-all ${
+                            filter === f.key
+                              ? "border-gold text-gold bg-gold/10"
+                              : "border-gold/20 text-mist hover:border-gold/50 hover:text-gold"
+                          }`}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="relative sm:ml-auto sm:w-72">
+                      <Search className="w-4 h-4 text-mist absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        data-testid="admin-search-input"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder={a.dash.searchPh}
+                        className="w-full bg-ink/70 border border-gold/25 pl-10 pr-4 py-2.5 font-fell text-sm text-bone placeholder:text-mist/50 focus:border-gold transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {visible.length === 0 ? (
+                      <div data-testid="admin-empty-state" className="border border-dashed border-gold/25 bg-deck/40 p-14 text-center">
+                        <p className="font-display text-2xl text-bone/70 mb-2">{a.dash.emptyTitle}</p>
+                        <p className="font-fell italic text-base text-mist">{a.dash.emptyText}</p>
+                      </div>
+                    ) : (
+                      visible.map((app) => (
+                        <AppRow key={app.id} app={app} onUpdate={onUpdate} onDelete={onDelete} />
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
