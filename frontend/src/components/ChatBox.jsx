@@ -68,6 +68,17 @@ export default function ChatBox({ code, sender, testPrefix = "chat" }) {
 
   const isReadTick = (m) => (sender === "recruit" ? !!m.read_by_council : !!m.read_by_recruit);
 
+  const dayKey = (iso) => new Date(iso).toDateString();
+  const dayLabel = (iso) => {
+    const d = new Date(iso);
+    const today = new Date();
+    const yest = new Date();
+    yest.setDate(today.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return s.dayToday;
+    if (d.toDateString() === yest.toDateString()) return s.dayYesterday;
+    return d.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
+  };
+
   const send = async (e) => {
     e?.preventDefault();
     const t = text.trim();
@@ -123,8 +134,16 @@ export default function ChatBox({ code, sender, testPrefix = "chat" }) {
               const mine = m.sender === sender;
               const removed = m.deleted;
               const isNew = !removed && (m.was_new || newSeenRef.current.has(m.id));
+              const newDay = i === 0 || dayKey(m.created_at) !== dayKey(messages[i - 1].created_at);
               return (
                 <Fragment key={m.id}>
+                  {newDay && (
+                    <div className="flex items-center justify-center py-1" data-testid={`${testPrefix}-day-divider`}>
+                      <span className="font-mono2 text-[8px] tracking-[0.3em] text-mist/80 bg-ink/60 border border-gold/15 px-3 py-1">
+                        {dayLabel(m.created_at)}
+                      </span>
+                    </div>
+                  )}
                   {i === firstNewIdx && (
                     <div className="flex items-center gap-3 py-1" data-testid={`${testPrefix}-new-divider`}>
                       <span className="h-px flex-1 bg-gold/40" />

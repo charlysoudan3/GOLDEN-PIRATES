@@ -189,6 +189,8 @@ const fr = {
     newDivider: "NOUVEAUX MESSAGES",
     tickRead: "LU",
     flood: "Du calme, moussaillon ! Trop de messages d'affilée — respire un coup.",
+    dayToday: "AUJOURD'HUI",
+    dayYesterday: "HIER",
   },
   notif: {
     title: "LA CORNE DU GUET",
@@ -219,8 +221,16 @@ const fr = {
         { key: "messages", label: "MESSAGERIE" },
       ],
       convEmpty: "Aucune conversation — les recrues n'ont pas encore lancé de bouteille.",
+      convSearch: "Rechercher une recrue…",
+      convNoMatch: "Aucune recrue ne correspond à cette recherche.",
+      convSort: [
+        { key: "unread", label: "NON LUS D'ABORD" },
+        { key: "recent", label: "PLUS RÉCENTS" },
+        { key: "alpha", label: "A → Z" },
+      ],
       convBack: "RETOUR AU REGISTRE",
       unread: "NON LUS",
+      convCountLabel: "CONVERSATIONS",
       stats: [
         { key: "total", label: "CANDIDATURES" },
         { key: "pending", label: "EN EXAMEN" },
@@ -462,6 +472,8 @@ const en = {
     newDivider: "NEW MESSAGES",
     tickRead: "READ",
     flood: "Steady, sailor! Too many messages in a row — take a breath.",
+    dayToday: "TODAY",
+    dayYesterday: "YESTERDAY",
   },
   notif: {
     title: "THE WATCH HORN",
@@ -492,8 +504,16 @@ const en = {
         { key: "messages", label: "MESSAGES" },
       ],
       convEmpty: "No conversations yet — no recruit has launched a bottle.",
+      convSearch: "Search a recruit…",
+      convNoMatch: "No recruit matches that search.",
+      convSort: [
+        { key: "unread", label: "UNREAD FIRST" },
+        { key: "recent", label: "MOST RECENT" },
+        { key: "alpha", label: "A → Z" },
+      ],
       convBack: "BACK TO THE REGISTER",
       unread: "UNREAD",
+      convCountLabel: "CONVERSATIONS",
       stats: [
         { key: "total", label: "APPLICATIONS" },
         { key: "pending", label: "UNDER REVIEW" },

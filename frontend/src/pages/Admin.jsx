@@ -225,6 +225,8 @@ function ConvList({ onOpen }) {
   const { c, lang } = useLang();
   const d = c.admin.dash;
   const [convs, setConvs] = useState(null);
+  const [q, setQ] = useState("");
+  const [sort, setSort] = useState("unread");
   const locale = lang === "fr" ? "fr-FR" : "en-GB";
 
   const load = useCallback(async () => {
@@ -245,46 +247,104 @@ function ConvList({ onOpen }) {
   if (convs === null) {
     return <p className="text-center font-mono2 text-xs tracking-[0.3em] text-mist pt-14">{c.admin.loading}</p>;
   }
-  if (convs.length === 0) {
-    return (
-      <div data-testid="admin-conv-empty" className="border border-dashed border-gold/25 bg-deck/40 p-14 text-center">
-        <Anchor className="w-8 h-8 text-gold/60 mx-auto mb-4" />
-        <p className="font-display text-2xl text-bone/70 mb-2">{d.emptyTitle}</p>
-        <p className="font-fell italic text-base text-mist">{d.convEmpty}</p>
-      </div>
-    );
-  }
+
+  const visible = convs
+    .filter((cv) => {
+      if (!q.trim()) return true;
+      const needle = q.trim().toLowerCase();
+      return (
+        cv.pseudo.toLowerCase().includes(needle) ||
+        cv.code.toLowerCase().includes(needle) ||
+        (cv.last_text || "").toLowerCase().includes(needle)
+      );
+    })
+    .sort((a, b) => {
+      if (sort === "unread") {
+        return (b.unread > 0 ? 1 : 0) - (a.unread > 0 ? 1 : 0) || b.last_at.localeCompare(a.last_at);
+      }
+      if (sort === "alpha") return a.pseudo.localeCompare(b.pseudo, "fr");
+      return b.last_at.localeCompare(a.last_at);
+    });
+
   return (
-    <div className="space-y-3">
-      {convs.map((cv) => (
-        <button
-          key={cv.code}
-          data-testid={`admin-conv-${cv.code}`}
-          onClick={() => onOpen(cv)}
-          className="w-full text-left border border-gold/15 bg-deck/60 hover:border-gold/45 hover:bg-deck transition-all p-5 flex items-center justify-between gap-4"
+    <div>
+      <div className="flex flex-col sm:flex-row gap-3 mb-6" data-testid="admin-conv-toolbar">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-mist absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            data-testid="admin-conv-search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={d.convSearch}
+            className="w-full bg-ink/70 border border-gold/25 pl-10 pr-4 py-2.5 font-fell text-sm text-bone placeholder:text-mist/50 focus:border-gold transition-all"
+          />
+        </div>
+        <select
+          data-testid="admin-conv-sort"
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="bg-ink/70 border border-gold/25 px-4 py-2.5 font-mono2 text-[10px] tracking-[0.2em] text-gold cursor-pointer focus:border-gold transition-all"
         >
-          <div className="min-w-0">
-            <p className="font-display text-xl text-bone truncate">
-              {cv.pseudo}{" "}
-              <span className="font-mono2 text-[9px] tracking-[0.2em] text-gold ml-1">{cv.code}</span>
-            </p>
-            <p className="font-fell text-sm text-bone/70 truncate">
-              {cv.last_text ? `${cv.last_sender === "council" ? "⚖ " : ""}${cv.last_text}` : "…"}
-            </p>
-            <p className="font-mono2 text-[8px] tracking-[0.2em] text-mist mt-1">
-              {frDate(cv.last_at, locale).toUpperCase()}
-            </p>
-          </div>
-          {cv.unread > 0 && (
-            <span
-              data-testid={`admin-conv-unread-${cv.code}`}
-              className="shrink-0 bg-blood text-bone font-mono2 text-[9px] tracking-[0.2em] px-2.5 py-1.5"
+          {d.convSort.map((o) => (
+            <option key={o.key} value={o.key} className="bg-deck text-bone">{o.label}</option>
+          ))}
+        </select>
+        <span
+          data-testid="admin-conv-count"
+          className="hidden sm:inline-flex items-center font-mono2 text-[9px] tracking-[0.25em] text-mist border border-gold/15 px-3"
+        >
+          {convs.length} {d.convCountLabel}
+        </span>
+      </div>
+
+      {convs.length === 0 ? (
+        <div data-testid="admin-conv-empty" className="border border-dashed border-gold/25 bg-deck/40 p-14 text-center">
+          <Anchor className="w-8 h-8 text-gold/60 mx-auto mb-4" />
+          <p className="font-display text-2xl text-bone/70 mb-2">{d.emptyTitle}</p>
+          <p className="font-fell italic text-base text-mist">{d.convEmpty}</p>
+        </div>
+      ) : visible.length === 0 ? (
+        <div data-testid="admin-conv-nomatch" className="border border-dashed border-gold/25 bg-deck/40 p-14 text-center">
+          <p className="font-fell italic text-base text-mist">{d.convNoMatch}</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {visible.map((cv) => (
+            <button
+              key={cv.code}
+              data-testid={`admin-conv-${cv.code}`}
+              onClick={() => onOpen(cv)}
+              className={`w-full text-left border p-5 flex items-center justify-between gap-4 transition-all ${
+                cv.unread > 0
+                  ? "border-gold/45 bg-gold/[0.06] hover:border-gold"
+                  : "border-gold/15 bg-deck/60 hover:border-gold/45"
+              }`}
             >
-              {cv.unread} {d.unread}
-            </span>
-          )}
-        </button>
-      ))}
+              <div className="min-w-0">
+                <p className="font-display text-xl text-bone truncate">
+                  {cv.unread > 0 && <span className="inline-block w-2 h-2 rounded-full bg-bloodglow mr-2 align-middle" />}
+                  {cv.pseudo}{" "}
+                  <span className="font-mono2 text-[9px] tracking-[0.2em] text-gold ml-1">{cv.code}</span>
+                </p>
+                <p className={`font-fell text-sm truncate ${cv.unread > 0 ? "text-bone/90" : "text-bone/60"}`}>
+                  {cv.last_text ? `${cv.last_sender === "council" ? "⚖ " : ""}${cv.last_text}` : "…"}
+                </p>
+                <p className="font-mono2 text-[8px] tracking-[0.2em] text-mist mt-1">
+                  {frDate(cv.last_at, locale).toUpperCase()}
+                </p>
+              </div>
+              {cv.unread > 0 && (
+                <span
+                  data-testid={`admin-conv-unread-${cv.code}`}
+                  className="shrink-0 bg-blood text-bone font-mono2 text-[9px] tracking-[0.2em] px-2.5 py-1.5"
+                >
+                  {cv.unread} {d.unread}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
