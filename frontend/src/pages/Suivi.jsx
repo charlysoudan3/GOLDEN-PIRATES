@@ -70,7 +70,7 @@ export default function Suivi() {
   }, [result]);
 
   useEffect(() => {
-    const base = "GOLDEN PIRATES — Royaume 1023 | Call of Dragons";
+    const base = "Suivre ma candidature — GOLDEN PIRATES";
     document.title = notif?.unread_messages ? `(${notif.unread_messages}) ${base}` : base;
     return () => {
       document.title = base;

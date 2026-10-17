@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-route
 import Lenis from "lenis";
 import { Toaster } from "@/components/ui/sonner";
 import { LangProvider } from "@/lib/i18n";
+import Seo from "@/lib/Seo";
 import Grain from "@/components/Grain";
 import Home from "@/pages/Home";
 import Suivi from "@/pages/Suivi";
@@ -80,6 +81,7 @@ function App() {
       <LangProvider>
         <BrowserRouter>
           <ScrollManager />
+          <Seo />
           <Grain />
           <Routes>
             <Route path="/" element={<Home />} />
