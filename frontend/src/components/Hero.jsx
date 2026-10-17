@@ -4,7 +4,6 @@ import { motion, useScroll, useTransform, useMotionValue, useSpring } from "fram
 import { ChevronDown } from "lucide-react";
 import { scrollToId } from "@/App";
 import { useLang } from "@/lib/i18n";
-import Countdown from "@/components/Countdown";
 
 const EASE = [0.16, 1, 0.3, 1];
 const HERO_BG =
@@ -130,12 +129,6 @@ export default function Hero() {
           <p data-testid="hero-subtitle" className="font-fell italic text-base sm:text-xl md:text-2xl text-bone/90 mt-6 md:mt-8 max-w-2xl">
             {s.sub}
           </p>
-        </RevealLine>
-
-        <RevealLine delay={0.72}>
-          <div className="mt-7 md:mt-9" data-testid="hero-countdown-wrap">
-            <Countdown variant="hero" testid="hero-countdown" />
-          </div>
         </RevealLine>
 
         <motion.div
