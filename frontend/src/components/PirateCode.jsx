@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useLang, withPower } from "@/lib/i18n";
+import { useLang, fmtPower } from "@/lib/i18n";
 
 const EASE = [0.16, 1, 0.3, 1];
 const COINS_IMG = "https://images.unsplash.com/photo-1599038988300-2e3f04d87f8b?q=85&w=900";
@@ -71,13 +71,13 @@ export default function PirateCode() {
               </span>
               <div className="col-span-10 sm:col-span-6">
                 <h3 className="font-decor text-lg sm:text-2xl text-bone mb-2 tracking-wide">{a.title}</h3>
-                <p className="font-fell text-base text-bone/70 leading-relaxed max-w-xl">{a.text}</p>
+                <p className="font-fell text-base text-bone/70 leading-relaxed max-w-xl">{fmtPower(a.text)}</p>
               </div>
               <div className="col-span-12 sm:col-span-5 sm:text-right sm:pl-6">
-                <span className="font-display text-xl sm:text-2xl text-goldlight block mb-2">{withPower(a.value)}</span>
+                <span className="font-display text-xl sm:text-2xl text-goldlight block mb-2">{fmtPower(a.value)}</span>
                 <span
                   className={`inline-block border px-3 py-1 font-mono2 text-[9px] sm:text-[10px] tracking-[0.3em] ${
-                    a.tag === "OBLIGATOIRE" || a.tag === "REQUIRED"
+                    ["OBLIGATOIRE", "REQUIRED", "STRATÉGIQUE", "STRATEGIC"].includes(a.tag)
                       ? "border-blood text-bloodglow"
                       : "border-gold/60 text-gold"
                   }`}

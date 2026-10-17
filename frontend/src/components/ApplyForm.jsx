@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Copy, Check, X, Anchor, ListChecks, Hourglass } from "lucide-react";
+import { Copy, Check, X, Anchor, ListChecks, Hourglass, Megaphone } from "lucide-react";
 import api, { formatApiError } from "@/lib/api";
-import { useLang, withPower } from "@/lib/i18n";
+import { useLang, fmtPower } from "@/lib/i18n";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -38,7 +38,7 @@ export default function ApplyForm() {
       return;
     }
     if (!form.power.trim()) {
-      toast.error(withPower(s.errors.power));
+      toast.error(fmtPower(s.errors.power));
       return;
     }
     if (!form.discord.trim()) {
@@ -80,12 +80,19 @@ export default function ApplyForm() {
             <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl text-bone leading-[1.02] mb-8 uppercase">
               {s.title1}<span className="text-gold">{s.titleGold}</span>
             </h2>
+            <p
+              data-testid="migration-banner"
+              className="inline-flex items-start gap-2.5 border border-blood/50 bg-blood/10 px-4 py-3 font-mono2 text-[9px] sm:text-[10px] tracking-[0.25em] text-bloodglow mb-6"
+            >
+              <Megaphone className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{fmtPower(s.migrationBanner)}</span>
+            </p>
             <p className="font-fell text-lg text-bone/80 leading-relaxed mb-6">{s.intro}</p>
             <ul className="space-y-4 border-l-2 border-gold/30 pl-5">
               {s.bullets.map((item) => (
                 <li key={item} className="font-fell text-base text-bone/75 flex items-start gap-3">
                   <Anchor className="w-4 h-4 text-gold mt-1 shrink-0" />
-                  {withPower(item)}
+                  {fmtPower(item)}
                 </li>
               ))}
             </ul>
@@ -121,7 +128,7 @@ export default function ApplyForm() {
                   className={inputCls}
                   value={form.power}
                   onChange={set("power")}
-                  placeholder={withPower(s.ph.power)}
+                  placeholder={fmtPower(s.ph.power)}
                   maxLength={16}
                 />
               </div>

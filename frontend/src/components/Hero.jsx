@@ -113,7 +113,7 @@ export default function Hero() {
               </span>
               {s.badge}
             </span>
-            <span className="hidden sm:inline-block border border-bone/20 bg-ink/60 backdrop-blur px-4 py-1.5 font-mono2 text-[10px] sm:text-xs tracking-[0.3em] text-bone/70">
+            <span className="border border-bone/20 bg-ink/60 backdrop-blur px-4 py-1.5 font-mono2 text-[10px] sm:text-xs tracking-[0.3em] text-bone/70">
               {s.badge2}
             </span>
           </div>

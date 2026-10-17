@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-export const MIN_POWER = "100M";
-export const withPower = (s) => s.replace("{POWER}", MIN_POWER);
+export const POWER_MIN = "6M";
+export const POWER_MAX = "20M";
+export const fmtPower = (s) => s.replace("{MIN}", POWER_MIN).replace("{MAX}", POWER_MAX);
 
 const fr = {
   nav: {
@@ -50,7 +51,7 @@ const fr = {
     imgCaption: "LE BUTIN DE LA DERNIÈRE TRAVERSÉE",
     imgAlt: "Pièces d'or du butin",
     articles: [
-      { num: "I", title: "Puissance minimum", value: "{POWER} de puissance", tag: "OBLIGATOIRE", text: "La puissance reflète la discipline d'un marin. Les profils proches du seuil sont étudiés avec attention : le Conseil tranche en âme et conscience." },
+      { num: "I", title: "Puissance visée", value: "{MIN} à {MAX} — et plus", tag: "STRATÉGIQUE", text: "Notre plage idéale va de {MIN} à {MAX} : assez fort pour peser sur la carte, assez vert pour devenir une légende de la flotte. Les profils au-dessus de la fourchette sont étudiés avec gourmandise par le Conseil." },
       { num: "II", title: "Troupes de guerre", value: "T4 exigé — T5 priorisé", tag: "OBLIGATOIRE", text: "Behemoths, sièges et passages n'attendent pas. Tes troupes doivent suivre le rythme de la flotte." },
       { num: "III", title: "Discord & vocal", value: "Présence au rassemblement", tag: "OBLIGATOIRE", text: "Les ordres de bataille se crient, pas s'écrivent. Discord et vocal sont obligatoires pendant les Behemoths et les guerres." },
       { num: "IV", title: "Activité quotidienne", value: "Connexion régulière", tag: "SURVEILLÉ", text: "Un pirate absent affaiblit tout l'équipage. On ne te demandera pas d'y passer tes nuits — mais on te demandera d'être là." },
@@ -65,7 +66,7 @@ const fr = {
       { season: "SAISON 1", title: "L'épreuve du feu", status: "TERMINÉE", text: "La première KvK est passée par là. L'équipage en est ressorti plus soudé, plus dur, plus doré que jamais." },
       { season: "PRÉ-KVK — SAISON 2", title: "Mobilisation générale", status: "EN COURS — NOUS SOMMES ICI", text: "La Saison 2 arrive : on renforce les troupes, on remplit les greniers, on aiguise la stratégie. Chaque marin compte." },
       { season: "SAISON 2 — KVK", title: "La bataille des terres", status: "À VENIR", text: "La Conquête du Royaume démarre. Batailles de territoires, Behemoths, sièges : la mer sera rouge — et l'or, nôtre." },
-      { season: "FIN DE SAISON 2", title: "Ouverture du recrutement", status: "C'EST ICI QU'ON VOUS ATTEND", text: "Comme le veut la loi de Call of Dragons, les nouvelles recrues montent à bord en fin de saison. Dépose ta candidature dès maintenant : elle sera traitée en priorité." },
+      { season: "FIN DE SAISON 2", title: "Ouverture du recrutement", status: "C'EST ICI QU'ON VOUS ATTEND", text: "Comme l'exige le règlement de migration de Call of Dragons, les nouvelles recrues ne montent à bord qu'en fin de saison — pas avant. Dépose ta candidature dès maintenant : elle sera traitée en priorité." },
     ],
   },
   process: {
@@ -83,11 +84,12 @@ const fr = {
     eyebrow: "Signer les articles — 05",
     title1: "Monte à bord, ",
     titleGold: "marin",
-    intro: "Le recrutement officiel s'ouvre à la fin de la Saison 2 — c'est la règle du Royaume. Mais les candidatures déposées dès maintenant passent la Barbene en premier : le Conseil les examine en priorité dès l'ouverture.",
+    intro: "Le recrutement n'aura lieu qu'à la FIN de la Saison 2 — c'est le règlement de migration de Call of Dragons, et nul n'y échappe. Mais dépose ta candidature dès maintenant : elle passera devant tout le monde dès l'ouverture.",
+    migrationBanner: "RECRUTEMENT UNIQUEMENT EN FIN DE SAISON 2 — RÈGLEMENT DE MIGRATION CALL OF DRAGONS",
     bullets: [
-      "Puissance minimum : {POWER} (Article I du Code)",
-      "Réponse du Conseil après entretien Discord",
-      "Un code de suivi t'est remis dès l'envoi — garde-le sur toi",
+      "Puissance visée : {MIN} à {MAX}+ (Article I du Code)",
+      "Réponse du Conseil sous 72 h après l'ouverture",
+      "Un numéro de suivi t'est remis dès l'envoi — garde-le sur toi",
     ],
     labels: {
       pseudo: "PSEUDO CALL OF DRAGONS *",
@@ -100,7 +102,7 @@ const fr = {
     },
     ph: {
       pseudo: "ex : KrakenDuNord",
-      power: "ex : 120M (min. {POWER})",
+      power: "ex : 8M, 15M ou {MAX}+",
       discord: "ex : krakendunord",
       experience: "Saisons jouées, rôles tenus, faits d'armes dont tu es fier…",
       message: "Pourquoi les GOLDEN PIRATES ? Qu'est-ce que tu apportes à l'équipage ?",
@@ -112,7 +114,7 @@ const fr = {
     oathNote: "EN SIGNANT, TU JURES LOYAUTÉ À L'ÉQUIPAGE — ARTICLE V DU CODE",
     errors: {
       pseudo: "Ton pseudo de marin est requis (2 caractères minimum).",
-      power: "Indique ta puissance (minimum requis : {POWER}).",
+      power: "Indique ta puissance (plage visée : {MIN} à {MAX}).",
       discord: "Ton tag Discord est requis — c'est là que le Conseil t'appellera.",
       message: "Laisse un message de 10 caractères minimum — fais bonne impression !",
       copyFail: "Copie impossible — recopie le code à la main, moussaillon.",
@@ -312,7 +314,7 @@ const en = {
     imgCaption: "THE PLUNDER OF THE LAST CROSSING",
     imgAlt: "Gold coins of the plunder",
     articles: [
-      { num: "I", title: "Minimum power", value: "{POWER} power", tag: "REQUIRED", text: "Power reflects a sailor's discipline. Profiles near the threshold are reviewed with care: the Council makes the final call." },
+      { num: "I", title: "Target power", value: "{MIN} to {MAX} — and beyond", tag: "STRATEGIC", text: "Our ideal range runs from {MIN} to {MAX}: strong enough to weigh on the map, green enough to become a legend of the fleet. Profiles above the range are studied with relish by the Council." },
       { num: "II", title: "War troops", value: "T4 required — T5 preferred", tag: "REQUIRED", text: "Behemoths, sieges and marches wait for no one. Your troops must keep pace with the fleet." },
       { num: "III", title: "Discord & voice", value: "Present at musters", tag: "REQUIRED", text: "Battle orders are shouted, not written. Discord and voice are mandatory during Behemoths and wars." },
       { num: "IV", title: "Daily activity", value: "Regular connection", tag: "WATCHED", text: "An absent pirate weakens the whole crew. We won't ask for your nights — we will ask you to show up." },
@@ -327,7 +329,7 @@ const en = {
       { season: "SEASON 1", title: "Trial by fire", status: "COMPLETED", text: "The first KvK came through. The crew came out of it tighter, tougher and more golden than ever." },
       { season: "PRE-KVK — SEASON 2", title: "General mobilization", status: "ONGOING — WE ARE HERE", text: "Season 2 is coming: troops are hardened, granaries are filled, strategy is sharpened. Every sailor counts." },
       { season: "SEASON 2 — KVK", title: "The battle for the land", status: "UPCOMING", text: "The Kingdom's Conquest begins. Territory battles, Behemoths, sieges: the sea will run red — and the gold will be ours." },
-      { season: "END OF SEASON 2", title: "Recruitment opens", status: "THIS IS WHERE WE WAIT FOR YOU", text: "As Call of Dragons' law goes, new recruits board at the end of the season. Submit your application now: it will be reviewed first." },
+      { season: "END OF SEASON 2", title: "Recruitment opens", status: "THIS IS WHERE WE WAIT FOR YOU", text: "As Call of Dragons' migration rule requires, new recruits board only at the end of the season — not before. Submit your application now: it will be reviewed first." },
     ],
   },
   process: {
@@ -345,11 +347,12 @@ const en = {
     eyebrow: "Sign the articles — 05",
     title1: "Come aboard, ",
     titleGold: "sailor",
-    intro: "Official recruitment opens at the end of Season 2 — that's the Kingdom's rule. But applications filed now jump the queue: the Council reviews them first the moment it opens.",
+    intro: "Recruitment will happen ONLY at the END of Season 2 — that's Call of Dragons' migration rule, no exceptions. But submit your application now: it will jump the queue the moment the gates open.",
+    migrationBanner: "RECRUITMENT ONLY AT THE END OF SEASON 2 — CALL OF DRAGONS MIGRATION RULE",
     bullets: [
-      "Minimum power: {POWER} (Article I of the Code)",
-      "Council's answer after a Discord interview",
-      "You're handed a tracking code upon sending — keep it close",
+      "Target power: {MIN} to {MAX}+ (Article I of the Code)",
+      "Council's answer within 72 h after opening",
+      "You're handed a tracking number upon sending — keep it close",
     ],
     labels: {
       pseudo: "CALL OF DRAGONS USERNAME *",
@@ -362,7 +365,7 @@ const en = {
     },
     ph: {
       pseudo: "e.g. KrakenDuNord",
-      power: "e.g. 120M (min. {POWER})",
+      power: "e.g. 8M, 15M or {MAX}+",
       discord: "e.g. krakendunord",
       experience: "Seasons played, roles held, deeds you're proud of…",
       message: "Why the GOLDEN PIRATES? What do you bring to the crew?",
@@ -374,7 +377,7 @@ const en = {
     oathNote: "BY SIGNING, YOU SWEAR LOYALTY TO THE CREW — ARTICLE V OF THE CODE",
     errors: {
       pseudo: "Your sailor name is required (2 characters minimum).",
-      power: "Tell us your power (minimum required: {POWER}).",
+      power: "Tell us your power (target range: {MIN} to {MAX}).",
       discord: "Your Discord tag is required — it's where the Council will call you.",
       message: "Leave a message of at least 10 characters — make it count!",
       copyFail: "Copy failed — write the code down by hand, sailor.",
