@@ -2,10 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { Compass } from "lucide-react";
 import LogoMark from "./LogoMark";
 import { useLang } from "@/lib/i18n";
+import useAdminSession from "@/lib/useAdminSession";
 
 export default function Footer() {
   const navigate = useNavigate();
   const { c } = useLang();
+  const isAdmin = useAdminSession();
   const s = c.footer;
   const backToTop = () => {
     const lenis = window.__lenis;
@@ -49,26 +51,51 @@ export default function Footer() {
           </div>
 
           <div className="md:col-span-4">
-            <p className="font-mono2 text-[10px] tracking-[0.35em] text-gold mb-5">{s.spacesTitle}</p>
+            <p className="font-mono2 text-[10px] tracking-[0.35em] text-gold mb-5">{isAdmin ? s.councilTitle : s.spacesTitle}</p>
             <ul className="space-y-3 font-fell text-base">
-              <li>
-                <button
-                  data-testid="footer-apply-link"
-                  onClick={() => navigate("/#postuler")}
-                  className="text-gold hover:text-goldlight transition-colors"
-                >
-                  {s.applyLink}
-                </button>
-              </li>
-              <li>
-                <button
-                  data-testid="footer-track-link"
-                  onClick={() => navigate("/suivi")}
-                  className="text-bone/75 hover:text-gold transition-colors"
-                >
-                  {s.trackLink}
-                </button>
-              </li>
+              {isAdmin ? (
+                <>
+                  <li>
+                    <button
+                      data-testid="footer-council-register"
+                      onClick={() => navigate("/admin")}
+                      className="text-gold hover:text-goldlight transition-colors"
+                    >
+                      {s.councilRegister}
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      data-testid="footer-council-messages"
+                      onClick={() => navigate("/admin#messagerie")}
+                      className="text-bone/75 hover:text-gold transition-colors"
+                    >
+                      {s.councilMessages}
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <button
+                      data-testid="footer-apply-link"
+                      onClick={() => navigate("/#postuler")}
+                      className="text-gold hover:text-goldlight transition-colors"
+                    >
+                      {s.applyLink}
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      data-testid="footer-track-link"
+                      onClick={() => navigate("/suivi")}
+                      className="text-bone/75 hover:text-gold transition-colors"
+                    >
+                      {s.trackLink}
+                    </button>
+                  </li>
+                </>
+              )}
             </ul>
             <button
               data-testid="footer-back-to-top"

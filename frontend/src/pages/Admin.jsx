@@ -505,6 +505,11 @@ export default function Admin() {
   const [badges, setBadges] = useState({ unread: 0, pending: 0 });
   const [exporting, setExporting] = useState(null);
 
+  // Lien direct du footer Conseil → onglet MESSAGERIE (/admin#messagerie)
+  useEffect(() => {
+    if (authed && window.location.hash === "#messagerie") setView("messages");
+  }, [authed]);
+
   const loadAll = useCallback(async () => {
     try {
       const [listRes, statsRes] = await Promise.all([

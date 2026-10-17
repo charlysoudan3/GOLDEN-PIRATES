@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Shield, ShieldCheck, MapPin } from "lucide-react";
 import LogoMark, { SkullIcon, CompassRose } from "./LogoMark";
 import LangSwitcher from "./LangSwitcher";
-import api from "@/lib/api";
+import useAdminSession from "@/lib/useAdminSession";
 import { scrollToId } from "@/App";
 import { useLang } from "@/lib/i18n";
 
@@ -23,23 +23,7 @@ export default function Nav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { c } = useLang();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    let stop = false;
-    const check = () => {
-      api
-        .get("/auth/me")
-        .then(() => { if (!stop) setIsAdmin(true); })
-        .catch(() => { if (!stop) setIsAdmin(false); });
-    };
-    check();
-    window.addEventListener("gp-auth-changed", check);
-    return () => {
-      stop = true;
-      window.removeEventListener("gp-auth-changed", check);
-    };
-  }, [location.pathname]);
+  const isAdmin = useAdminSession();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
