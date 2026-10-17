@@ -48,7 +48,7 @@ export default function Hero() {
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
   const bgScale = useTransform(scrollYProgress, [0, 1], [1.05, 1.2]);
   const contentFade = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "-14%"]);
 
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
@@ -67,7 +67,7 @@ export default function Hero() {
       ref={ref}
       data-testid="hero-section"
       onMouseMove={onMouseMove}
-      className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden"
+      className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden pb-10 sm:pb-0"
     >
       <motion.div className="absolute inset-0" style={{ y: bgY, scale: bgScale }}>
         <img
@@ -157,7 +157,7 @@ export default function Hero() {
       </motion.div>
 
       <motion.div
-        className="absolute bottom-0 inset-x-0 z-10 border-t border-gold/10"
+        className="relative z-10 mt-12 sm:mt-0 sm:absolute sm:bottom-0 sm:inset-x-0 border-t border-gold/10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.3, duration: 1 }}
