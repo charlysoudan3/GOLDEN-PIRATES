@@ -255,7 +255,18 @@ async def get_messages(code: str):
     if not await db.applications.find_one({"tracking_code": code}):
         raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
     docs = await db.messages.find({"conv_code": code}).sort("created_at", 1).to_list(1000)
-    return [clean_msg(d) for d in docs]
+    new_ids = {d["id"] for d in docs if d["sender"] == "council" and not d.get("deleted") and not d.get("read_by_recruit")}
+    if new_ids:
+        await db.messages.update_many(
+            {"conv_code": code, "id": {"$in": list(new_ids)}},
+            {"$set": {"read_by_recruit": True}},
+        )
+    out = []
+    for d in docs:
+        if d["id"] in new_ids:
+            d["was_new"] = True
+        out.append(clean_msg(d))
+    return out
 
 
 @api_router.post("/messages/{code}")
@@ -328,7 +339,13 @@ async def admin_conversations(_: str = Depends(require_admin)):
 async def admin_thread(code: str, _: str = Depends(require_admin)):
     code = code.strip().upper()
     docs = await db.messages.find({"conv_code": code}).sort("created_at", 1).to_list(1000)
-    return [clean_msg(d) for d in docs]
+    new_ids = {d["id"] for d in docs if d["sender"] == "recruit" and not d.get("deleted") and not d.get("read_by_council")}
+    out = []
+    for d in docs:
+        if d["id"] in new_ids:
+            d["was_new"] = True
+        out.append(clean_msg(d))
+    return out
 
 
 @api_router.post("/admin/conversations/{code}")
@@ -347,6 +364,7 @@ async def admin_send_message(code: str, data: MessageCreate, _: str = Depends(re
         "created_at": now_utc().isoformat(),
         "deleted": False,
         "read_by_council": True,
+        "read_by_recruit": False,
     }
     await db.messages.insert_one(doc)
     return clean_msg(doc)

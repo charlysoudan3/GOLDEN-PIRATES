@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Send, Trash2, ScrollText } from "lucide-react";
+import { Send, Trash2, ScrollText, Check, CheckCheck } from "lucide-react";
 import api, { formatApiError } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 
@@ -15,6 +15,7 @@ export default function ChatBox({ code, sender, testPrefix = "chat" }) {
   const [sending, setSending] = useState(false);
   const listRef = useRef(null);
   const countRef = useRef(0);
+  const newSeenRef = useRef(new Set());
   const locale = lang === "fr" ? "fr-FR" : "en-GB";
   const base = sender === "council" ? "/admin/conversations" : "/messages";
 
@@ -43,6 +44,13 @@ export default function ChatBox({ code, sender, testPrefix = "chat" }) {
 
   useEffect(() => {
     if (!messages) return;
+    messages.forEach((m) => {
+      if (m.was_new) newSeenRef.current.add(m.id);
+    });
+  }, [messages]);
+
+  useEffect(() => {
+    if (!messages) return;
     if (messages.length !== countRef.current) {
       countRef.current = messages.length;
       const el = listRef.current;
@@ -57,6 +65,8 @@ export default function ChatBox({ code, sender, testPrefix = "chat" }) {
       hour: "2-digit",
       minute: "2-digit",
     });
+
+  const isReadTick = (m) => (sender === "recruit" ? !!m.read_by_council : !!m.read_by_recruit);
 
   const send = async (e) => {
     e?.preventDefault();
@@ -104,56 +114,81 @@ export default function ChatBox({ code, sender, testPrefix = "chat" }) {
         ) : messages.length === 0 ? (
           <p className="text-center font-fell italic text-base text-mist pt-20 px-6">{s.empty}</p>
         ) : (
-          messages.map((m) => {
-            const mine = m.sender === sender;
-            const removed = m.deleted;
-            return (
-              <motion.div
-                key={m.id}
-                data-testid={`${testPrefix}-message-${m.id}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, ease: EASE }}
-                className={`flex ${mine ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[85%] sm:max-w-[70%] border px-4 py-2.5 ${
-                    removed
-                      ? "border-mist/25 bg-ink/40"
-                      : mine
-                        ? "border-gold/40 bg-gold/10"
-                        : "border-gold/20 bg-deck/80"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`font-mono2 text-[8px] tracking-[0.25em] ${mine ? "text-gold" : "text-mist"}`}>
-                      {mine ? (sender === "council" ? s.councilYou : s.you) : sender === "council" ? s.recruitLabel : s.council}
-                    </span>
-                    {mine && !removed && (
-                      <button
-                        data-testid={`${testPrefix}-delete-${m.id}`}
-                        onClick={() => remove(m)}
-                        aria-label={s.deleteConfirm}
-                        className="text-mist/60 hover:text-bloodglow transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                  <p
-                    className={`font-fell text-base leading-snug break-words ${
-                      removed ? "italic text-mist/70" : "text-bone/90"
-                    }`}
-                  >
-                    {removed ? s.deleted : m.text}
-                  </p>
-                  <p className="font-mono2 text-[8px] tracking-[0.2em] text-mist/60 mt-1 text-right">
-                    {fmt(m.created_at)}
-                  </p>
-                </div>
-              </motion.div>
+          (() => {
+            const firstNewIdx = messages.findIndex(
+              (m) => m.was_new || newSeenRef.current.has(m.id)
             );
-          })
+            return messages.map((m, i) => {
+              const mine = m.sender === sender;
+              const removed = m.deleted;
+              const isNew = !removed && (m.was_new || newSeenRef.current.has(m.id));
+              return (
+                <Fragment key={m.id}>
+                  {i === firstNewIdx && (
+                    <div className="flex items-center gap-3 py-1" data-testid={`${testPrefix}-new-divider`}>
+                      <span className="h-px flex-1 bg-gold/40" />
+                      <span className="font-mono2 text-[8px] tracking-[0.3em] text-gold">{s.newDivider}</span>
+                      <span className="h-px flex-1 bg-gold/40" />
+                    </div>
+                  )}
+                  <motion.div
+                    data-testid={`${testPrefix}-message-${m.id}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, ease: EASE }}
+                    className={`flex ${mine ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[85%] sm:max-w-[70%] border px-4 py-2.5 ${
+                        removed
+                          ? "border-mist/25 bg-ink/40"
+                          : mine
+                            ? "border-gold/40 bg-gold/10"
+                            : isNew
+                              ? "border-gold/60 bg-deck/90"
+                              : "border-gold/20 bg-deck/80"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`font-mono2 text-[8px] tracking-[0.25em] ${mine ? "text-gold" : "text-mist"}`}>
+                          {mine ? (sender === "council" ? s.councilYou : s.you) : sender === "council" ? s.recruitLabel : s.council}
+                        </span>
+                        {mine && !removed && (
+                          <button
+                            data-testid={`${testPrefix}-delete-${m.id}`}
+                            onClick={() => remove(m)}
+                            aria-label={s.deleteConfirm}
+                            className="text-mist/60 hover:text-bloodglow transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <p
+                        className={`font-fell text-base leading-snug break-words ${
+                          removed ? "italic text-mist/70" : "text-bone/90"
+                        }`}
+                      >
+                        {removed ? s.deleted : m.text}
+                      </p>
+                      <div className="flex items-center justify-end gap-1 mt-1">
+                        <span className="font-mono2 text-[8px] tracking-[0.2em] text-mist/60">{fmt(m.created_at)}</span>
+                        {mine && !removed && (
+                          <span title={s.tickRead} data-testid={`${testPrefix}-tick-${m.id}`}>
+                            {isReadTick(m) ? (
+                              <CheckCheck className="w-3.5 h-3.5 text-sky-400" />
+                            ) : (
+                              <Check className="w-3.5 h-3.5 text-mist/50" />
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </Fragment>
+              );
+            });
+          })()
         )}
       </div>
 

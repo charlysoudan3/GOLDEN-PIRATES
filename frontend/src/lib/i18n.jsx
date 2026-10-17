@@ -184,6 +184,8 @@ const fr = {
     recruitLabel: "RECRUE",
     councilNote: "RÉPONSE DU CONSEIL — GÉNÉRALEMENT SOUS 72 H",
     loading: "ON DÉROULE LA CORDE…",
+    newDivider: "NOUVEAUX MESSAGES",
+    tickRead: "LU",
   },
   admin: {
     loading: "OUVERTURE DU COFFRE…",
@@ -444,6 +446,8 @@ const en = {
     recruitLabel: "RECRUIT",
     councilNote: "COUNCIL'S REPLY — USUALLY WITHIN 72 H",
     loading: "UNROLLING THE ROPE…",
+    newDivider: "NEW MESSAGES",
+    tickRead: "READ",
   },
   admin: {
     loading: "OPENING THE CHEST…",
