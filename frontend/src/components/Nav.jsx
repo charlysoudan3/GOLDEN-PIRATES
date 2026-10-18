@@ -59,14 +59,27 @@ export default function Nav() {
   };
 
   useEffect(() => {
-    if (!open) return;
     try {
       const v = JSON.parse(localStorage.getItem("gp_bottles"));
       setIsRecruit(Array.isArray(v) && v.length > 0);
     } catch {
       setIsRecruit(false);
     }
-  }, [open]);
+  }, [open, location.pathname]);
+
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key && e.key !== "gp_bottles") return;
+      refreshRecruit();
+    };
+    // storage = autres onglets · gp_bottles_change = le même onglet (l'étagère de /suivi)
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("gp_bottles_change", refreshRecruit);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("gp_bottles_change", refreshRecruit);
+    };
+  }, []);
 
   useEffect(() => {
     setOpen(false);

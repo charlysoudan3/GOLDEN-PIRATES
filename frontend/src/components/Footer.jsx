@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Compass } from "lucide-react";
 import LogoMark from "./LogoMark";
 import { useLang } from "@/lib/i18n";
@@ -6,17 +7,30 @@ import useAdminSession from "@/lib/useAdminSession";
 
 export default function Footer() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { c } = useLang();
   const isAdmin = useAdminSession();
   const s = c.footer;
   // Une RECRUE = au moins un code gardé dans son coffre local — elle ne voit plus « Postuler ».
-  let isRecruit = false;
-  try {
-    const v = JSON.parse(localStorage.getItem("gp_bottles"));
-    isRecruit = Array.isArray(v) && v.length > 0;
-  } catch {
-    isRecruit = false;
-  }
+  // Réactif : montage, changement de page, autre onglet (storage) et même onglet (gp_bottles_change).
+  const [isRecruit, setIsRecruit] = useState(false);
+  useEffect(() => {
+    const read = () => {
+      try {
+        const v = JSON.parse(localStorage.getItem("gp_bottles"));
+        setIsRecruit(Array.isArray(v) && v.length > 0);
+      } catch {
+        setIsRecruit(false);
+      }
+    };
+    read();
+    window.addEventListener("storage", read);
+    window.addEventListener("gp_bottles_change", read);
+    return () => {
+      window.removeEventListener("storage", read);
+      window.removeEventListener("gp_bottles_change", read);
+    };
+  }, [location.pathname]);
   const backToTop = () => {
     const lenis = window.__lenis;
     if (lenis) lenis.scrollTo(0, { duration: 1.4 });

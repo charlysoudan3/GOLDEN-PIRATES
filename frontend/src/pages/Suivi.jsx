@@ -145,6 +145,8 @@ export default function Suivi() {
   const persistRack = (next) => {
     try {
       localStorage.setItem(RACK_KEY, JSON.stringify(next));
+      // Notifier la Nav/Footer du MÊME onglet (l'événement natif storage ne traverse pas les onglets)
+      window.dispatchEvent(new CustomEvent("gp_bottles_change"));
     } catch {
       /* stockage indisponible : l'étagère vivra seulement pour la session */
     }
