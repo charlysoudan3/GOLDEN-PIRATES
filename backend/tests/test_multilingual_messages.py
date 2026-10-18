@@ -230,11 +230,32 @@ class TestRoundtripMultilingual:
         hit = next((x for x in results if x["app_id"] == b["id"]), None)
         assert hit is not None, f"CJK search miss, got: {results}"
         assert hit["pseudo"] == b["pseudo"]
-        # Champs autorisés uniquement (joined = date de dépôt, non sensible)
-        assert set(hit.keys()) == {"app_id", "pseudo", "power", "troops", "status", "joined"}
+        # Champs autorisés uniquement (joined = date de dépôt, note = bio publique — non sensibles)
+        assert set(hit.keys()) == {"app_id", "pseudo", "power", "troops", "status", "joined", "note"}
         # Champs sensibles JAMAIS exposés
         for leak in ("discord", "email", "tracking_code", "message", "experience", "ip"):
             assert leak not in hit, f"LEAK: {leak} exposé dans /peers/search"
+
+    def test_peer_note_roundtrip(self, created_apps):
+        """B écrit sa note de mer → A la voit sur sa fiche (search). Note trop longue → 422."""
+        a = created_apps["A"]
+        b = created_apps["B"]
+        r = requests.post(f"{API}/peers/note",
+                          json={"code": b["code"], "note": "Cavalerie lourde — spécialiste Behemoths."},
+                          timeout=15)
+        assert r.status_code == 200, r.text
+        assert r.json()["ok"] is True
+        r2 = requests.get(f"{API}/peers/search",
+                          params={"q": "海盗", "code": a["code"]}, timeout=15)
+        hit = next((x for x in r2.json() if x["app_id"] == b["id"]), None)
+        assert hit is not None
+        assert hit["note"] == "Cavalerie lourde — spécialiste Behemoths."
+        # Note vide autorisée (effacement)
+        r3 = requests.post(f"{API}/peers/note", json={"code": b["code"], "note": ""}, timeout=15)
+        assert r3.status_code == 200 and r3.json()["note"] == ""
+        # Trop longue → 422 (validation stricte, pas de troncature silencieuse)
+        r4 = requests.post(f"{API}/peers/note", json={"code": b["code"], "note": "x" * 201}, timeout=15)
+        assert r4.status_code == 422
 
     def test_peer_search_cyrillic(self, created_apps):
         """A cherche son propre préfixe cyrillique — ne doit PAS se trouver (code != me)."""

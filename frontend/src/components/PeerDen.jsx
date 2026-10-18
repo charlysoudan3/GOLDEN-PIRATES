@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MessageSquare, ArrowLeft, Send, Users, Anchor as AnchorIcon, Lock, Gauge } from "lucide-react";
+import { Search, MessageSquare, ArrowLeft, Send, Users, Anchor as AnchorIcon, Lock, Gauge, Feather } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import api from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 
 const EASE = [0.22, 1, 0.36, 1];
 
-export default function PeerDen({ code, myName = "" }) {
+export default function PeerDen({ code, myName = "", initialNote = "" }) {
   const { c, lang } = useLang();
   const s = c.suivi;
   const p = s.peer;
@@ -18,6 +18,8 @@ export default function PeerDen({ code, myName = "" }) {
   const [threads, setThreads] = useState(null);
   const [active, setActive] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [note, setNote] = useState(initialNote);
+  const [noteSaved, setNoteSaved] = useState(false);
   const [msgs, setMsgs] = useState([]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -69,6 +71,22 @@ export default function PeerDen({ code, myName = "" }) {
     const t = setTimeout(() => search(), 300);
     return () => clearTimeout(t);
   }, [query, range]);
+
+  const saveNote = async () => {
+    if (busy) return;
+    setError("");
+    setBusy(true);
+    try {
+      const { data } = await api.post("/peers/note", { code, note: note.trim() });
+      setNote(data.note);
+      setNoteSaved(true);
+      setTimeout(() => setNoteSaved(false), 2500);
+    } catch (err) {
+      setError(err?.response?.data?.detail || p.error);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const loadThreads = async () => {
     try {
@@ -130,6 +148,39 @@ export default function PeerDen({ code, myName = "" }) {
         <p data-testid="peer-error" className="mb-4 border border-bloodglow/45 bg-bloodglow/10 px-4 py-3 font-mono2 text-[10px] tracking-[0.12em] text-bloodglow flex items-start gap-2">
           <Lock className="w-3.5 h-3.5 shrink-0 mt-0.5" /> <span>{error}</span>
         </p>
+      )}
+
+      {!active && !profile && (
+        <div data-testid="peer-my-note" className="border border-gold/20 bg-ink/50 p-4 mb-4">
+          <p className="font-mono2 text-[9px] tracking-[0.25em] text-gold mb-2 flex items-center gap-2">
+            <Feather className="w-3.5 h-3.5 shrink-0" /> {p.myNote.title}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              data-testid="peer-my-note-input"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={p.myNote.ph}
+              maxLength={120}
+              autoComplete="off"
+              className="flex-1 bg-ink/70 border border-gold/25 px-4 py-2.5 font-fell text-base text-bone placeholder:text-bone/40 focus:border-gold transition-all"
+            />
+            <button
+              type="button"
+              data-testid="peer-my-note-save"
+              onClick={saveNote}
+              disabled={busy}
+              className={`inline-flex items-center justify-center gap-2 font-mono2 text-[10px] tracking-[0.2em] px-5 py-2.5 border transition-all duration-300 ${
+                noteSaved
+                  ? "bg-emerald-500/20 border-emerald-400/60 text-emerald-300"
+                  : "border-gold/40 text-gold hover:bg-gold hover:text-ink"
+              } disabled:opacity-60`}
+            >
+              {noteSaved ? p.myNote.saved : p.myNote.save}
+            </button>
+          </div>
+          <p className="mt-2 font-mono2 text-[8px] tracking-[0.15em] text-mist/70">{p.myNote.hint}</p>
+        </div>
       )}
 
       {!active && !profile && (
@@ -234,7 +285,32 @@ export default function PeerDen({ code, myName = "" }) {
             <span className="font-display text-3xl text-goldlight">{profile.pseudo.trim().charAt(0).toUpperCase()}</span>
           </div>
           <p className="font-mono2 text-[9px] tracking-[0.3em] text-gold mb-2">{p.profile.title}</p>
-          <h4 data-testid="peer-profile-name" className="font-display text-3xl text-bone mb-4 break-words">{profile.pseudo}</h4>
+          <h4 data-testid="peer-profile-name" className="font-display text-3xl text-bone mb-3 break-words">{profile.pseudo}</h4>
+          {(() => {
+            const noteTxt = (profile.note || "").trim();
+            return noteTxt ? (
+              <p data-testid="peer-profile-note" className="font-fell italic text-base text-bone/80 mb-4 px-4 leading-snug">« {noteTxt} »</p>
+            ) : null;
+          })()}
+          {(() => {
+            const lvl = (profile.troops || "").split(" ")[0].replace(/[^T\d/]/g, "");
+            if (!lvl) return null;
+            const flagCls = lvl.includes("T5") && !lvl.includes("T4")
+              ? "bg-gold text-ink"
+              : lvl.includes("T4")
+                ? "bg-gold/25 text-goldlight"
+                : "bg-[#101826] text-mist";
+            return (
+              <div
+                aria-hidden
+                data-testid="peer-profile-flag"
+                className={`absolute top-0 right-6 sm:right-10 px-2.5 pt-3 pb-4 font-display text-lg tracking-wider shadow-[0_3px_10px_rgba(0,0,0,0.5)] ${flagCls}`}
+                style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%)" }}
+              >
+                {lvl}
+              </div>
+            );
+          })()}
           <div className="grid sm:grid-cols-2 gap-3 text-left mb-3">
             <div className="border border-gold/20 bg-ink/50 px-4 py-3">
               <p className="font-mono2 text-[8px] tracking-[0.25em] text-gold/80 mb-1">{al.power}</p>

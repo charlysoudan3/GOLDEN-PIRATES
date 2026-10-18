@@ -235,6 +235,13 @@ const fr = {
       threadsTitle: "MES CONVERSATIONS",
       threadsEmpty: "Aucune conversation encore — cherche une recrue et lance la discussion.",
       back: "RETOUR",
+      myNote: {
+        title: "TA NOTE DE MER",
+        ph: "Une ligne pour te présenter — ex : Cavalerie lourde, spécialiste Behemoths.",
+        save: "ENREGISTRER LA NOTE",
+        saved: "NOTE ENREGISTRÉE ✓",
+        hint: "Elle s'affiche sur ta fiche de marin, vue par les autres recrues.",
+      },
       profile: {
         title: "FICHE DE MARIN",
         since: "À BORD DEPUIS",
@@ -640,6 +647,13 @@ const en = {
       threadsTitle: "MY CONVERSATIONS",
       threadsEmpty: "No conversation yet — search a recruit and start talking.",
       back: "BACK",
+      myNote: {
+        title: "YOUR SEA NOTE",
+        ph: "One line to introduce yourself — e.g. Heavy cavalry, Behemoth specialist.",
+        save: "SAVE NOTE",
+        saved: "NOTE SAVED ✓",
+        hint: "It shows on your sailor's file, seen by other recruits.",
+      },
       profile: {
         title: "SAILOR'S FILE",
         since: "ABOARD SINCE",

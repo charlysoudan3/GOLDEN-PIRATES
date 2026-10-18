@@ -741,7 +741,7 @@ export default function Suivi() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, ease: EASE }}
                     >
-                      <PeerDen code={result.tracking_code} myName={result.pseudo} />
+                      <PeerDen code={result.tracking_code} myName={result.pseudo} initialNote={result.peer_note || ""} />
                     </motion.div>
                   )}
 

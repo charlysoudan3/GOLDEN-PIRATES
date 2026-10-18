@@ -283,6 +283,7 @@ async def track_application(code: str):
         "experience": doc.get("experience", ""),
         "discord": doc.get("discord", ""),
         "message": doc.get("message", ""),
+        "peer_note": doc.get("peer_note", ""),
         "status": doc["status"],
         "note": doc.get("note", ""),
         "created_at": doc.get("created_at"),
@@ -874,6 +875,27 @@ def parse_power_m(text):
     return None
 
 
+class PeerNoteIn(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    code: str
+    note: str = Field(default="", max_length=200)
+
+
+@api_router.post("/peers/note")
+async def peers_note(data: PeerNoteIn):
+    # La recrue rédige sa note de mer (bio d'une ligne) — visible sur sa fiche de marin.
+    me = (data.code or "").strip().upper()
+    mine = await db.applications.find_one({"tracking_code": me})
+    if not mine:
+        raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
+    note = safe_text((data.note or "").strip())[:120]
+    await db.applications.update_one(
+        {"tracking_code": me},
+        {"$set": {"peer_note": note, "peer_note_at": now_utc().isoformat()}},
+    )
+    return {"ok": True, "note": note}
+
+
 @api_router.get("/peers/search")
 async def peers_search(q: str, code: str, min_power: Optional[float] = None, max_power: Optional[float] = None):
     # Protégée par un code de suivi valide ; n'expose JAMAIS discord / email / code d'autrui.
@@ -906,6 +928,7 @@ async def peers_search(q: str, code: str, min_power: Optional[float] = None, max
             "troops": d.get("troops", ""),
             "status": d.get("status", "pending"),
             "joined": d.get("created_at"),
+            "note": d.get("peer_note", ""),
         })
         if len(out) >= 12:
             break
