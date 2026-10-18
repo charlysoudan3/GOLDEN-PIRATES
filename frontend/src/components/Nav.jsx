@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Shield, ShieldCheck, MapPin } from "lucide-react";
+import SunToggle from "@/components/SunToggle";
 import LogoMark, { SkullIcon, CompassRose } from "./LogoMark";
 import LangSwitcher from "./LangSwitcher";
 import useAdminSession from "@/lib/useAdminSession";
@@ -105,6 +106,7 @@ export default function Nav() {
           </button>
 
           <div className="flex items-center gap-2 sm:gap-4">
+            <SunToggle />
             <LangSwitcher />
             {!isAdmin && (
               <button
@@ -159,6 +161,7 @@ export default function Nav() {
             <div className="relative z-10 flex items-center justify-between px-4 sm:px-8 h-16 md:h-20 border-b border-gold/15">
               <LogoMark className="w-8 h-8 md:w-10 md:h-10" />
               <div className="flex items-center gap-3 sm:gap-4">
+                <SunToggle />
                 <LangSwitcher />
                 <button
                   data-testid="nav-menu-close"

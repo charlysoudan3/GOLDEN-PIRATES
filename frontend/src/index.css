@@ -74,6 +74,29 @@
     background: #9a7b1c;
   }
 
+  /* VUE DE JOUR — plein soleil : contraste relevé pour la lisibilité extérieure */
+  html.sun-mode .text-bone\/50,
+  html.sun-mode .text-bone\/60,
+  html.sun-mode .text-bone\/70,
+  html.sun-mode .text-bone\/75,
+  html.sun-mode .text-bone\/80,
+  html.sun-mode .text-bone\/85,
+  html.sun-mode .text-bone\/90 {
+    color: #f7f1e3 !important;
+  }
+  html.sun-mode .text-mist {
+    color: #dbe2ea !important;
+  }
+  html.sun-mode .text-gold {
+    color: #f2c744 !important;
+  }
+  html.sun-mode .grain-layer {
+    opacity: 0.04 !important;
+  }
+  html.sun-mode .hero-veil {
+    opacity: 0.5 !important;
+  }
+
   input, select, textarea {
     outline: none;
   }

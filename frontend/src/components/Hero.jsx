@@ -80,7 +80,7 @@ export default function Hero() {
           loading="eager"
         />
       </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/55 to-ink" />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/55 to-ink hero-veil" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(6,9,14,0.85)_85%)]" />
       <div
         aria-hidden="true"
