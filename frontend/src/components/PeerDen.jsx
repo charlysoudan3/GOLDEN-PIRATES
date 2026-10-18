@@ -6,7 +6,7 @@ import api from "@/lib/api";
 
 const EASE = [0.22, 1, 0.36, 1];
 
-export default function PeerDen({ code }) {
+export default function PeerDen({ code, myName = "" }) {
   const { c } = useLang();
   const s = c.suivi;
   const p = s.peer;
@@ -171,12 +171,23 @@ export default function PeerDen({ code }) {
               <div
                 key={m.id}
                 data-testid={`peer-msg-${m.id}`}
-                className={`max-w-[85%] px-4 py-2.5 font-fell text-base break-words ${
+                className={`relative max-w-[85%] px-4 py-2.5 font-fell text-base break-words ${
                   m.from_me
                     ? "ml-auto bg-gold/15 border border-gold/35 text-bone"
                     : "bg-ink/70 border border-gold/15 text-bone/90"
                 }`}
               >
+                <div
+                  aria-hidden
+                  data-testid={`peer-seal-${m.from_me ? "mine" : "them"}`}
+                  className={`absolute -top-2.5 w-8 h-8 rounded-full bg-[#101826] border-2 border-[#2b3b57] shadow-[0_2px_8px_rgba(0,0,0,0.65)] flex items-center justify-center ${
+                    m.from_me ? "-right-2.5 rotate-6" : "-left-2.5 -rotate-6"
+                  }`}
+                >
+                  <span className="font-display text-[10px] text-goldlight">
+                    {(m.from_me ? myName : active.pseudo).trim().charAt(0).toUpperCase()}
+                  </span>
+                </div>
                 {m.text}
               </div>
             ))}

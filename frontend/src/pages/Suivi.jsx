@@ -731,7 +731,7 @@ export default function Suivi() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, ease: EASE }}
                     >
-                      <ChatBox code={result.tracking_code} sender="recruit" testPrefix="chat" />
+                      <ChatBox code={result.tracking_code} sender="recruit" testPrefix="chat" peerName={result.pseudo} />
                     </motion.div>
                   )}
 
@@ -741,7 +741,7 @@ export default function Suivi() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, ease: EASE }}
                     >
-                      <PeerDen code={result.tracking_code} />
+                      <PeerDen code={result.tracking_code} myName={result.pseudo} />
                     </motion.div>
                   )}
 

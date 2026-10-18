@@ -775,7 +775,7 @@ export default function Admin() {
                         {a.dash.convBack}
                       </button>
                     </div>
-                    <ChatBox code={activeConv.code} sender="council" testPrefix="admin-chat" />
+                    <ChatBox code={activeConv.code} sender="council" testPrefix="admin-chat" peerName={activeConv.pseudo} />
                   </div>
                 ) : (
                   <ConvList onOpen={setActiveConv} />

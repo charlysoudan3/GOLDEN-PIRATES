@@ -7,7 +7,7 @@ import { useLang } from "@/lib/i18n";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-export default function ChatBox({ code, sender, testPrefix = "chat" }) {
+export default function ChatBox({ code, sender, testPrefix = "chat", peerName = "" }) {
   const { c, lang } = useLang();
   const s = c.chat;
   const [messages, setMessages] = useState(null);
@@ -179,6 +179,15 @@ export default function ChatBox({ code, sender, testPrefix = "chat" }) {
                           className="absolute -top-2.5 -right-2.5 w-8 h-8 rounded-full bg-blood border-2 border-[#7a1f1f] shadow-[0_2px_8px_rgba(0,0,0,0.65)] flex items-center justify-center -rotate-6"
                         >
                           <span className="font-display text-[9px] tracking-wider text-goldlight">GP</span>
+                        </div>
+                      )}
+                      {!isCouncil && !removed && (
+                        <div
+                          aria-hidden
+                          data-testid={`${testPrefix}-ink-seal`}
+                          className="absolute -top-2.5 -right-2.5 w-8 h-8 rounded-full bg-[#101826] border-2 border-[#2b3b57] shadow-[0_2px_8px_rgba(0,0,0,0.65)] flex items-center justify-center rotate-6"
+                        >
+                          <span className="font-display text-[10px] text-goldlight">{(peerName || "?").trim().charAt(0).toUpperCase()}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-2 mb-1">
