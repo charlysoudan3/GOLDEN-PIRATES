@@ -97,7 +97,7 @@ const fr = {
       power: "PUISSANCE ACTUELLE *",
       troops: "NIVEAU DE TROUPES *",
       activity: "ACTIVITÉ QUOTIDIENNE *",
-      discord: "TAG DISCORD *",
+      discord: "TAG DISCORD — SI TU EN AS UN",
       experience: "EXPÉRIENCE — KVK & ALLIANCES PRÉCÉDENTES",
       message: "TON MESSAGE AU CONSEIL *",
     },
@@ -107,6 +107,7 @@ const fr = {
       signals: "TES SIGNAUX",
       letter: "TA LETTRE DE MARQUE",
     },
+    noDiscord: "PAS ACCÈS À DISCORD ? AUCUN SOUCI, MOUSSAILLON — LA BOUTEILLE À LA MER DANS L'ESPACE RECRUE TE RELIE AU CONSEIL SANS DISCORD.",
     ph: {
       pseudo: "ex : KrakenDuNord",
       power: "ex : 8M, 15M ou {MAX}+",
@@ -122,7 +123,6 @@ const fr = {
     errors: {
       pseudo: "Ton pseudo de marin est requis (2 caractères minimum).",
       power: "Indique ta puissance (plage visée : {MIN} à {MAX}).",
-      discord: "Ton tag Discord est requis — c'est là que le Conseil t'appellera.",
       message: "Laisse un message de 10 caractères minimum — fais bonne impression !",
       copyFail: "Copie impossible — recopie le code à la main, moussaillon.",
       duplicateActive: "Tu as déjà un dossier en examen ou en réserve, marin — garde ton code de suivi et passe par l'Espace Recrue.",
@@ -486,7 +486,7 @@ const en = {
       power: "CURRENT POWER *",
       troops: "TROOP LEVEL *",
       activity: "DAILY ACTIVITY *",
-      discord: "DISCORD TAG *",
+      discord: "DISCORD TAG — IF YOU HAVE ONE",
       experience: "EXPERIENCE — PAST KVK & ALLIANCES",
       message: "YOUR MESSAGE TO THE COUNCIL *",
     },
@@ -496,6 +496,7 @@ const en = {
       signals: "YOUR SIGNALS",
       letter: "YOUR LETTER OF MARQUE",
     },
+    noDiscord: "NO DISCORD ACCESS? NO WORRIES, SAILOR — THE BOTTLE TO THE SEA IN THE RECRUIT SPACE CONNECTS YOU TO THE COUNCIL WITHOUT DISCORD.",
     ph: {
       pseudo: "e.g. KrakenDuNord",
       power: "e.g. 8M, 15M or {MAX}+",
@@ -511,7 +512,6 @@ const en = {
     errors: {
       pseudo: "Your sailor name is required (2 characters minimum).",
       power: "Tell us your power (target range: {MIN} to {MAX}).",
-      discord: "Your Discord tag is required — it's where the Council will call you.",
       message: "Leave a message of at least 10 characters — make it count!",
       copyFail: "Copy failed — write the code down by hand, sailor.",
       duplicateActive: "You already have a file under review or on reserve, sailor — keep your tracking code and use the Recruit Space.",

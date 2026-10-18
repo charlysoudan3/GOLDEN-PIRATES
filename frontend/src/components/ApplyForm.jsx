@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Copy, Check, X, Anchor, ListChecks, Hourglass, Megaphone, Skull, Swords, Radio, Feather } from "lucide-react";
+import { Copy, Check, X, Anchor, ListChecks, Hourglass, Megaphone, Skull, Swords, Radio, Feather, LifeBuoy } from "lucide-react";
 import api, { formatApiError } from "@/lib/api";
 import { useLang, fmtPower } from "@/lib/i18n";
 import Countdown from "@/components/Countdown";
@@ -40,10 +40,6 @@ export default function ApplyForm() {
     }
     if (!form.power.trim()) {
       toast.error(fmtPower(s.errors.power));
-      return;
-    }
-    if (!form.discord.trim()) {
-      toast.error(s.errors.discord);
       return;
     }
     if (form.message.trim().length < 10) {
@@ -215,6 +211,13 @@ export default function ApplyForm() {
                     placeholder={s.ph.discord}
                     maxLength={60}
                   />
+                  <p
+                    data-testid="no-discord-note"
+                    className="mt-3 flex items-start gap-2 font-mono2 text-[9px] tracking-[0.2em] text-mist/80 leading-relaxed"
+                  >
+                    <LifeBuoy className="w-3.5 h-3.5 text-gold shrink-0 mt-0.5" />
+                    <span>{s.noDiscord}</span>
+                  </p>
                 </div>
               </fieldset>
 

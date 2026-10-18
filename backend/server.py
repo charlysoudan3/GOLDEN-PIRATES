@@ -113,7 +113,7 @@ class ApplicationCreate(BaseModel):
     troops: str = Field(min_length=2, max_length=60)
     activity: str = Field(min_length=2, max_length=60)
     experience: str = Field(default="", max_length=1200)
-    discord: str = Field(min_length=2, max_length=60)
+    discord: str = Field(default="", max_length=60)
     message: str = Field(min_length=10, max_length=2000)
 
 
