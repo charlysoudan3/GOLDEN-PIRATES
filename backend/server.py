@@ -869,7 +869,7 @@ async def peers_search(q: str, code: str):
     docs = await db.applications.find({
         "pseudo": {"$regex": re.escape(q), "$options": "i"},
         "tracking_code": {"$ne": me},
-    }).sort("created_at", -1).to_list(12)
+    }, collation={"locale": "en", "strength": 2}).sort("pseudo", 1).to_list(12)
     return [{
         "app_id": d["id"],
         "pseudo": d["pseudo"],

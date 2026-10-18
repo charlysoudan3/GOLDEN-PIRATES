@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Search, MessageSquare, ArrowLeft, Send, Users, Anchor as AnchorIcon, Lock } from "lucide-react";
 import { useLang } from "@/lib/i18n";
@@ -18,22 +18,38 @@ export default function PeerDen({ code, myName = "" }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const searchGen = useRef(0);
 
-  const search = async (e) => {
-    e.preventDefault();
-    if (busy) return;
-    setError("");
+  const search = async (value) => {
+    const q = (typeof value === "string" ? value : query).trim();
+    if (q.length < 2) { setResults(null); return; }
+    const gen = ++searchGen.current;
     setBusy(true);
+    setError("");
     try {
-      const { data } = await api.get("/peers/search", { params: { q: query, code } });
-      setResults(data);
+      const { data } = await api.get("/peers/search", { params: { q, code } });
+      if (gen !== searchGen.current) return;
+      const ql = q.toLowerCase();
+      setResults([...data].sort((a, b) => {
+        const pa = a.pseudo.toLowerCase().startsWith(ql) ? 0 : 1;
+        const pb = b.pseudo.toLowerCase().startsWith(ql) ? 0 : 1;
+        if (pa !== pb) return pa - pb;
+        return a.pseudo.localeCompare(b.pseudo, undefined, { sensitivity: "base" });
+      }));
     } catch (err) {
+      if (gen !== searchGen.current) return;
       setError(err?.response?.data?.detail || p.error);
       setResults(null);
     } finally {
-      setBusy(false);
+      if (gen === searchGen.current) setBusy(false);
     }
   };
+
+  // Recherche en direct : résultats dès 2 lettres, 300 ms après la dernière frappe — les requêtes obsolètes sont ignorées.
+  useEffect(() => {
+    const t = setTimeout(() => search(), 300);
+    return () => clearTimeout(t);
+  }, [query]);
 
   const loadThreads = async () => {
     try {
@@ -98,7 +114,7 @@ export default function PeerDen({ code, myName = "" }) {
       )}
 
       {!active && (
-        <form onSubmit={search} className="flex flex-col sm:flex-row gap-3 mb-2">
+        <form onSubmit={(e) => { e.preventDefault(); search(); }} className="flex flex-col sm:flex-row gap-3 mb-2">
           <input
             data-testid="peer-search-input"
             value={query}
