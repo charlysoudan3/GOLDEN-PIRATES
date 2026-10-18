@@ -6,14 +6,23 @@ import api from "@/lib/api";
 // changement de page, donc plus aucun bouton qui vacille en plein clic.
 let isAdminCached = false;
 let checkedOnce = false;
+let inFlight = null;
 const listeners = new Set();
 
 export function refreshAdminSession() {
-  return api
+  // Dédoublonnage strict : le drapeau est posé AVANT l'attente pour que les
+  // doubles montages (StrictMode Nav + Footer) partagent UNE SEULE requête.
+  if (inFlight) return inFlight;
+  checkedOnce = true;
+  inFlight = api
     .get("/auth/me")
-    .then(() => { isAdminCached = true; checkedOnce = true; })
-    .catch(() => { isAdminCached = false; checkedOnce = true; })
-    .finally(() => listeners.forEach((l) => l()));
+    .then(() => { isAdminCached = true; })
+    .catch(() => { isAdminCached = false; })
+    .finally(() => {
+      inFlight = null;
+      listeners.forEach((l) => l());
+    });
+  return inFlight;
 }
 
 export default function useAdminSession() {
