@@ -453,6 +453,86 @@ EXPORT_COLUMNS = [
     ("peer_note", "NOTE DE MER"),
 ]
 
+STATUS_I18N = {
+    "fr": {"pending": "EN EXAMEN", "accepted": "ACCEPTÉ À BORD", "reserve": "EN RÉSERVE", "rejected": "REFUSÉE"},
+    "en": {"pending": "UNDER REVIEW", "accepted": "ACCEPTED ABOARD", "reserve": "IN RESERVE", "rejected": "REJECTED"},
+}
+
+EXPORT_I18N = {
+    "fr": {
+        "syn_sheet": "Synthèse",
+        "bios_sheet": "Bios des recrues",
+        "reg_sheet": "Registre",
+        "doc_title": "GOLDEN PIRATES — REGISTRE DES RECRUES",
+        "doc_sub": "REGISTRE DES RECRUES — ROYAUME 1023 · CALL OF DRAGONS",
+        "edited_on": "Édité le",
+        "in_register": "candidature(s) au registre",
+        "kpi": {"total": "Total", "pending": "En examen", "accepted": "Acceptées", "reserve": "En réserve", "rejected": "Refusées"},
+        "read_order": "LIRE DANS L'ORDRE : « Bios des recrues » = la voix de l'équipage · « Registre » = le détail de chaque dossier, trié par décision",
+        "bios_title": "BIOS DES RECRUES — LA VOIX DE L'ÉQUIPAGE",
+        "recrues": "recrue(s)",
+        "notes_mer": "note(s) de mer",
+        "bios_headers": ["PSEUDO", "PUISSANCE", "STATUT", "NOTE DE MER", "DÉPOSÉE LE"],
+        "calm": "La mer est calme — aucune candidature enregistrée pour l'instant.",
+        "calm2": "Les recrues ne tarderont pas à frapper au pont.",
+        "reg_banner": "REGISTRE COMPLET — ORDRE DES DÉCISIONS (EN EXAMEN → ACCEPTÉES → RÉSERVE → REFUSÉES)",
+        "chart_title": "RÉPARTITION DES PUISSANCES",
+        "chart_sub": "Répartition des {n} candidature(s) par tranche de puissance",
+        "unreadable": "{n} puissance(s) non lisible(s) hors graphique",
+        "bins": [["Moins de 6M", 0, 6], ["6M – 10M", 6, 10], ["10M – 15M", 10, 15], ["15M – 20M", 15, 20], ["20M et plus", 20, None]],
+        "sections": {"pending": "EN EXAMEN — DOSSIERS À TRANCHER", "accepted": "ACCEPTÉES À BORD", "reserve": "EN RÉSERVE — LA RÉSERVE DE LA FLOTTE", "rejected": "REFUSÉES — DÉCISION RENDUE"},
+        "dossiers_count": "DOSSIER(S)",
+        "labels": {
+            "dossier_n": "DOSSIER N° {n:02d}",
+            "power": "PUISSANCE", "troops": "TROUPES", "activity": "ACTIVITÉ", "discord": "DISCORD",
+            "filed": "DÉPOSÉE LE", "exp": "EXPÉRIENCE", "msg": "MESSAGE",
+            "council_note": "NOTE DU CONSEIL", "sea_note": "NOTE DE MER",
+        },
+        "no_exp": "— aucune ligne dans le journal de bord —",
+        "col": {"tracking_code": "CODE DE SUIVI", "pseudo": "PSEUDO", "power": "PUISSANCE", "troops": "TROUPES", "activity": "ACTIVITÉ", "discord": "DISCORD", "status": "STATUT", "note": "NOTE DU CONSEIL", "created_at": "DÉPOSÉE LE", "experience": "EXPÉRIENCE", "message": "MESSAGE", "peer_note": "NOTE DE MER"},
+        "date_fmt": "%d/%m/%Y %H:%M",
+        "file_suffix": "registre",
+        "footer": "GOLDEN PIRATES — CONSEIL DES CAPITAINES · ROYAUME 1023 · CALL OF DRAGONS",
+        "page_n": "Page {n}",
+    },
+    "en": {
+        "syn_sheet": "Summary",
+        "bios_sheet": "Recruits' bios",
+        "reg_sheet": "Register",
+        "doc_title": "GOLDEN PIRATES — RECRUITS' REGISTER",
+        "doc_sub": "RECRUITS' REGISTER — KINGDOM 1023 · CALL OF DRAGONS",
+        "edited_on": "Edited on",
+        "in_register": "application(s) in the register",
+        "kpi": {"total": "Total", "pending": "Under review", "accepted": "Accepted", "reserve": "In reserve", "rejected": "Rejected"},
+        "read_order": "READ IN ORDER: “Recruits' bios” = the crew's voice · “Register” = full detail of every file, sorted by decision",
+        "bios_title": "RECRUITS' BIOS — THE CREW'S VOICE",
+        "recrues": "recruit(s)",
+        "notes_mer": "sea note(s)",
+        "bios_headers": ["PSEUDO", "POWER", "STATUS", "SEA NOTE", "SUBMITTED ON"],
+        "calm": "The sea is calm — no application recorded yet.",
+        "calm2": "Recruits won't be long in knocking on the deck.",
+        "reg_banner": "FULL REGISTER — DECISION ORDER (UNDER REVIEW → ACCEPTED → RESERVE → REJECTED)",
+        "chart_title": "POWER BREAKDOWN",
+        "chart_sub": "Breakdown of {n} application(s) by power range",
+        "unreadable": "{n} unreadable power value(s) kept out of the chart",
+        "bins": [["Under 6M", 0, 6], ["6M – 10M", 6, 10], ["10M – 15M", 10, 15], ["15M – 20M", 15, 20], ["20M and more", 20, None]],
+        "sections": {"pending": "UNDER REVIEW — FILES TO DECIDE", "accepted": "ACCEPTED ABOARD", "reserve": "IN RESERVE — THE FLEET'S BENCH", "rejected": "REJECTED — DECISION MADE"},
+        "dossiers_count": "FILE(S)",
+        "labels": {
+            "dossier_n": "FILE N° {n:02d}",
+            "power": "POWER", "troops": "TROOPS", "activity": "ACTIVITY", "discord": "DISCORD",
+            "filed": "SUBMITTED ON", "exp": "EXPERIENCE", "msg": "MESSAGE",
+            "council_note": "COUNCIL'S NOTE", "sea_note": "SEA NOTE",
+        },
+        "no_exp": "— no entry in the logbook —",
+        "col": {"tracking_code": "TRACKING CODE", "pseudo": "PSEUDO", "power": "POWER", "troops": "TROOPS", "activity": "ACTIVITY", "discord": "DISCORD", "status": "STATUS", "note": "COUNCIL'S NOTE", "created_at": "SUBMITTED ON", "experience": "EXPERIENCE", "message": "MESSAGE", "peer_note": "SEA NOTE"},
+        "date_fmt": "%m/%d/%Y %H:%M",
+        "file_suffix": "register",
+        "footer": "GOLDEN PIRATES — COUNCIL OF CAPTAINS · KINGDOM 1023 · CALL OF DRAGONS",
+        "page_n": "Page {n}",
+    },
+}
+
 STATUS_FR = {
     "pending": "EN EXAMEN",
     "accepted": "ACCEPTÉ À BORD",
@@ -488,15 +568,16 @@ def fmt_dt(v):
         return str(v)
 
 
-def fmt_row(doc):
+def fmt_row(doc, lang="fr"):
+    L = EXPORT_I18N[lang]
     row = []
     for key, _ in EXPORT_COLUMNS:
         v = doc.get(key, "")
         if key == "status":
-            v = STATUS_FR.get(v, v)
+            v = STATUS_I18N[lang].get(v, v)
         elif key == "created_at" and v:
             try:
-                v = datetime.fromisoformat(v).strftime("%d/%m/%Y %H:%M")
+                v = datetime.fromisoformat(v).strftime(L["date_fmt"])
             except (TypeError, ValueError):
                 pass
         row.append("" if v is None else str(v))
@@ -504,7 +585,8 @@ def fmt_row(doc):
 
 
 @api_router.get("/admin/export/xlsx")
-async def export_xlsx(_: str = Depends(require_admin)):
+async def export_xlsx(lang: str = "fr", _: str = Depends(require_admin)):
+    L = EXPORT_I18N[lang if lang in ("fr", "en") else "fr"]
     docs = await db.applications.find({}).sort("created_at", -1).to_list(2000)
     thin = Side(style="thin", color="D8DEE8")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
@@ -513,26 +595,26 @@ async def export_xlsx(_: str = Depends(require_admin)):
 
     # Feuille 1 — Synthèse décorée
     ws = wb.active
-    ws.title = "Synthèse"
+    ws.title = L["syn_sheet"]
     ws.merge_cells("A1:D1")
     for col in "ABCD":
         ws[f"{col}1"].fill = PatternFill("solid", fgColor="0B192C")
     c = ws["A1"]
-    c.value = "GOLDEN PIRATES — REGISTRE DES RECRUES"
+    c.value = L["doc_title"]
     c.font = Font(color="D4AF37", bold=True, size=16)
     c.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 34
     ws.merge_cells("A2:D2")
     c = ws["A2"]
-    c.value = f"Royaume 1023 · Call of Dragons · édité le {fmt_dt(now_utc().isoformat())}"
+    c.value = f"{L['edited_on']} {fmt_dt(now_utc().isoformat())} · {len(docs)} {L['in_register']}"
     c.font = Font(color="5C6B7E", italic=True, size=10)
     c.alignment = Alignment(horizontal="center", vertical="center")
     kpis = [
-        ("Total", len(docs), "0B192C", "D4AF37"),
-        ("En examen", sum(1 for d in docs if d.get("status") == "pending"), "FFF4CC", "B8860B"),
-        ("Acceptées", sum(1 for d in docs if d.get("status") == "accepted"), "DCF3E8", "1B7F4C"),
-        ("En réserve", sum(1 for d in docs if d.get("status") == "reserve"), "FEF3C7", "B45309"),
-        ("Refusées", sum(1 for d in docs if d.get("status") == "rejected"), "FEE2E2", "B91C1C"),
+        (L["kpi"]["total"], len(docs), "0B192C", "D4AF37"),
+        (L["kpi"]["pending"], sum(1 for d in docs if d.get("status") == "pending"), "FFF4CC", "B8860B"),
+        (L["kpi"]["accepted"], sum(1 for d in docs if d.get("status") == "accepted"), "DCF3E8", "1B7F4C"),
+        (L["kpi"]["reserve"], sum(1 for d in docs if d.get("status") == "reserve"), "FEF3C7", "B45309"),
+        (L["kpi"]["rejected"], sum(1 for d in docs if d.get("status") == "rejected"), "FEE2E2", "B91C1C"),
     ]
     r = 4
     for label, count, tint, hexc in kpis:
@@ -547,27 +629,27 @@ async def export_xlsx(_: str = Depends(require_admin)):
         r += 1
     ws.column_dimensions["A"].width = 24
     ws.column_dimensions["B"].width = 14
-    nav = ws.cell(row=r + 1, column=1, value="LIRE DANS L'ORDRE : « Bios des recrues » = la voix de l'équipage · « Registre » = le détail de chaque dossier, trié par décision")
+    nav = ws.cell(row=r + 1, column=1, value=L["read_order"])
     nav.font = Font(italic=True, size=9, color="5C6B7E")
     nav.alignment = Alignment(horizontal="left", vertical="center")
 
     # Feuille 2 — Bios des recrues (lecture rapide pour les officiers)
-    wsB = wb.create_sheet("Bios des recrues")
+    wsB = wb.create_sheet(L["bios_sheet"])
     wsB.merge_cells("A1:E1")
     for col in "ABCDE":
         wsB[f"{col}1"].fill = PatternFill("solid", fgColor="0B192C")
     c = wsB["A1"]
-    c.value = "BIOS DES RECRUES — LA VOIX DE L'ÉQUIPAGE"
+    c.value = L["bios_title"]
     c.font = Font(color="D4AF37", bold=True, size=14)
     c.alignment = Alignment(horizontal="center", vertical="center")
     wsB.row_dimensions[1].height = 30
     wsB.merge_cells("A2:E2")
     bios_count = sum(1 for d in docs if (d.get("peer_note") or "").strip())
     c = wsB["A2"]
-    c.value = f"{len(docs)} recrue(s) · {bios_count} note(s) de mer · édité le {fmt_dt(now_utc().isoformat())}"
+    c.value = f"{len(docs)} {L['recrues']} · {bios_count} {L['notes_mer']} · {L['edited_on']} {fmt_dt(now_utc().isoformat())}"
     c.font = Font(color="5C6B7E", italic=True, size=10)
     c.alignment = Alignment(horizontal="center", vertical="center")
-    for i, h in enumerate(["PSEUDO", "PUISSANCE", "STATUT", "NOTE DE MER", "DÉPOSÉE LE"], 1):
+    for i, h in enumerate(L["bios_headers"], 1):
         cell = wsB.cell(row=3, column=i, value=h)
         cell.fill = PatternFill("solid", fgColor="0B192C")
         cell.font = Font(color="D4AF37", bold=True, size=10)
@@ -577,7 +659,7 @@ async def export_xlsx(_: str = Depends(require_admin)):
         vals = [
             d.get("pseudo", ""),
             d.get("power", ""),
-            STATUS_FR.get(d.get("status"), d.get("status", "")),
+            STATUS_I18N[lang if lang in ("fr", "en") else "fr"].get(d.get("status"), d.get("status", "")),
             (d.get("peer_note") or "").strip() or "—",
             fmt_dt(d.get("created_at")) or "—",
         ]
@@ -604,16 +686,16 @@ async def export_xlsx(_: str = Depends(require_admin)):
         return (DECISION_ORDER.get(d.get("status"), 9), -ts)
 
     docs_ordered = sorted(docs, key=_decision_key)
-    ws2 = wb.create_sheet("Registre")
+    ws2 = wb.create_sheet(L["reg_sheet"])
     ws2.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(EXPORT_COLUMNS))
-    hc = ws2.cell(row=1, column=1, value="REGISTRE COMPLET — ORDRE DES DÉCISIONS (EN EXAMEN → ACCEPTÉES → RÉSERVE → REFUSÉES)")
+    hc = ws2.cell(row=1, column=1, value=L["reg_banner"])
     hc.fill = PatternFill("solid", fgColor="0B192C")
     hc.font = Font(color="D4AF37", bold=True, size=12)
     hc.alignment = Alignment(horizontal="center", vertical="center")
     ws2.row_dimensions[1].height = 26
     hdr_row = 2
-    for i, (_, h) in enumerate(EXPORT_COLUMNS, 1):
-        cell = ws2.cell(row=hdr_row, column=i, value=h)
+    for i, k in enumerate([k for k, _ in EXPORT_COLUMNS], 1):
+        cell = ws2.cell(row=hdr_row, column=i, value=L["col"][k])
         cell.fill = PatternFill("solid", fgColor="14273F")
         cell.font = Font(color="F2D98D", bold=True, size=10)
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
@@ -623,7 +705,7 @@ async def export_xlsx(_: str = Depends(require_admin)):
     wrap_idx = {[k for k, _ in EXPORT_COLUMNS].index(k) + 1 for k in ("experience", "message", "note", "peer_note", "activity")}
     for n, d in enumerate(docs_ordered):
         rn = hdr_row + 1 + n
-        for i, v in enumerate(fmt_row(d), 1):
+        for i, v in enumerate(fmt_row(d, lang), 1):
             ws2.cell(row=rn, column=i, value=v)
         for i in range(1, len(EXPORT_COLUMNS) + 1):
             cell = ws2.cell(row=rn, column=i)
@@ -636,7 +718,7 @@ async def export_xlsx(_: str = Depends(require_admin)):
         sc.font = Font(bold=True, color=STATUS_HEX.get(d.get("status"), "#1A2433").lstrip("#"))
         sc.alignment = Alignment(horizontal="center", vertical="top")
     if not docs:
-        ws2.cell(row=hdr_row + 1, column=1, value="La mer est calme — aucune candidature enregistrée pour l'instant.")
+        ws2.cell(row=hdr_row + 1, column=1, value=L["calm"])
     for i, w in enumerate([15, 20, 12, 20, 24, 18, 15, 36, 17, 42, 52, 34], 1):
         ws2.column_dimensions[get_column_letter(i)].width = w
     ws2.freeze_panes = "A3"
@@ -649,18 +731,19 @@ async def export_xlsx(_: str = Depends(require_admin)):
     return StreamingResponse(
         buf,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f'attachment; filename="golden-pirates-registre-{stamp}.xlsx"'},
+        headers={"Content-Disposition": f'attachment; filename="golden-pirates-{L["file_suffix"]}-{lang}-{stamp}.xlsx"'},
     )
 
 
 @api_router.get("/admin/export/pdf")
-async def export_pdf(_: str = Depends(require_admin)):
+async def export_pdf(lang: str = "fr", _: str = Depends(require_admin)):
+    L = EXPORT_I18N[lang if lang in ("fr", "en") else "fr"]
     docs = await db.applications.find({}).sort("created_at", -1).to_list(2000)
     buf = io.BytesIO()
     doc_pdf = SimpleDocTemplate(
         buf, pagesize=A4,
         topMargin=14 * mm, bottomMargin=20 * mm, leftMargin=15 * mm, rightMargin=15 * mm,
-        title="Golden Pirates — Registre des recrues",
+        title=L["doc_title"],
         author="Conseil des Capitaines — Golden Pirates",
     )
     W = A4[0] - 30 * mm
@@ -675,8 +758,8 @@ async def export_pdf(_: str = Depends(require_admin)):
 
     band_inner = [
         Paragraph("GOLDEN PIRATES", band_title),
-        Paragraph("REGISTRE DES RECRUES — ROYAUME 1023 · CALL OF DRAGONS", band_sub),
-        Paragraph(f"Édité le {fmt_dt(now_utc().isoformat())} · {len(docs)} candidature(s) au registre", band_sub),
+        Paragraph(L["doc_sub"], band_sub),
+        Paragraph(f"{L['edited_on']} {fmt_dt(now_utc().isoformat())} · {len(docs)} {L['in_register']}", band_sub),
     ]
     band = Table([[band_inner]], colWidths=[W])
     band.setStyle(TableStyle([
@@ -689,13 +772,13 @@ async def export_pdf(_: str = Depends(require_admin)):
     ]))
     flow = [band, Spacer(1, 6 * mm)]
 
-    counts = {k: sum(1 for d in docs if d.get("status") == k) for k in STATUS_FR}
+    counts = {k: sum(1 for d in docs if d.get("status") == k) for k in STATUS_I18N["fr"]}
     kpis = [
-        ("Total", len(docs), NAVY_HEX, "#E8ECF2"),
-        ("En examen", counts["pending"], STATUS_HEX["pending"], "#" + STATUS_TINT["pending"]),
-        ("Acceptées", counts["accepted"], STATUS_HEX["accepted"], "#" + STATUS_TINT["accepted"]),
-        ("En réserve", counts["reserve"], STATUS_HEX["reserve"], "#" + STATUS_TINT["reserve"]),
-        ("Refusées", counts["rejected"], STATUS_HEX["rejected"], "#" + STATUS_TINT["rejected"]),
+        (L["kpi"]["total"], len(docs), NAVY_HEX, "#E8ECF2"),
+        (L["kpi"]["pending"], counts["pending"], STATUS_HEX["pending"], "#" + STATUS_TINT["pending"]),
+        (L["kpi"]["accepted"], counts["accepted"], STATUS_HEX["accepted"], "#" + STATUS_TINT["accepted"]),
+        (L["kpi"]["reserve"], counts["reserve"], STATUS_HEX["reserve"], "#" + STATUS_TINT["reserve"]),
+        (L["kpi"]["rejected"], counts["rejected"], STATUS_HEX["rejected"], "#" + STATUS_TINT["rejected"]),
     ]
     kpi_cells = []
     for i, (label, count, hexc, tint) in enumerate(kpis):
@@ -715,13 +798,7 @@ async def export_pdf(_: str = Depends(require_admin)):
 
     # Page dédiée — répartition des puissances (barres dorées par tranche)
     if docs:
-        bins = [
-            ("Moins de 6M", 0, 6),
-            ("6M – 10M", 6, 10),
-            ("10M – 15M", 10, 15),
-            ("15M – 20M", 15, 20),
-            ("20M et plus", 20, None),
-        ]
+        bins = [(label, lo, hi) for label, lo, hi in L["bins"]]
         bin_counts = [0] * len(bins)
         unreadable = 0
         for d in docs:
@@ -735,8 +812,8 @@ async def export_pdf(_: str = Depends(require_admin)):
                     break
         chart_title = ParagraphStyle("ct", fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=colors.HexColor(GOLD_HEX))
         chart_sub = ParagraphStyle("cs", fontName="Helvetica", fontSize=8.5, leading=12, textColor=colors.HexColor("#C9D3E0"))
-        sub_txt = f"Répartition des {len(docs)} candidature(s) par tranche de puissance" + (f" · {unreadable} puissance(s) non lisible(s) hors graphique" if unreadable else "")
-        band_chart = Table([[Paragraph("RÉPARTITION DES PUISSANCES", chart_title)], [Paragraph(sub_txt, chart_sub)]], colWidths=[W])
+        sub_txt = L["chart_sub"].format(n=len(docs)) + (f" · {L['unreadable'].format(n=unreadable)}" if unreadable else "")
+        band_chart = Table([[Paragraph(L["chart_title"], chart_title)], [Paragraph(sub_txt, chart_sub)]], colWidths=[W])
         band_chart.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(NAVY_HEX)),
             ("LINEBELOW", (0, -1), (-1, -1), 1.5, colors.HexColor(GOLD_HEX)),
@@ -763,7 +840,7 @@ async def export_pdf(_: str = Depends(require_admin)):
         status = d.get("status", "pending")
         tint = "#" + STATUS_TINT.get(status, "FFFFFF")
         meta = Paragraph(
-            f'<font color="{GOLD_HEX}" size="7.5">DOSSIER N° {numero:02d}</font>'
+            f'<font color="{GOLD_HEX}" size="7.5">{L["labels"]["dossier_n"].format(n=numero)}</font>'
             f'&nbsp;&nbsp;·&nbsp;&nbsp;<font color="#8FA3BC" size="8.5">{escape(d.get("tracking_code", ""))}</font>',
             ParagraphStyle(f"hm{numero}", fontName="Helvetica", leading=10),
         )
@@ -772,28 +849,28 @@ async def export_pdf(_: str = Depends(require_admin)):
             ParagraphStyle(f"hp{numero}", fontName="Helvetica", leading=17),
         )
         chip = Paragraph(
-            f'<b>{escape(STATUS_FR.get(status, status))}</b>',
+            f'<b>{escape(STATUS_I18N[lang if lang in ("fr", "en") else "fr"].get(status, status))}</b>',
             ParagraphStyle(f"hr{numero}", fontName="Helvetica", fontSize=10, leading=13, alignment=1,
                            textColor=colors.HexColor(STATUS_HEX.get(status, "#1A2433"))),
         )
         rows = [
             [meta, "", "", ""],
             [pseudo_p, "", "", chip],
-            [Paragraph("PUISSANCE", lab), Paragraph(escape(d.get("power", "")) or "—", val),
-             Paragraph("TROUPES", lab), Paragraph(escape(d.get("troops", "")) or "—", val)],
-            [Paragraph("ACTIVITÉ", lab), Paragraph(escape(d.get("activity", "")) or "—", val),
-             Paragraph("DISCORD", lab), Paragraph(escape(d.get("discord", "")) or "—", val)],
-            [Paragraph("DÉPOSÉE LE", lab), Paragraph(fmt_dt(d.get("created_at")) or "—", val), "", ""],
-            [Paragraph("EXPÉRIENCE", lab), Paragraph(escape(d.get("experience", "")) or "— aucune ligne dans le journal de bord —", val), "", ""],
-            [Paragraph("MESSAGE", lab), Paragraph(escape(d.get("message", "")) or "—", val), "", ""],
+            [Paragraph(L["labels"]["power"], lab), Paragraph(escape(d.get("power", "")) or "—", val),
+             Paragraph(L["labels"]["troops"], lab), Paragraph(escape(d.get("troops", "")) or "—", val)],
+            [Paragraph(L["labels"]["activity"], lab), Paragraph(escape(d.get("activity", "")) or "—", val),
+             Paragraph(L["labels"]["discord"], lab), Paragraph(escape(d.get("discord", "")) or "—", val)],
+            [Paragraph(L["labels"]["filed"], lab), Paragraph(fmt_dt(d.get("created_at")) or "—", val), "", ""],
+            [Paragraph(L["labels"]["exp"], lab), Paragraph(escape(d.get("experience", "")) or L["no_exp"], val), "", ""],
+            [Paragraph(L["labels"]["msg"], lab), Paragraph(escape(d.get("message", "")) or "—", val), "", ""],
         ]
         # lignes pleine largeur (col 1 → 3), index calculés dynamiquement
         span_rows = [4, 5, 6]
         if d.get("note"):
-            rows.append([Paragraph("NOTE DU CONSEIL", lab), Paragraph(escape(d["note"]), val), "", ""])
+            rows.append([Paragraph(L["labels"]["council_note"], lab), Paragraph(escape(d["note"]), val), "", ""])
             span_rows.append(len(rows) - 1)
         if d.get("peer_note"):
-            rows.append([Paragraph("NOTE DE MER", lab), Paragraph(escape(d["peer_note"]), val), "", ""])
+            rows.append([Paragraph(L["labels"]["sea_note"], lab), Paragraph(escape(d["peer_note"]), val), "", ""])
             span_rows.append(len(rows) - 1)
         t = Table(rows, colWidths=[0.15 * W, 0.35 * W, 0.15 * W, 0.35 * W])
         style = [
@@ -831,18 +908,12 @@ async def export_pdf(_: str = Depends(require_admin)):
         section_style = ParagraphStyle(
             "sec", fontName="Helvetica-Bold", fontSize=11.5, leading=15, textColor=colors.HexColor(GOLD_HEX),
         )
-        SECTION_FR = {
-            "pending": "EN EXAMEN — DOSSIERS À TRANCHER",
-            "accepted": "ACCEPTÉES À BORD",
-            "reserve": "EN RÉSERVE — LA RÉSERVE DE LA FLOTTE",
-            "rejected": "REFUSÉES — DÉCISION RENDUE",
-        }
         last_status = None
         for numero, d in enumerate(docs_sorted, 1):
             st = d.get("status")
             if st != last_status:
                 group_n = sum(1 for x in docs_sorted if x.get("status") == st)
-                sec = Table([[Paragraph(f"{SECTION_FR.get(st, st)} — {group_n} DOSSIER(S)", section_style)]], colWidths=[W])
+                sec = Table([[Paragraph(f"{L['sections'].get(st, st)} — {group_n} {L['dossiers_count']}", section_style)]], colWidths=[W])
                 sec.setStyle(TableStyle([
                     ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(NAVY_HEX)),
                     ("LINEBELOW", (0, 0), (-1, -1), 1.5, colors.HexColor(GOLD_HEX)),
@@ -856,7 +927,7 @@ async def export_pdf(_: str = Depends(require_admin)):
             flow.append(Spacer(1, 5 * mm))
     else:
         mer = Table([[Paragraph(
-            "La mer est calme — aucune candidature enregistrée pour l'instant.<br/>Les recrues ne tarderont pas à frapper au pont.",
+            f"{L['calm']}<br/>{L['calm2']}",
             empty_style,
         )]], colWidths=[W])
         mer.setStyle(TableStyle([
@@ -874,8 +945,8 @@ async def export_pdf(_: str = Depends(require_admin)):
         canv.line(15 * mm, 13.5 * mm, A4[0] - 15 * mm, 13.5 * mm)
         canv.setFont("Helvetica", 7.5)
         canv.setFillColor(colors.HexColor(GRAY_HEX))
-        canv.drawString(15 * mm, 9.5 * mm, "GOLDEN PIRATES — CONSEIL DES CAPITAINES · ROYAUME 1023 · CALL OF DRAGONS")
-        canv.drawRightString(A4[0] - 15 * mm, 9.5 * mm, f"Page {canv.getPageNumber()}")
+        canv.drawString(15 * mm, 9.5 * mm, L["footer"])
+        canv.drawRightString(A4[0] - 15 * mm, 9.5 * mm, L["page_n"].format(n=canv.getPageNumber()))
         canv.restoreState()
 
     doc_pdf.build(flow, onFirstPage=_footer, onLaterPages=_footer)
@@ -884,7 +955,7 @@ async def export_pdf(_: str = Depends(require_admin)):
     return StreamingResponse(
         buf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="golden-pirates-registre-{stamp}.pdf"'},
+        headers={"Content-Disposition": f'attachment; filename="golden-pirates-{L["file_suffix"]}-{lang}-{stamp}.pdf"'},
     )
 
 

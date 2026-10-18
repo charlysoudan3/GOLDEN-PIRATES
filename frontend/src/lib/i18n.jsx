@@ -387,6 +387,10 @@ const fr = {
       exportPdf: "EXPORT PDF",
       exportBusy: "GÉNÉRATION…",
       exportDone: "Registre exporté — bonne réunion d'officiers, Capitaine !",
+      exportAskTitle: "GÉNÉRER LE DOCUMENT",
+      exportAskSub: "Le document sera entièrement rédigé dans la langue choisie — titres, colonnes, sections, statuts et notes.",
+      exportFr: "EN FRANÇAIS",
+      exportEn: "IN ENGLISH",
     },
     toast: {
       welcome: (email) => `Bien le bonjour, Capitaine — ${email}`,
@@ -800,6 +804,10 @@ const en = {
       exportPdf: "PDF EXPORT",
       exportBusy: "GENERATING…",
       exportDone: "Register exported — good council meeting, Captain!",
+      exportAskTitle: "GENERATE THE DOCUMENT",
+      exportAskSub: "The document will be fully written in the chosen language — titles, columns, sections, statuses and notes.",
+      exportFr: "IN FRENCH",
+      exportEn: "IN ENGLISH",
     },
     toast: {
       welcome: (email) => `Greetings, Captain — ${email}`,

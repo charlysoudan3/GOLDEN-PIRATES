@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { ChevronDown, LogOut, Search, Trash2, MessagesSquare, Anchor, Mail, KeyRound, Eye, EyeOff, Lock, Fingerprint, FileSpreadsheet, FileText, Loader2, Feather } from "lucide-react";
+import { ChevronDown, LogOut, Search, Trash2, MessagesSquare, Anchor, Mail, KeyRound, Eye, EyeOff, Lock, Fingerprint, FileSpreadsheet, FileText, Loader2, Feather, X } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
@@ -572,6 +572,7 @@ export default function Admin() {
   const [activeConv, setActiveConv] = useState(null);
   const [badges, setBadges] = useState({ unread: 0, pending: 0 });
   const [exporting, setExporting] = useState(null);
+  const [langAsk, setLangAsk] = useState(null);
 
   // Lien direct du footer Conseil → onglet MESSAGERIE (/admin#messagerie)
   useEffect(() => {
@@ -662,16 +663,18 @@ export default function Admin() {
     }
   };
 
-  const downloadExport = async (fmt) => {
+  const downloadExport = async (fmt, lang = "fr") => {
     if (exporting) return;
     setExporting(fmt);
+    setLangAsk(null);
     try {
       // Délai étendu : un gros registre sur réseau lent ne doit pas casser l'export
-      const { data } = await api.get(`/admin/export/${fmt}`, { responseType: "blob", timeout: 120000 });
+      const { data, headers } = await api.get(`/admin/export/${fmt}`, { params: { lang }, responseType: "blob", timeout: 120000 });
+      const m = /filename="?([^";]+)"?/.exec(headers?.["content-disposition"] || "");
       const url = URL.createObjectURL(data);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `golden-pirates-registre-${new Date().toISOString().slice(0, 10)}.${fmt}`;
+      link.download = m ? m[1] : `golden-pirates-registre-${new Date().toISOString().slice(0, 10)}.${fmt}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -822,8 +825,8 @@ export default function Admin() {
                       <div className="flex gap-2" data-testid="admin-export-cluster">
                         <button
                           data-testid="admin-export-xlsx"
-                          onClick={() => downloadExport("xlsx")}
-                          disabled={exporting !== null}
+                          onClick={() => setLangAsk("xlsx")}
+                          disabled={exporting !== null || langAsk !== null}
                           className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-mono2 text-[10px] tracking-[0.2em] px-3.5 py-2.5 border border-gold/30 text-gold hover:bg-gold/10 hover:border-gold/60 disabled:opacity-50 transition-all"
                         >
                           <FileSpreadsheet className="w-4 h-4 shrink-0" />
@@ -831,8 +834,8 @@ export default function Admin() {
                         </button>
                         <button
                           data-testid="admin-export-pdf"
-                          onClick={() => downloadExport("pdf")}
-                          disabled={exporting !== null}
+                          onClick={() => setLangAsk("pdf")}
+                          disabled={exporting !== null || langAsk !== null}
                           className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-mono2 text-[10px] tracking-[0.2em] px-3.5 py-2.5 border border-gold/30 text-gold hover:bg-gold/10 hover:border-gold/60 disabled:opacity-50 transition-all"
                         >
                           <FileText className="w-4 h-4 shrink-0" />
@@ -870,6 +873,48 @@ export default function Admin() {
           )}
         </div>
       </main>
+      {langAsk && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/85 backdrop-blur-sm px-4"
+          onClick={() => setLangAsk(null)}
+        >
+          <div
+            data-testid="export-lang-modal"
+            className="relative w-full max-w-md border-2 border-gold/60 bg-deck p-8 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              data-testid="export-lang-cancel"
+              onClick={() => setLangAsk(null)}
+              aria-label="Fermer"
+              className="absolute top-3 right-3 text-mist hover:text-gold transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <p className="font-display text-3xl text-gold uppercase tracking-wide mb-3">{a.dash.exportAskTitle}</p>
+            <p className="font-fell text-base text-mist mb-6">{a.dash.exportAskSub}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                data-testid="export-lang-fr"
+                onClick={() => downloadExport(langAsk, "fr")}
+                className="font-mono2 text-xs tracking-[0.25em] py-3.5 border border-gold/40 text-gold hover:bg-gold/10 transition-all"
+              >
+                {a.dash.exportFr}
+              </button>
+              <button
+                type="button"
+                data-testid="export-lang-en"
+                onClick={() => downloadExport(langAsk, "en")}
+                className="font-mono2 text-xs tracking-[0.25em] py-3.5 border border-gold/40 text-gold hover:bg-gold/10 transition-all"
+              >
+                {a.dash.exportEn}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Footer />
     </div>
   );
