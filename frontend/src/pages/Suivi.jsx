@@ -288,7 +288,7 @@ export default function Suivi() {
     <div className="bg-ink min-h-screen flex flex-col">
       <Nav />
       <main className="flex-1 pt-28 md:pt-36 pb-24">
-        <section data-testid="status-section" className="max-w-3xl mx-auto px-5 sm:px-8">
+        <section data-testid="status-section" className="max-w-4xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-12">
             <p className="font-mono2 text-[11px] tracking-[0.35em] text-gold mb-4">{s.eyebrow}</p>
             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-bone leading-[1.02] mb-5 uppercase">
@@ -544,15 +544,15 @@ export default function Suivi() {
                         aria-selected={active}
                         data-testid={`tab-${t.id}`}
                         onClick={() => setTab(t.id)}
-                        className={`relative flex items-center gap-2 whitespace-nowrap px-3 sm:px-5 py-3 font-mono2 text-[9px] sm:text-[10px] tracking-[0.25em] transition-all duration-300 border-b-2 -mb-px ${
+                        className={`relative flex items-center gap-1.5 sm:gap-2 whitespace-nowrap px-2 sm:px-5 py-3 font-mono2 text-[9px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.25em] transition-all duration-300 border-b-2 -mb-px ${
                           active
                             ? "text-gold border-gold"
                             : "text-mist border-transparent hover:text-gold hover:border-gold/40"
                         }`}
                       >
                         <Icon className="w-4 h-4 shrink-0" />
-                        <span className="hidden sm:inline">{t.label}</span>
-                        <span className="sm:hidden">{t.label.split(" ")[0]}</span>
+                        <span className="hidden lg:inline">{t.label}</span>
+                        <span className="lg:hidden">{t.label.split(" ")[0]}</span>
                         {t.badge && (
                           <span className={`font-mono2 text-[8px] px-1.5 py-0.5 ${t.badge === "•" ? "bg-blood text-bone rounded-full" : "bg-blood text-bone"}`}>
                             {t.badge}
