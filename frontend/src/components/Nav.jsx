@@ -113,7 +113,7 @@ export default function Nav() {
           </button>
 
           {/* LES ONGLETS DU DOCK — visibles directement, plus besoin de menu sur grand écran */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+          <nav className="hidden xl:flex items-center gap-1">
             {DOCK_TABS.map((t) => (
               <button
                 key={t.id}
@@ -183,7 +183,7 @@ export default function Nav() {
               onClick={() => setOpen(true)}
               aria-label="Menu"
               aria-expanded={open}
-              className="lg:hidden group flex items-center gap-2 border border-gold/40 bg-[#0C121C]/70 backdrop-blur px-2.5 py-2 hover:border-gold hover:shadow-[0_0_25px_rgba(212,175,55,0.25)] transition-all duration-300"
+              className="xl:hidden group flex items-center gap-2 border border-gold/40 bg-[#0C121C]/70 backdrop-blur px-2.5 py-2 hover:border-gold hover:shadow-[0_0_25px_rgba(212,175,55,0.25)] transition-all duration-300"
             >
               <CompassRose className="w-6 h-6 animate-spin-slow" />
               <span className="hidden sm:block font-display text-lg text-gold tracking-wider">MENU</span>
@@ -200,7 +200,7 @@ export default function Nav() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: EASE }}
-            className="fixed inset-0 z-[85] bg-ink/70 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[85] bg-ink/70 backdrop-blur-sm xl:hidden"
             onClick={() => setOpen(false)}
             data-testid="nav-drawer-overlay"
           >
