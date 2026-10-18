@@ -1,80 +1,127 @@
 {
-  "project_name": "GOLDEN PIRATES - Kingdom 1023 Recruitment Hero",
-  "context": "Hero section reorganization for the GOLDEN PIRATES alliance recruitment portal (Kingdom 1023, Call of Dragons). Eliminates sticker clutter and scattered badges to deliver a highly strategic, 100% pirate visual hierarchy where the October season countdown serves as the 'secret weapon' focal point for visitors, recruits, and administrators.",
-  "theme": "Dark Pirate War Room (#06090E ink, burnished gold #D4AF37, parchment bone #E8D8C8, blood red #B91C1C)",
+  "project_name": "Golden Pirates Recruit Portal - Espaces Recrue (Royaume 1023)",
+  "app_type": "Pirate Web App & Recruitment Portal (React JS + Tailwind CSS + Framer Motion)",
+  "design_archetype": "Gothic Nautical & Tactical Pirate Command Center",
+  "theme": "Dark Velvet & Gold Parchment (Ink #06090E, Gold #D4AF37, Bone Parchment #F5EFE0, Crimson #8B0000)",
+  "target_audience": "Recruits, Pirates, Council Officers, Kingdom 1023 Members across Desktop, Tablet, iOS, and Smartphone",
+  "key_problems_addressed": [
+    "Eliminated vertical stack chaos (~8 long blocks collapse together)",
+    "Modular Tabbed & Grid Architecture (Status & Dossier, Council Bottle Chat, Recruits Den, Bottle Shelf)",
+    "Added explicit sorting (Trier par date, statut, nom, puissance) and quick search filters across all lists",
+    "Enhanced button states, active feedback, accessible hit targets, and clear visual hierarchy for mobile/tablet/desktop",
+    "Restored functionality & clarity for re-applications, sanctuary cooldowns, code lookup, and peer messaging"
+  ],
   "typography": {
-    "display": "\"Pirata One\", \"Cinzel Decorative\", serif",
-    "decor": "\"Cinzel Decorative\", serif",
-    "body_serif": "\"IM Fell English\", Georgia, serif",
-    "mono": "\"JetBrains Mono\", monospace",
-    "hierarchy": {
-      "hero_title": "text-[clamp(3.5rem,10vw,7.5rem)] leading-[0.9] tracking-tight font-display text-gold drop-shadow-[0_0_35px_rgba(212,175,55,0.35)]",
-      "hero_title_stroke": "text-[clamp(3.5rem,10vw,7.5rem)] leading-[0.9] tracking-tight font-display text-stroke-gold",
-      "hero_subtitle": "text-base sm:text-lg md:text-xl font-fell italic text-bone/90 max-w-xl mx-auto leading-relaxed",
-      "command_badge": "font-mono text-[10px] sm:text-xs tracking-[0.25em] uppercase text-gold",
-      "countdown_digits": "font-display text-3xl sm:text-4xl text-gold tabular-nums",
-      "cta_button": "font-display text-lg sm:text-xl tracking-widest uppercase px-8 sm:px-10 py-3.5 sm:py-4 transition-all duration-300"
+    "headings": {
+      "family": "'Pirata One', gothic, serif",
+      "h1": "text-3xl sm:text-4xl lg:text-5xl font-normal tracking-wide text-[#D4AF37] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
+      "h2": "text-2xl sm:text-3xl font-normal tracking-wide text-[#F5EFE0]",
+      "h3": "text-lg sm:text-xl font-normal text-[#D4AF37]",
+      "h4": "text-base sm:text-lg font-medium text-[#F5EFE0]"
+    },
+    "subtitles_and_body_serif": {
+      "family": "'IM Fell English', serif",
+      "style": "italic",
+      "classes": "font-serif italic text-sm sm:text-base text-[#F5EFE0]/80"
+    },
+    "mono_code": {
+      "family": "ui-monospace, 'JetBrains Mono', SFMono-Regular, monospace",
+      "classes": "font-mono tracking-widest uppercase text-amber-300 font-bold bg-[#0D131F] px-2 py-1 rounded border border-[#D4AF37]/30"
     }
   },
   "colors": {
-    "background_ink": "#06090E",
-    "surface_deep": "#0A0F18",
-    "surface_deck": "#0F1722",
-    "surface_parchment": "#161D27",
+    "background_base": "#06090E",
+    "background_surface": "#0F1622",
+    "background_surface_elevated": "#162030",
+    "parchment_text": "#F5EFE0",
     "gold_primary": "#D4AF37",
-    "gold_light": "#F5D77F",
-    "gold_dark": "#9A7B1C",
-    "bone_text": "#E8D8C8",
-    "mist_muted": "#94A3B8",
-    "blood_accent": "#B91C1C",
-    "blood_glow": "#DC2626",
-    "border_gold_subtle": "rgba(212, 175, 55, 0.25)",
-    "border_gold_strong": "rgba(212, 175, 55, 0.6)"
+    "gold_hover": "#E5C158",
+    "gold_subtle": "rgba(212, 175, 55, 0.15)",
+    "crimson_alert": "#8B0000",
+    "crimson_hover": "#A00000",
+    "emerald_success": "#1B4D3E",
+    "border_gold_glow": "border border-[#D4AF37]/30 shadow-[0_0_12px_rgba(212,175,55,0.1)]",
+    "glass_panel": "backdrop-blur-xl bg-[#0F1622]/85 border border-[#D4AF37]/25 shadow-2xl"
   },
-  "visual_enhancers": {
-    "glassmorphism": "backdrop-blur-md bg-ink/75 border border-gold/30 shadow-[0_10px_30px_rgba(0,0,0,0.8)]",
-    "frame_plate": "box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.8)",
-    "glow_fuse": "drop-shadow-[0_0_12px_rgba(220,38,38,0.8)]",
-    "embers": "floating ambient gold particles rising from the countdown weapon plate",
-    "compass_rose": "subtle rotatable 3D compass rose background element responding to mouse hover perspective"
+  "layout_and_navigation": {
+    "header": "Sticky translucent pirate navigation bar with backdrop-blur-md, kingdom status pill, countdown tag, brand mark, and desktop/mobile quick tabs",
+    "suivi_page_architecture": {
+      "mode": "Modular Tabbed Hub with Top Quick Search Bar",
+      "top_bar": "Search tracking code GP-1023-XXXX with high contrast INTERROGER button + Collapsible recovery panel toggle",
+      "tab_navigation": [
+        {
+          "id": "dossier",
+          "label": "Mon Statut & Dossier",
+          "icon": "ShieldCheck / Scroll",
+          "content": "Status badge, Discord acceptance banner / sanctuary cooldown, 6 detailed dossier fields, Council notes, Re-application trigger"
+        },
+        {
+          "id": "bouteille",
+          "label": "Bouteille à la Mer",
+          "icon": "MessageSquare / Mail",
+          "content": "Council direct messaging channel, real-time feel chat, message deletion, status indicators"
+        },
+        {
+          "id": "taniere",
+          "label": "Tanière des Recrues",
+          "icon": "Users / Compass",
+          "content": "Peer search by pseudo, power sorting, filter tabs, active recruit list with chat modal/drawer"
+        },
+        {
+          "id": "etagere",
+          "label": "Étagère à Bouteilles",
+          "icon": "Database / Bookmark",
+          "content": "Device saved codes grid/list, quick filter (Actif / Archivé), VOIR, Retirer, and POSTULER À NOUVEAU actions"
+        }
+      ],
+      "notifications_drawer": "Floating gold parchment notification bell & side panel for latest kingdom announcements"
+    }
   },
-  "grids_and_layouts": {
-    "hero_structure": "Centrally orchestrated single-column War Room hero (max-w-5xl) eliminating sticker clutter. 5-Stage Strategic Hierarchy: Stage 1 (Tactical Status Command Ribbon) -> Stage 2 (Dominant GOLDEN PIRATES Title) -> Stage 3 (Evocative Lore Subtitle) -> Stage 4 (The Secret Weapon: Illuminated Countdown Relic) -> Stage 5 (Strategic CTAs & Ticker Bar).",
-    "countdown_relic_layout": "Horizontal framed brass-and-wood chest plate containing 4 tabular countdown blocks (JOURS / HEURES / MIN / SEC) with real-time flip motion, an animated burning fuse bar, and active ember sparks."
+  "component_guidelines": {
+    "buttons": "Custom gold-bordered pirate buttons (`bg-gradient-to-r from-[#D4AF37] to-[#B89028] text-[#06090E] font-bold shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200 border border-[#FFF0A5]/40`). NEVER use default blue or plain gray buttons.",
+    "inputs": "Parchment-tinted dark inputs (`bg-[#0A0F18] border border-[#D4AF37]/40 text-[#F5EFE0] placeholder-[#F5EFE0]/40 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] px-4 py-3 rounded-md font-mono text-sm shadow-inner`).",
+    "cards": "Textured dark leather & parchment panels with metallic gold corner trims or 1px stroke border (`bg-[#0F1622] border border-[#D4AF37]/30 rounded-lg p-5 sm:p-6 shadow-xl relative overflow-hidden`).",
+    "badges": "Custom status pills: Accepté (Emerald Green #1B4D3E + Gold text), En Examen (Gold #D4AF37 + Dark text), Refusé (Sanctuaire Crimson #8B0000 + Parchment text)."
   },
-  "motion": {
-    "entrance": "Framer Motion staggered reveal with smooth cubic-bezier easing [0.16, 1, 0.3, 1]",
-    "parallax_bg": "Scroll-based background y-translation and subtle zoom scale",
-    "compass_tilt": "Spring-based 3D rotation tracking mouse coordinates",
-    "digit_flip": "AnimatePresence y-axis slice transition for per-second digit updates",
-    "fuse_burn": "Dynamic percentage progress line with glowing flame icon and rising ember particles"
+  "sorting_and_filtering_controls": {
+    "recruits_den": "Sort selector: [Dernière activité, Puissance de combat (max->min), Statut, Alphabetique], Search input for pseudo",
+    "bottle_shelf": "Sort selector: [Date de sauvegarde, Statut de la candidature, Code GP], Filter buttons: [Tous, Validés, En attente, Refusés]"
   },
-  "accessibility": {
-    "contrast": "APCA high-contrast compliance with bone/gold text over deep ink background",
-    "test_ids": "Every key element MUST retain data-testid attributes: hero-section, hero-badge-kvk, hero-title, hero-subtitle, hero-countdown-wrap, hero-countdown, hero-cta-apply, hero-cta-track, hero-scroll-cue",
-    "reduced_motion": "Respect user prefers-reduced-motion settings by dampening parallax and flame animations"
+  "motion_and_effects": {
+    "tabs": "Smooth Framer Motion tab switcher (`layoutId='activeTab'`, smooth fade-in and scale-in 0.2s)",
+    "micro_interactions": "Haptic scale feel on hover/tap (`whileHover={{ scale: 1.02 }}`, `whileTap={{ scale: 0.97 }}`)",
+    "reduced_motion": "Respect `prefers-reduced-motion` with static fallbacks"
   },
-  "media": {
-    "hero_bg": "https://images.pexels.com/photos/38427508/pexels-photo-38427508.jpeg?auto=compress&cs=tinysrgb&w=1800",
-    "compass_svg": "Embedded precision SVG Compass Rose component with cardinal points and gold/blood red accents"
+  "image_urls": {
+    "vintage_map": "https://images.pexels.com/photos/20476788/pexels-photo-20476788.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "world_parchment_map": "https://images.pexels.com/photos/592753/pexels-photo-592753.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "nautical_compass_wood": "https://images.pexels.com/photos/32563237/pexels-photo-32563237.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "telescope_and_box": "https://images.pexels.com/photos/10728161/pexels-photo-10728161.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
   },
-  "component_paths": [
-    "/app/frontend/src/components/Hero.jsx",
-    "/app/frontend/src/components/Countdown.jsx"
-  ],
-  "instructions_to_main_agent": [
-    "Reorganize Hero.jsx to eliminate scattered sticker/badge bloat. Replace the multiple separate badges with a single unified 'Command Ribbon' at the top containing kingdom & season status with a pulsing blood red indicator.",
-    "Promote the Countdown timer in Hero.jsx as the undeniable 'Secret Weapon' focal point: frame it inside an elegant pirate relic plate with glowing embers and burning fuse.",
-    "Center align the main Hero text column to create a majestic, balanced, cinematic focal point.",
-    "Ensure all data-testid attributes are strictly preserved for test automation compatibility.",
-    "Maintain backward compatibility for the compact Countdown variants (`variant='line'`) used in forms and recruit tracking views.",
-    "Follow JS format (React .jsx files) as specified in project structure."
-  ],
-  "UNIVERSAL GUIDELINES FOR MAIN AGENT": {
-    "anti_slop": "Avoid generic centered white/gray SaaS designs. Maintain deep immersive pirate storytelling with rich textures, gold accents, gothic typography, and atmospheric lighting.",
-    "spacing": "Maintain generous vertical breathing room between section elements (py-16 to py-24).",
-    "transitions": "Never use transition: all. Specify individual properties like transform, opacity, background-color.",
-    "interactive_contrast": "Ensure buttons and links have distinct hover states with glow/shadow effects and high contrast text.",
-    "test_ids": "All interactive and key informational elements MUST include a data-testid attribute in kebab-case."
-  }
+  "testing_attributes": {
+    "mandatory": "All interactive elements, buttons, tabs, inputs, filters, sort dropdowns, and status badges MUST include data-testid attributes.",
+    "examples": [
+      "data-testid='suivi-search-input'",
+      "data-testid='suivi-search-button'",
+      "data-testid='tab-dossier'",
+      "data-testid='tab-bouteille'",
+      "data-testid='tab-taniere'",
+      "data-testid='tab-etagere'",
+      "data-testid='sort-recruits-select'",
+      "data-testid='filter-status-all'",
+      "data-testid='btn-reapply'",
+      "data-testid='btn-delete-message'",
+      "data-testid='saved-bottle-view-btn'",
+      "data-testid='saved-bottle-remove-btn'"
+    ]
+  },
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "You are working in a React JS environment (.js and .jsx files). Do NOT use TypeScript type annotations.",
+    "Do not keep the vertical 8-block stack on /suivi page. Reorganize into a clean tabbed/bento UI hierarchy so users never lose their place.",
+    "Make sure all action buttons (VOIR, Retirer, POSTULER À NOUVEAU, Chat recrue, Interroger le registre, Replier) work seamlessly with clear state feedback.",
+    "Implement real sorting dropdowns and filter buttons for the Recruits' Den and Bottle Shelf lists.",
+    "Maintain the immersive pirate brand identity (Ink #06090E, Gold #D4AF37, Parchment #F5EFE0, Gothic typography, leather card panels).",
+    "Ensure total responsiveness across Smartphone (iOS/Android touch hit targets >= 44px), Tablet, and Desktop displays.",
+    "Add data-testid to every interactive component for testing verification."
+  ]
 }

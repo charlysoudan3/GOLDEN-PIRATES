@@ -224,6 +224,14 @@ const fr = {
       error: "La mer est agitée — réessaie.",
       hint: "Puissance et statut visibles — jamais le Discord ni le code d'une autre recrue.",
     },
+    tabs: {
+      dossier: "MON STATUT & DOSSIER",
+      mer: "BOUTEILLE À LA MER",
+      taniere: "TANIÈRE DES RECRUES",
+      etagere: "ÉTAGÈRE À BOUTEILLES",
+      aria: "Les espaces de suivi",
+    },
+    rackEmpty: "Aucune bouteille sur cet appareil — interroge ton code de suivi et il viendra se poser ici.",
     noExp: "— aucune ligne dans le journal de bord —",
     fields: {
       pseudo: "PSEUDO",
@@ -599,6 +607,14 @@ const en = {
       error: "The sea is rough — try again.",
       hint: "Power and status visible — never another recruit's Discord or code.",
     },
+    tabs: {
+      dossier: "MY STATUS & FILE",
+      mer: "BOTTLE TO THE SEA",
+      taniere: "THE CREW'S DEN",
+      etagere: "THE BOTTLE SHELF",
+      aria: "Tracking areas",
+    },
+    rackEmpty: "No bottle on this device — check your tracking code and it will rest here.",
     noExp: "— no entry in the logbook —",
     fields: {
       pseudo: "USERNAME",

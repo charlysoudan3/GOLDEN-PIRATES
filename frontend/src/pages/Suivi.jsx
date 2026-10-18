@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Compass, FileQuestion, Bell, RefreshCw, ScrollText, Anchor as AnchorIcon, RotateCcw, X, HelpCircle, Check, Copy } from "lucide-react";
+import { Search, Compass, FileQuestion, Bell, RefreshCw, ScrollText, Anchor as AnchorIcon, RotateCcw, X, HelpCircle, Check, Copy, Users, MessageSquare, ShieldCheck, Database } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
@@ -32,6 +32,66 @@ const STATUS_DOT = {
   reserve: "bg-amber-400",
 };
 
+function RackBlock({ rack, onView, onDrop, s, c }) {
+  return (
+    <motion.div
+      data-testid="bottle-rack"
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: EASE }}
+      className="border border-gold/20 bg-deck/60 p-5 sm:p-6"
+    >
+      <p className="flex items-center gap-2 font-mono2 text-[10px] tracking-[0.3em] text-gold mb-4">
+        <AnchorIcon className="w-4 h-4" /> {s.rackTitle}
+        <span className="ml-auto font-mono2 text-[9px] text-mist">{rack.length}/6</span>
+      </p>
+      <ul className="space-y-2">
+        {rack.map((b) => (
+          <li
+            key={b.code}
+            data-testid={`rack-item-${b.code}`}
+            className="flex items-center justify-between gap-3 border border-gold/15 bg-ink/50 px-4 py-3"
+          >
+            <div className="min-w-0">
+              <p className="font-display text-lg text-bone truncate">
+                {b.pseudo} <span className="font-mono2 text-[9px] text-gold ml-1">{b.code}</span>
+              </p>
+              <p className="font-mono2 text-[8px] tracking-[0.25em] text-mist flex items-center gap-1.5 mt-0.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[b.status] || STATUS_DOT.pending}`} />
+                {c.status[b.status]?.label || c.status.pending.label}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                data-testid={`rack-view-${b.code}`}
+                onClick={() => onView(b.code)}
+                className="font-mono2 text-[9px] tracking-[0.25em] text-gold border border-gold/40 px-3 py-1.5 hover:bg-gold/10 transition-all"
+              >
+                {s.rackView}
+              </button>
+              <button
+                data-testid={`rack-drop-${b.code}`}
+                onClick={() => onDrop(b.code)}
+                aria-label={s.rackRemove}
+                className="p-1.5 text-mist/60 hover:text-bloodglow transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <button
+        data-testid="rack-reapply"
+        onClick={() => (window.location.href = "/#postuler")}
+        className="mt-4 w-full font-display text-xl tracking-wider uppercase py-3 border border-gold/40 text-gold hover:bg-gold/10 transition-all"
+      >
+        {s.reapply}
+      </button>
+    </motion.div>
+  );
+}
+
 export default function Suivi() {
   const { c, lang } = useLang();
   const s = c.suivi;
@@ -43,6 +103,7 @@ export default function Suivi() {
   const [notFound, setNotFound] = useState(false);
   const [notif, setNotif] = useState(null);
   const [rack, setRack] = useState(loadRack);
+  const [tab, setTab] = useState("dossier");
   const [showRecover, setShowRecover] = useState(false);
   const [recRoute, setRecRoute] = useState("discord");
   const [rec, setRec] = useState({ pseudo: "", discord: "", power: "" });
@@ -119,6 +180,7 @@ export default function Suivi() {
     try {
       const { data } = await api.get(`/applications/track/${encodeURIComponent(clean)}`);
       setResult(data);
+      setTab("dossier");
       saveToRack(data.tracking_code, data.pseudo, data.status);
     } catch (err) {
       setResult(null);
@@ -178,12 +240,31 @@ export default function Suivi() {
   };
 
   const copyRecovered = () => {
-    try {
-      navigator.clipboard?.writeText(recRes.tracking_code);
+    const tcode = recRes?.tracking_code;
+    if (!tcode) return;
+    const done = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* presse-papier indisponible : la recrue recopie à la main */
+    };
+    const fallback = () => {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = tcode;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        done();
+      } catch {
+        /* presse-papier indisponible : la recrue recopie à la main */
+      }
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(tcode).then(done).catch(fallback);
+    } else {
+      fallback();
     }
   };
 
@@ -195,6 +276,13 @@ export default function Suivi() {
   };
 
   const locale = lang === "fr" ? "fr-FR" : "en-GB";
+
+  const TABS = [
+    { id: "dossier", label: s.tabs.dossier, icon: ShieldCheck, badge: result?.new_status || result?.new_note ? "•" : null },
+    { id: "mer", label: s.tabs.mer, icon: MessageSquare, badge: notif?.unread_messages > 0 ? notif.unread_messages : null },
+    { id: "taniere", label: s.tabs.taniere, icon: Users, badge: null },
+    { id: "etagere", label: s.tabs.etagere, icon: Database, badge: rack.length > 0 ? rack.length : null },
+  ];
 
   return (
     <div className="bg-ink min-h-screen flex flex-col">
@@ -398,6 +486,13 @@ export default function Suivi() {
                   <li data-testid="notif-item-messages" className="font-fell text-base text-bone/90 flex items-center gap-2.5">
                     <ScrollText className="w-4 h-4 text-gold shrink-0" />
                     {c.notif.newMsgs(notif.unread_messages)}
+                    <button
+                      data-testid="notif-goto-mer"
+                      onClick={() => setTab("mer")}
+                      className="font-mono2 text-[9px] tracking-[0.25em] border border-gold/50 text-gold px-3 py-1.5 hover:bg-gold/10 transition-all"
+                    >
+                      {s.tabs.mer}
+                    </button>
                   </li>
                 )}
                 {notif.new_status && (
@@ -406,7 +501,7 @@ export default function Suivi() {
                     {c.notif.statusChanged}
                     <button
                       data-testid="notif-update-btn"
-                      onClick={() => runCheck(result.tracking_code)}
+                      onClick={() => { runCheck(result.tracking_code); setTab("dossier"); }}
                       className="font-mono2 text-[9px] tracking-[0.25em] border border-gold/50 text-gold px-3 py-1.5 hover:bg-gold/10 transition-all"
                     >
                       {c.notif.updateBtn}
@@ -426,226 +521,248 @@ export default function Suivi() {
           <AnimatePresence>
             {result && (
               <motion.div
-                data-testid="status-result-card"
+                data-testid="suivi-tabs-hub"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.6, ease: EASE }}
-                className="mt-8 border border-gold/25 bg-deck/80 frame-plate p-7 sm:p-9"
+                className="mt-10"
               >
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                  <div>
-                    <p className="font-mono2 text-[9px] tracking-[0.3em] text-mist mb-1">{s.codeLabel}</p>
-                    <p className="font-display text-3xl text-bone">{result.pseudo}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={result.status} size="lg" />
-                    {result.new_status && (
-                      <span
-                        data-testid="status-new-chip"
-                        className="bg-blood text-bone font-mono2 text-[9px] tracking-[0.25em] px-2 py-1"
+                <div
+                  role="tablist"
+                  aria-label={s.tabs.aria}
+                  data-testid="suivi-tablist"
+                  className="sticky top-16 md:top-20 z-30 bg-ink/95 backdrop-blur flex gap-1 sm:gap-2 border-b border-gold/20 overflow-x-auto"
+                >
+                  {TABS.map((t) => {
+                    const Icon = t.icon;
+                    const active = tab === t.id;
+                    return (
+                      <button
+                        key={t.id}
+                        role="tab"
+                        aria-selected={active}
+                        data-testid={`tab-${t.id}`}
+                        onClick={() => setTab(t.id)}
+                        className={`relative flex items-center gap-2 whitespace-nowrap px-3 sm:px-5 py-3 font-mono2 text-[9px] sm:text-[10px] tracking-[0.25em] transition-all duration-300 border-b-2 -mb-px ${
+                          active
+                            ? "text-gold border-gold"
+                            : "text-mist border-transparent hover:text-gold hover:border-gold/40"
+                        }`}
                       >
-                        {c.notif.newChip}
-                      </span>
-                    )}
-                  </div>
+                        <Icon className="w-4 h-4 shrink-0" />
+                        <span className="hidden sm:inline">{t.label}</span>
+                        <span className="sm:hidden">{t.label.split(" ")[0]}</span>
+                        {t.badge && (
+                          <span className={`font-mono2 text-[8px] px-1.5 py-0.5 ${t.badge === "•" ? "bg-blood text-bone rounded-full" : "bg-blood text-bone"}`}>
+                            {t.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-                <div className="border-t border-gold/15 pt-5 space-y-5">
-                  <p className="font-fell text-lg text-bone/85">{c.status[result.status]?.long || c.status.pending.long}</p>
-                  {result.status === "pending" && (
-                    <p
-                      data-testid="status-wait-note"
-                      className="font-mono2 text-[9px] tracking-[0.25em] text-gold border border-gold/25 bg-gold/5 px-3 py-2 inline-block"
-                    >
-                      {s.waitNote}
-                    </p>
-                  )}
-                  {result.status === "accepted" && (
-                    <div data-testid="status-discord-cta" className="border border-emerald-500/40 bg-emerald-500/5 p-5">
-                      <p className="font-mono2 text-[9px] tracking-[0.3em] text-emerald-400 mb-2">{s.discordCta.eyebrow}</p>
-                      <p className="font-fell text-lg text-bone/90 mb-4">{s.discordCta.title}</p>
-                      <a
-                        href={DISCORD_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-testid="status-discord-link"
-                        className="inline-flex items-center gap-3 font-display text-xl tracking-wider px-6 py-3 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.35)] transition-all"
+
+                <div className="mt-8" data-testid={`panel-${tab}`}>
+                  {tab === "dossier" && (
+                    <div className="space-y-6">
+                      <motion.div
+                        data-testid="status-result-card"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, ease: EASE }}
+                        className="border border-gold/25 bg-deck/80 frame-plate p-7 sm:p-9"
                       >
-                        <AnchorIcon className="w-5 h-5" /> {s.discordCta.btn}
-                      </a>
+                        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                          <div>
+                            <p className="font-mono2 text-[9px] tracking-[0.3em] text-mist mb-1">{s.codeLabel}</p>
+                            <p className="font-display text-3xl text-bone">{result.pseudo}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <StatusBadge status={result.status} size="lg" />
+                            {result.new_status && (
+                              <span
+                                data-testid="status-new-chip"
+                                className="bg-blood text-bone font-mono2 text-[9px] tracking-[0.25em] px-2 py-1"
+                              >
+                                {c.notif.newChip}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="border-t border-gold/15 pt-5 space-y-5">
+                          <p className="font-fell text-lg text-bone/85">{c.status[result.status]?.long || c.status.pending.long}</p>
+                          {result.status === "pending" && (
+                            <p
+                              data-testid="status-wait-note"
+                              className="font-mono2 text-[9px] tracking-[0.25em] text-gold border border-gold/25 bg-gold/5 px-3 py-2 inline-block"
+                            >
+                              {s.waitNote}
+                            </p>
+                          )}
+                          {result.status === "accepted" && (
+                            <div data-testid="status-discord-cta" className="border border-emerald-500/40 bg-emerald-500/5 p-5">
+                              <p className="font-mono2 text-[9px] tracking-[0.3em] text-emerald-400 mb-2">{s.discordCta.eyebrow}</p>
+                              <p className="font-fell text-lg text-bone/90 mb-4">{s.discordCta.title}</p>
+                              <a
+                                href={DISCORD_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                data-testid="status-discord-link"
+                                className="inline-flex items-center gap-3 font-display text-xl tracking-wider px-6 py-3 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.35)] transition-all"
+                              >
+                                <AnchorIcon className="w-5 h-5" /> {s.discordCta.btn}
+                              </a>
+                            </div>
+                          )}
+
+                          <div data-testid="status-dossier" className="border border-gold/20 bg-ink/40 p-5">
+                            <p className="font-mono2 text-[10px] tracking-[0.3em] text-gold mb-4">{s.dossierTitle}</p>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              {[
+                                [s.fields.pseudo, result.pseudo],
+                                [s.fields.power, result.power],
+                                [s.fields.troops, result.troops],
+                                [s.fields.activity, result.activity],
+                                [s.fields.discord, result.discord],
+                              ].map(([label, value]) => (
+                                <div key={label}>
+                                  <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{label}</p>
+                                  <p className="font-fell text-base text-bone/85 break-words">{value || "—"}</p>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-4">
+                              <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{s.fields.experience}</p>
+                              <p className="font-fell text-base text-bone/85 whitespace-pre-wrap break-words">
+                                {result.experience || s.noExp}
+                              </p>
+                            </div>
+                            <div className="mt-4">
+                              <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{s.fields.message}</p>
+                              <p className="font-fell text-base text-bone/85 whitespace-pre-wrap break-words">{result.message}</p>
+                            </div>
+                          </div>
+
+                          {result.note ? (
+                            <p className="font-fell italic text-base text-goldlight border-l-2 border-gold/40 pl-4">
+                              {c.status.note}
+                              {result.note}
+                              {result.new_note && (
+                                <span
+                                  data-testid="note-new-chip"
+                                  className="ml-2 bg-blood text-bone font-mono2 text-[9px] tracking-[0.25em] px-2 py-0.5"
+                                >
+                                  {c.notif.newChip}
+                                </span>
+                              )}
+                            </p>
+                          ) : null}
+
+                          <div className="flex flex-wrap gap-x-8 gap-y-2 pt-2 font-mono2 text-[10px] tracking-[0.2em] text-mist">
+                            <span>
+                              {c.status.code}
+                              <span className="text-gold">{result.tracking_code}</span>
+                            </span>
+                            {result.created_at ? (
+                              <span>
+                                {c.status.filedOn}
+                                <span className="text-bone/80">
+                                  {new Date(result.created_at).toLocaleDateString(locale, {
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                  })}
+                                </span>
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </motion.div>
+
+                      {result.status === "rejected" && (() => {
+                        const locked = !!result.reapply_at && new Date(result.reapply_at) > new Date();
+                        return (
+                          <motion.div
+                            data-testid="reapply-block"
+                            initial={{ opacity: 0, y: 24 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, ease: EASE }}
+                            className="border border-amber-500/40 bg-amber-500/5 p-6 text-center"
+                          >
+                            <p className="font-fell italic text-base text-bone/80 mb-4">
+                              {locked
+                                ? s.reapplyLocked(new Date(result.reapply_at).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }))
+                                : s.reapplyHint}
+                            </p>
+                            {locked ? (
+                              <span
+                                data-testid="reapply-locked-chip"
+                                className="inline-block font-mono2 text-[10px] tracking-[0.25em] text-amber-400 border border-amber-500/50 bg-amber-500/10 px-4 py-2"
+                              >
+                                {s.reapplyLockedLabel}
+                              </span>
+                            ) : (
+                              <button
+                                data-testid="reapply-btn"
+                                onClick={() => navigate("/#postuler")}
+                                className="font-display text-xl tracking-wider uppercase px-8 py-3 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+                              >
+                                {s.reapply}
+                              </button>
+                            )}
+                          </motion.div>
+                        );
+                      })()}
                     </div>
                   )}
 
-                  <div data-testid="status-dossier" className="border border-gold/20 bg-ink/40 p-5">
-                    <p className="font-mono2 text-[10px] tracking-[0.3em] text-gold mb-4">{s.dossierTitle}</p>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      {[
-                        [s.fields.pseudo, result.pseudo],
-                        [s.fields.power, result.power],
-                        [s.fields.troops, result.troops],
-                        [s.fields.activity, result.activity],
-                        [s.fields.discord, result.discord],
-                      ].map(([label, value]) => (
-                        <div key={label}>
-                          <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{label}</p>
-                          <p className="font-fell text-base text-bone/85 break-words">{value || "—"}</p>
+                  {tab === "mer" && (
+                    <motion.div
+                      data-testid="chat-section"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, ease: EASE }}
+                    >
+                      <ChatBox code={result.tracking_code} sender="recruit" testPrefix="chat" />
+                    </motion.div>
+                  )}
+
+                  {tab === "taniere" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, ease: EASE }}
+                    >
+                      <PeerDen code={result.tracking_code} />
+                    </motion.div>
+                  )}
+
+                  {tab === "etagere" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, ease: EASE }}
+                    >
+                      {rack.length > 0 ? (
+                        <RackBlock rack={rack} onView={viewRackCode} onDrop={dropFromRack} s={s} c={c} />
+                      ) : (
+                        <div data-testid="rack-empty" className="border border-gold/20 bg-deck/60 p-8 text-center">
+                          <AnchorIcon className="w-6 h-6 text-gold/60 mx-auto mb-3" />
+                          <p className="font-fell italic text-base text-bone/75">{s.rackEmpty}</p>
                         </div>
-                      ))}
-                    </div>
-                    <div className="mt-4">
-                      <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{s.fields.experience}</p>
-                      <p className="font-fell text-base text-bone/85 whitespace-pre-wrap break-words">
-                        {result.experience || s.noExp}
-                      </p>
-                    </div>
-                    <div className="mt-4">
-                      <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{s.fields.message}</p>
-                      <p className="font-fell text-base text-bone/85 whitespace-pre-wrap break-words">{result.message}</p>
-                    </div>
-                  </div>
-
-                  {result.note ? (
-                    <p className="font-fell italic text-base text-goldlight border-l-2 border-gold/40 pl-4">
-                      {c.status.note}
-                      {result.note}
-                      {result.new_note && (
-                        <span
-                          data-testid="note-new-chip"
-                          className="ml-2 bg-blood text-bone font-mono2 text-[9px] tracking-[0.25em] px-2 py-0.5"
-                        >
-                          {c.notif.newChip}
-                        </span>
                       )}
-                    </p>
-                  ) : null}
-
-                  <div className="flex flex-wrap gap-x-8 gap-y-2 pt-2 font-mono2 text-[10px] tracking-[0.2em] text-mist">
-                    <span>
-                      {c.status.code}
-                      <span className="text-gold">{result.tracking_code}</span>
-                    </span>
-                    {result.created_at ? (
-                      <span>
-                        {c.status.filedOn}
-                        <span className="text-bone/80">
-                          {new Date(result.created_at).toLocaleDateString(locale, {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </span>
-                    ) : null}
-                  </div>
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {result && result.status === "rejected" && (() => {
-            const locked = !!result.reapply_at && new Date(result.reapply_at) > new Date();
-            return (
-              <motion.div
-                data-testid="reapply-block"
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: EASE }}
-                className="mt-6 border border-amber-500/40 bg-amber-500/5 p-6 text-center"
-              >
-                <p className="font-fell italic text-base text-bone/80 mb-4">
-                  {locked
-                    ? s.reapplyLocked(new Date(result.reapply_at).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }))
-                    : s.reapplyHint}
-                </p>
-                {locked ? (
-                  <span
-                    data-testid="reapply-locked-chip"
-                    className="inline-block font-mono2 text-[10px] tracking-[0.25em] text-amber-400 border border-amber-500/50 bg-amber-500/10 px-4 py-2"
-                  >
-                    {s.reapplyLockedLabel}
-                  </span>
-                ) : (
-                  <button
-                    data-testid="reapply-btn"
-                    onClick={() => navigate("/#postuler")}
-                    className="font-display text-xl tracking-wider uppercase px-8 py-3 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
-                  >
-                    {s.reapply}
-                  </button>
-                )}
-              </motion.div>
-            );
-          })()}
-
-          {result && <PeerDen code={result.tracking_code} />}
-
-          {rack.length > 0 && (
-            <motion.div
-              data-testid="bottle-rack"
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE }}
-              className="mt-8 border border-gold/20 bg-deck/60 p-5 sm:p-6"
-            >
-              <p className="flex items-center gap-2 font-mono2 text-[10px] tracking-[0.3em] text-gold mb-4">
-                <AnchorIcon className="w-4 h-4" /> {s.rackTitle}
-              </p>
-              <ul className="space-y-2">
-                {rack.map((b) => (
-                  <li
-                    key={b.code}
-                    data-testid={`rack-item-${b.code}`}
-                    className="flex items-center justify-between gap-3 border border-gold/15 bg-ink/50 px-4 py-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-display text-lg text-bone truncate">
-                        {b.pseudo} <span className="font-mono2 text-[9px] text-gold ml-1">{b.code}</span>
-                      </p>
-                      <p className="font-mono2 text-[8px] tracking-[0.25em] text-mist flex items-center gap-1.5 mt-0.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[b.status] || STATUS_DOT.pending}`} />
-                        {c.status[b.status]?.label || c.status.pending.label}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        data-testid={`rack-view-${b.code}`}
-                        onClick={() => viewRackCode(b.code)}
-                        className="font-mono2 text-[9px] tracking-[0.25em] text-gold border border-gold/40 px-3 py-1.5 hover:bg-gold/10 transition-all"
-                      >
-                        {s.rackView}
-                      </button>
-                      <button
-                        data-testid={`rack-drop-${b.code}`}
-                        onClick={() => dropFromRack(b.code)}
-                        aria-label={s.rackRemove}
-                        className="p-1.5 text-mist/60 hover:text-bloodglow transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <button
-                data-testid="rack-reapply"
-                onClick={() => navigate("/#postuler")}
-                className="mt-4 w-full font-display text-xl tracking-wider uppercase py-3 border border-gold/40 text-gold hover:bg-gold/10 transition-all"
-              >
-                {s.reapply}
-              </button>
-            </motion.div>
-          )}
-
-          {result && (
-            <motion.div
-              data-testid="chat-section"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE }}
-              className="mt-10"
-            >
-              <ChatBox code={result.tracking_code} sender="recruit" testPrefix="chat" />
-            </motion.div>
+          {!result && rack.length > 0 && (
+            <div className="mt-8">
+              <RackBlock rack={rack} onView={viewRackCode} onDrop={dropFromRack} s={s} c={c} />
+            </div>
           )}
         </section>
       </main>
