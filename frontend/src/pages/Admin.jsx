@@ -569,10 +569,17 @@ function ButinPanel() {
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [goal, setGoal] = useState("");
+  const [goalBusy, setGoalBusy] = useState(false);
+  const [goalSaved, setGoalSaved] = useState(false);
 
   const load = () =>
     api.get("/donators")
-      .then(({ data }) => { setItems(data.items || []); setTotal(data.total || 0); })
+      .then(({ data }) => {
+        setItems(data.items || []);
+        setTotal(data.total || 0);
+        setGoal((prev) => (prev === "" ? String(data.goal ?? "") : prev));
+      })
       .catch(() => {});
 
   useEffect(() => { load(); }, []);
@@ -604,6 +611,26 @@ function ButinPanel() {
       toast.success(a.butin.removed);
     } catch (err) {
       toast.error(formatApiError(err));
+    }
+  };
+
+  const saveGoal = async () => {
+    if (goalBusy) return;
+    const g = parseFloat((goal || "").replace(",", "."));
+    if (!(g >= 1)) {
+      toast.error(a.butin.goalInvalid);
+      return;
+    }
+    setGoalBusy(true);
+    try {
+      await api.put("/admin/butin/goal", { goal: g });
+      setGoalSaved(true);
+      setTimeout(() => setGoalSaved(false), 2500);
+      toast.success(a.butin.goalSaved);
+    } catch (err) {
+      toast.error(formatApiError(err));
+    } finally {
+      setGoalBusy(false);
     }
   };
 
@@ -645,6 +672,32 @@ function ButinPanel() {
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {saved ? a.butin.saved : a.butin.add}
+        </button>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-end gap-3 border border-gold/25 bg-deck/60 p-5 mb-8">
+        <div className="flex-1">
+          <label className="block font-mono2 text-[9px] tracking-[0.25em] text-gold/80 mb-1.5">{a.butin.goalLabel}</label>
+          <input
+            data-testid="butin-goal-input"
+            value={goal}
+            onChange={(e) => setGoal(e.target.value.replace(/[^\d.,]/g, ""))}
+            inputMode="decimal"
+            maxLength={8}
+            autoComplete="off"
+            className="w-full bg-ink/70 border border-gold/25 px-4 py-2.5 font-fell text-lg text-bone placeholder:text-bone/40 focus:border-gold transition-all"
+          />
+        </div>
+        <button
+          type="button"
+          data-testid="butin-goal-save"
+          onClick={saveGoal}
+          disabled={goalBusy || !(parseFloat((goal || "").replace(",", ".")) >= 1)}
+          className={`font-mono2 text-[10px] tracking-[0.2em] px-6 py-3 border transition-all duration-300 ${
+            goalSaved ? "bg-emerald-500/20 border-emerald-400/60 text-emerald-300" : "bg-gold text-ink border-gold hover:bg-goldlight"
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          {goalSaved ? a.butin.goalSaved : a.butin.goalSave}
         </button>
       </div>
 

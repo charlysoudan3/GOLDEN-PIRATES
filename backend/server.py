@@ -766,6 +766,21 @@ class DonatorIn(BaseModel):
     amount: float = Field(ge=0.5, le=100000)
 
 
+class ButinGoalIn(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    goal: float = Field(ge=1, le=100000)
+
+
+async def get_butin_goal():
+    # Objectif de butin réglé par le Conseil (réglage persistant) — 100 € par défaut.
+    doc = await db.site_settings.find_one({"_id": "butin"})
+    try:
+        g = float(doc.get("goal", 0)) if doc else 0.0
+    except (TypeError, ValueError):
+        g = 0.0
+    return round(g, 2) if g >= 1 else 100.0
+
+
 @api_router.get("/donators")
 async def donators_list():
     # Public — pseudo + montant + date uniquement ; jamais de données de contact.
@@ -773,6 +788,7 @@ async def donators_list():
     total = round(sum(float(d.get("amount", 0)) for d in docs), 2)
     return {
         "total": total,
+        "goal": await get_butin_goal(),
         "items": [{
             "id": str(d["_id"]),
             "pseudo": d.get("pseudo", ""),
@@ -798,6 +814,14 @@ async def donators_add(data: DonatorIn, _=Depends(require_admin)):
 async def donators_remove(donator_id: str, _=Depends(require_admin)):
     await db.donators.delete_one({"_id": ObjectId(donator_id)})
     return {"ok": True}
+
+
+@api_router.put("/admin/butin/goal")
+async def butin_goal_set(data: ButinGoalIn, _=Depends(require_admin)):
+    # Le Conseil règle l'objectif de la barre de progression du butin.
+    goal = round(float(data.goal), 2)
+    await db.site_settings.update_one({"_id": "butin"}, {"$set": {"goal": goal}}, upsert=True)
+    return {"ok": True, "goal": goal}
 
 
 @api_router.get("/admin/export/pdf")

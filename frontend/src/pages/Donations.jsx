@@ -19,6 +19,7 @@ export default function Donations() {
   const [coming, setComing] = useState(false);
   const [hallItems, setHallItems] = useState([]);
   const [hallTotal, setHallTotal] = useState(0);
+  const [goal, setGoal] = useState(0);
 
   useEffect(() => {
     let dead = false;
@@ -27,6 +28,7 @@ export default function Donations() {
         if (dead) return;
         setHallItems(data.items || []);
         setHallTotal(data.total || 0);
+        setGoal(Number(data.goal) || 0);
       })
       .catch(() => {});
     return () => { dead = true; };
@@ -55,6 +57,9 @@ export default function Donations() {
       setBusy(false);
     }
   };
+
+  const goalPct = goal > 0 ? Math.min(100, Math.round((hallTotal / goal) * 100)) : 0;
+  const goalReached = goal > 0 && hallTotal >= goal;
 
   return (
     <div className="min-h-screen bg-ink text-bone overflow-x-hidden">
@@ -294,9 +299,26 @@ export default function Donations() {
               {d.hall.title}
             </h2>
             <p className="font-fell italic text-base text-mist text-center mt-2 mb-8">{d.hall.sub}</p>
-            <p className="font-mono2 text-[11px] tracking-[0.3em] text-emerald-300 text-center mb-8" data-testid="donations-hall-total">
-              {d.hall.total} : {hallTotal.toFixed(2)} €
-            </p>
+            <div className="mb-8" data-testid="donations-progress">
+              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+                <p className="font-mono2 text-[10px] tracking-[0.3em] text-gold">{d.hall.goalLabel}</p>
+                <p className="font-mono2 text-[11px] tracking-[0.3em] text-emerald-300" data-testid="donations-hall-total">
+                  {hallTotal.toFixed(2)} €{goal > 0 ? ` / ${goal.toFixed(0)} €` : ""}
+                </p>
+              </div>
+              <div data-testid="donations-progress-bar" className="relative h-4 border border-gold/40 bg-ink/70 overflow-hidden">
+                <motion.div
+                  data-testid="donations-progress-fill"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${goalPct}%` }}
+                  transition={{ duration: 1.1, ease: EASE }}
+                  className={`h-full ${goalReached ? "bg-emerald-400" : "bg-gradient-to-r from-gold/70 to-gold"}`}
+                />
+              </div>
+              <p className="font-mono2 text-[9px] tracking-[0.25em] text-mist mt-2 text-right" data-testid="donations-progress-caption">
+                {goal > 0 ? `${goalPct} % ${d.hall.ofGoal}` : ""}{goalReached ? ` — ${d.hall.reached}` : ""}
+              </p>
+            </div>
             {hallItems.length > 0 ? (
               <div className="grid sm:grid-cols-2 gap-4">
                 {hallItems.map((it) => {
