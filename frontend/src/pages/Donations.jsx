@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLang } from "@/lib/i18n";
 import Seo from "@/lib/Seo";
@@ -17,6 +17,20 @@ export default function Donations() {
   const [custom, setCustom] = useState("");
   const [busy, setBusy] = useState(false);
   const [coming, setComing] = useState(false);
+  const [hallItems, setHallItems] = useState([]);
+  const [hallTotal, setHallTotal] = useState(0);
+
+  useEffect(() => {
+    let dead = false;
+    api.get("/donators")
+      .then(({ data }) => {
+        if (dead) return;
+        setHallItems(data.items || []);
+        setHallTotal(data.total || 0);
+      })
+      .catch(() => {});
+    return () => { dead = true; };
+  }, []);
 
   const chosenAmount = picked === "free"
     ? (parseFloat((custom || "").replace(",", ".")) || 0)
@@ -262,6 +276,52 @@ export default function Donations() {
               <Feather className="w-5 h-5 shrink-0" /> {d.trustTitle}
             </p>
             <p className="font-fell text-base text-bone/85 leading-relaxed">{d.trustText}</p>
+          </motion.div>
+        </section>
+
+        {/* LE HALL DES DONATEURS */}
+        <section className="max-w-4xl mx-auto px-5 sm:px-8 mt-16 sm:mt-24">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.7, ease: EASE }}
+          >
+            <h2 className="font-display text-3xl sm:text-4xl text-gold uppercase tracking-wide text-center" data-testid="donations-hall-title">
+              {d.hall.title}
+            </h2>
+            <p className="font-fell italic text-base text-mist text-center mt-2 mb-8">{d.hall.sub}</p>
+            <p className="font-mono2 text-[11px] tracking-[0.3em] text-emerald-300 text-center mb-8" data-testid="donations-hall-total">
+              {d.hall.total} : {hallTotal.toFixed(2)} €
+            </p>
+            {hallItems.length > 0 ? (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {hallItems.map((it) => {
+                  const tierName = it.amount >= 15 ? d.tierLabels[2] : it.amount >= 7 ? d.tierLabels[1] : d.tierLabels[0];
+                  return (
+                    <div
+                      key={it.id}
+                      data-testid="donations-hall-item"
+                      className="flex items-center gap-4 border border-gold/45 bg-gradient-to-r from-gold/12 via-gold/5 to-transparent p-4"
+                    >
+                      <div aria-hidden className="w-11 h-11 rounded-full bg-gold border-2 border-goldlight flex items-center justify-center shrink-0 rotate-3">
+                        <span className="font-display text-lg text-ink">{(it.pseudo || "?").trim().charAt(0).toUpperCase()}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-display text-lg text-bone truncate">{it.pseudo}</p>
+                        <p className="font-mono2 text-[8px] tracking-[0.2em] text-gold/80">
+                          {it.amount.toFixed(2)} € · {tierName}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="font-fell italic text-lg text-mist text-center border border-gold/20 bg-deck/50 p-8" data-testid="donations-hall-empty">
+                {d.hall.empty}
+              </p>
+            )}
           </motion.div>
         </section>
 

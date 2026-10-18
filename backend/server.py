@@ -10,6 +10,7 @@ from typing import Optional
 import os
 import io
 import jwt
+from bson import ObjectId
 import bcrypt
 import uuid
 import secrets
@@ -755,6 +756,46 @@ async def donations_paypal(amount: Optional[float] = None):
         sep = "&" if "?" in url else "?"
         full = f"{url}{sep}amount={amt}" if amt else url
     return {"configured": True, "url": full}
+
+
+class DonatorIn(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    pseudo: str = Field(min_length=2, max_length=40)
+    amount: float = Field(ge=0.5, le=100000)
+
+
+@api_router.get("/donators")
+async def donators_list():
+    # Public — pseudo + montant + date uniquement ; jamais de données de contact.
+    docs = await db.donators.find({}).sort("created_at", -1).to_list(500)
+    total = round(sum(float(d.get("amount", 0)) for d in docs), 2)
+    return {
+        "total": total,
+        "items": [{
+            "id": str(d["_id"]),
+            "pseudo": d.get("pseudo", ""),
+            "amount": d.get("amount", 0),
+            "created_at": d.get("created_at"),
+        } for d in docs],
+    }
+
+
+@api_router.post("/admin/donators")
+async def donators_add(data: DonatorIn, _=Depends(require_admin)):
+    # Le Conseil grave un donateur après chaque don PayPal reçu.
+    doc = {
+        "pseudo": safe_text(data.pseudo.strip())[:40],
+        "amount": round(float(data.amount), 2),
+        "created_at": now_utc().isoformat(),
+    }
+    await db.donators.insert_one(doc)
+    return {"ok": True}
+
+
+@api_router.delete("/admin/donators/{donator_id}")
+async def donators_remove(donator_id: str, _=Depends(require_admin)):
+    await db.donators.delete_one({"_id": ObjectId(donator_id)})
+    return {"ok": True}
 
 
 @api_router.get("/admin/export/pdf")

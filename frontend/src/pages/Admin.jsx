@@ -560,6 +560,128 @@ function ConvList({ onOpen }) {
   );
 }
 
+function ButinPanel() {
+  const { c, lang } = useLang();
+  const a = c.admin.dash;
+  const [items, setItems] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [pseudo, setPseudo] = useState("");
+  const [amount, setAmount] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const load = () =>
+    api.get("/donators")
+      .then(({ data }) => { setItems(data.items || []); setTotal(data.total || 0); })
+      .catch(() => {});
+
+  useEffect(() => { load(); }, []);
+
+  const add = async () => {
+    if (busy) return;
+    const amt = parseFloat((amount || "").replace(",", "."));
+    if (pseudo.trim().length < 2 || !(amt >= 0.5)) return;
+    setBusy(true);
+    try {
+      await api.post("/admin/donators", { pseudo: pseudo.trim(), amount: amt });
+      setPseudo("");
+      setAmount("");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      await load();
+      toast.success(a.butin.added);
+    } catch (err) {
+      toast.error(formatApiError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async (id) => {
+    try {
+      await api.delete(`/admin/donators/${id}`);
+      await load();
+      toast.success(a.butin.removed);
+    } catch (err) {
+      toast.error(formatApiError(err));
+    }
+  };
+
+  return (
+    <div data-testid="admin-butin-panel">
+      <p className="font-fell text-base text-mist mb-8 max-w-2xl">{a.butin.sub}</p>
+
+      <div className="grid sm:grid-cols-[1fr_150px_auto] gap-3 items-end border border-gold/25 bg-deck/60 p-5 mb-8">
+        <div>
+          <label className="block font-mono2 text-[9px] tracking-[0.25em] text-gold/80 mb-1.5">{a.butin.pseudoLabel}</label>
+          <input
+            data-testid="butin-pseudo-input"
+            value={pseudo}
+            onChange={(e) => setPseudo(e.target.value)}
+            maxLength={40}
+            autoComplete="off"
+            className="w-full bg-ink/70 border border-gold/25 px-4 py-2.5 font-fell text-base text-bone placeholder:text-bone/40 focus:border-gold transition-all"
+          />
+        </div>
+        <div>
+          <label className="block font-mono2 text-[9px] tracking-[0.25em] text-gold/80 mb-1.5">{a.butin.amountLabel}</label>
+          <input
+            data-testid="butin-amount-input"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value.replace(/[^\d.,]/g, ""))}
+            inputMode="decimal"
+            maxLength={8}
+            autoComplete="off"
+            className="w-full bg-ink/70 border border-gold/25 px-4 py-2.5 font-fell text-lg text-bone placeholder:text-bone/40 focus:border-gold transition-all"
+          />
+        </div>
+        <button
+          type="button"
+          data-testid="butin-add-btn"
+          onClick={add}
+          disabled={busy || pseudo.trim().length < 2 || !(parseFloat((amount || "").replace(",", ".")) >= 0.5)}
+          className={`font-mono2 text-[10px] tracking-[0.2em] px-6 py-3 border transition-all duration-300 ${
+            saved ? "bg-emerald-500/20 border-emerald-400/60 text-emerald-300" : "bg-gold text-ink border-gold hover:bg-goldlight"
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          {saved ? a.butin.saved : a.butin.add}
+        </button>
+      </div>
+
+      <p className="font-mono2 text-[11px] tracking-[0.3em] text-emerald-300 mb-6" data-testid="butin-total">
+        {a.butin.total} : {total.toFixed(2)} €
+      </p>
+
+      {items.length > 0 ? (
+        <div className="space-y-2">
+          {items.map((it) => (
+            <div key={it.id} data-testid={`butin-row-${it.id}`} className="flex items-center gap-4 border border-gold/20 bg-deck/50 px-4 py-3">
+              <div aria-hidden className="w-9 h-9 rounded-full bg-gold border border-goldlight flex items-center justify-center shrink-0 rotate-3">
+                <span className="font-display text-base text-ink">{(it.pseudo || "?").trim().charAt(0).toUpperCase()}</span>
+              </div>
+              <p className="font-display text-lg text-bone flex-1 truncate">{it.pseudo}</p>
+              <p className="font-mono2 text-[10px] tracking-[0.15em] text-gold shrink-0">{it.amount.toFixed(2)} €</p>
+              <p className="font-mono2 text-[9px] tracking-[0.15em] text-mist shrink-0 hidden sm:block">
+                {it.created_at ? new Date(it.created_at).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+              </p>
+              <button
+                type="button"
+                data-testid={`butin-remove-${it.id}`}
+                onClick={() => remove(it.id)}
+                className="font-mono2 text-[9px] tracking-[0.2em] text-red-400/80 hover:text-red-400 border border-red-400/30 hover:border-red-400/60 px-3 py-1.5 shrink-0 transition-all"
+              >
+                {a.butin.remove}
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="font-fell italic text-base text-mist border border-gold/15 bg-deck/40 p-6 text-center">{a.butin.empty}</p>
+      )}
+    </div>
+  );
+}
+
 export default function Admin() {
   const { c } = useLang();
   const a = c.admin;
@@ -731,7 +853,7 @@ export default function Admin() {
                 <div>
                   <p className="font-mono2 text-[11px] tracking-[0.35em] text-gold mb-3">{a.dash.eyebrow}</p>
                   <h1 className="font-display text-4xl sm:text-5xl text-bone">
-                    {view === "messages" ? a.dash.titleMessages : a.dash.title}
+                    {view === "messages" ? a.dash.titleMessages : view === "butin" ? a.dash.titleButin : a.dash.title}
                   </h1>
                 </div>
                 <button
@@ -772,7 +894,9 @@ export default function Admin() {
                 ))}
               </div>
 
-              {view === "messages" ? (
+              {view === "butin" ? (
+                <ButinPanel />
+              ) : view === "messages" ? (
                 activeConv ? (
                   <div data-testid="admin-thread">
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
