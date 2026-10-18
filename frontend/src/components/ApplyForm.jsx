@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Copy, Check, X, Anchor, ListChecks, Hourglass, Megaphone } from "lucide-react";
+import { Copy, Check, X, Anchor, ListChecks, Hourglass, Megaphone, Skull, Swords, Radio, Feather } from "lucide-react";
 import api, { formatApiError } from "@/lib/api";
 import { useLang, fmtPower } from "@/lib/i18n";
 import Countdown from "@/components/Countdown";
@@ -122,95 +122,136 @@ export default function ApplyForm() {
             transition={{ duration: 0.9, ease: EASE }}
             className="lg:col-span-7 relative border border-gold/25 bg-parch/80 frame-plate p-6 sm:p-10"
           >
-            <div className="grid sm:grid-cols-2 gap-5">
-              <div>
-                <label className={labelCls} htmlFor="f-pseudo">{s.labels.pseudo}</label>
-                <input
-                  id="f-pseudo"
-                  data-testid="input-pseudo"
-                  className={inputCls}
-                  value={form.pseudo}
-                  onChange={set("pseudo")}
-                  placeholder={s.ph.pseudo}
-                  maxLength={32}
-                />
-              </div>
-              <div>
-                <label className={labelCls} htmlFor="f-power">{s.labels.power}</label>
-                <input
-                  id="f-power"
-                  data-testid="input-power"
-                  className={inputCls}
-                  value={form.power}
-                  onChange={set("power")}
-                  placeholder={fmtPower(s.ph.power)}
-                  maxLength={16}
-                />
-              </div>
-              <div>
-                <label className={labelCls} htmlFor="f-troops">{s.labels.troops}</label>
-                <select
-                  id="f-troops"
-                  data-testid="select-troops"
-                  className={`${inputCls} appearance-none cursor-pointer`}
-                  value={form.troops}
-                  onChange={set("troops")}
-                >
-                  {s.troopsOptions.map((o) => (
-                    <option key={o} value={o} className="bg-deck text-bone">{o}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls} htmlFor="f-activity">{s.labels.activity}</label>
-                <select
-                  id="f-activity"
-                  data-testid="select-activity"
-                  className={`${inputCls} appearance-none cursor-pointer`}
-                  value={form.activity}
-                  onChange={set("activity")}
-                >
-                  {s.activityOptions.map((o) => (
-                    <option key={o} value={o} className="bg-deck text-bone">{o}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelCls} htmlFor="f-discord">{s.labels.discord}</label>
-                <input
-                  id="f-discord"
-                  data-testid="input-discord"
-                  className={inputCls}
-                  value={form.discord}
-                  onChange={set("discord")}
-                  placeholder={s.ph.discord}
-                  maxLength={60}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelCls} htmlFor="f-experience">{s.labels.experience}</label>
-                <textarea
-                  id="f-experience"
-                  data-testid="textarea-experience"
-                  className={`${inputCls} min-h-[90px] resize-y`}
-                  value={form.experience}
-                  onChange={set("experience")}
-                  placeholder={s.ph.experience}
-                  maxLength={1200}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelCls} htmlFor="f-message">{s.labels.message}</label>
-                <textarea
-                  id="f-message"
-                  data-testid="textarea-message"
-                  className={`${inputCls} min-h-[110px] resize-y`}
-                  value={form.message}
-                  onChange={set("message")}
-                  placeholder={s.ph.message}
-                  maxLength={2000}
-                />
-              </div>
+            <div className="space-y-9">
+              <fieldset data-testid="form-group-identity">
+                <legend className="flex items-center gap-3 w-full mb-5">
+                  <Skull className="w-4 h-4 text-gold shrink-0" />
+                  <span className="font-mono2 text-[10px] tracking-[0.3em] text-gold uppercase">{s.groups.identity}</span>
+                  <span className="flex-1 h-px bg-gold/15" />
+                  <span className="font-mono2 text-[9px] tracking-[0.2em] text-mist/70">I</span>
+                </legend>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className={labelCls} htmlFor="f-pseudo">{s.labels.pseudo}</label>
+                    <input
+                      id="f-pseudo"
+                      data-testid="input-pseudo"
+                      className={inputCls}
+                      value={form.pseudo}
+                      onChange={set("pseudo")}
+                      placeholder={s.ph.pseudo}
+                      maxLength={32}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls} htmlFor="f-power">{s.labels.power}</label>
+                    <input
+                      id="f-power"
+                      data-testid="input-power"
+                      className={inputCls}
+                      value={form.power}
+                      onChange={set("power")}
+                      placeholder={fmtPower(s.ph.power)}
+                      maxLength={16}
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset data-testid="form-group-force">
+                <legend className="flex items-center gap-3 w-full mb-5">
+                  <Swords className="w-4 h-4 text-gold shrink-0" />
+                  <span className="font-mono2 text-[10px] tracking-[0.3em] text-gold uppercase">{s.groups.force}</span>
+                  <span className="flex-1 h-px bg-gold/15" />
+                  <span className="font-mono2 text-[9px] tracking-[0.2em] text-mist/70">II</span>
+                </legend>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className={labelCls} htmlFor="f-troops">{s.labels.troops}</label>
+                    <select
+                      id="f-troops"
+                      data-testid="select-troops"
+                      className={`${inputCls} appearance-none cursor-pointer`}
+                      value={form.troops}
+                      onChange={set("troops")}
+                    >
+                      {s.troopsOptions.map((o) => (
+                        <option key={o} value={o} className="bg-deck text-bone">{o}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelCls} htmlFor="f-activity">{s.labels.activity}</label>
+                    <select
+                      id="f-activity"
+                      data-testid="select-activity"
+                      className={`${inputCls} appearance-none cursor-pointer`}
+                      value={form.activity}
+                      onChange={set("activity")}
+                    >
+                      {s.activityOptions.map((o) => (
+                        <option key={o} value={o} className="bg-deck text-bone">{o}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset data-testid="form-group-signals">
+                <legend className="flex items-center gap-3 w-full mb-5">
+                  <Radio className="w-4 h-4 text-gold shrink-0" />
+                  <span className="font-mono2 text-[10px] tracking-[0.3em] text-gold uppercase">{s.groups.signals}</span>
+                  <span className="flex-1 h-px bg-gold/15" />
+                  <span className="font-mono2 text-[9px] tracking-[0.2em] text-mist/70">III</span>
+                </legend>
+                <div>
+                  <label className={labelCls} htmlFor="f-discord">{s.labels.discord}</label>
+                  <input
+                    id="f-discord"
+                    data-testid="input-discord"
+                    className={inputCls}
+                    value={form.discord}
+                    onChange={set("discord")}
+                    placeholder={s.ph.discord}
+                    maxLength={60}
+                  />
+                </div>
+              </fieldset>
+
+              <fieldset data-testid="form-group-letter">
+                <legend className="flex items-center gap-3 w-full mb-5">
+                  <Feather className="w-4 h-4 text-gold shrink-0" />
+                  <span className="font-mono2 text-[10px] tracking-[0.3em] text-gold uppercase">{s.groups.letter}</span>
+                  <span className="flex-1 h-px bg-gold/15" />
+                  <span className="font-mono2 text-[9px] tracking-[0.2em] text-mist/70">IV</span>
+                </legend>
+                <div className="space-y-5">
+                  <div>
+                    <label className={labelCls} htmlFor="f-experience">{s.labels.experience}</label>
+                    <textarea
+                      id="f-experience"
+                      data-testid="textarea-experience"
+                      className={`${inputCls} min-h-[90px] resize-y`}
+                      value={form.experience}
+                      onChange={set("experience")}
+                      placeholder={s.ph.experience}
+                      maxLength={1200}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls} htmlFor="f-message">{s.labels.message}</label>
+                    <textarea
+                      id="f-message"
+                      data-testid="textarea-message"
+                      className={`${inputCls} min-h-[110px] resize-y`}
+                      value={form.message}
+                      onChange={set("message")}
+                      placeholder={s.ph.message}
+                      maxLength={2000}
+                    />
+                  </div>
+                </div>
+              </fieldset>
             </div>
             <button
               type="submit"

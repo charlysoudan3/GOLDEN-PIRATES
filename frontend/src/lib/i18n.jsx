@@ -101,6 +101,12 @@ const fr = {
       experience: "EXPÉRIENCE — KVK & ALLIANCES PRÉCÉDENTES",
       message: "TON MESSAGE AU CONSEIL *",
     },
+    groups: {
+      identity: "TON NOM DE GUERRE",
+      force: "TA FORCE DE FRAPPE",
+      signals: "TES SIGNAUX",
+      letter: "TA LETTRE DE MARQUE",
+    },
     ph: {
       pseudo: "ex : KrakenDuNord",
       power: "ex : 8M, 15M ou {MAX}+",
@@ -483,6 +489,12 @@ const en = {
       discord: "DISCORD TAG *",
       experience: "EXPERIENCE — PAST KVK & ALLIANCES",
       message: "YOUR MESSAGE TO THE COUNCIL *",
+    },
+    groups: {
+      identity: "YOUR WAR NAME",
+      force: "YOUR STRIKING FORCE",
+      signals: "YOUR SIGNALS",
+      letter: "YOUR LETTER OF MARQUE",
     },
     ph: {
       pseudo: "e.g. KrakenDuNord",
