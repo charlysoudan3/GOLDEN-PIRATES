@@ -744,7 +744,16 @@ function ButinPanel() {
 export default function Admin() {
   const { c } = useLang();
   const a = c.admin;
-  const [authed, setAuthed] = useState(null);
+  // PARCOURS ZÉRO CHARGEMENT : la session est mémorisée dans l'onglet.
+  // - Pas de drapeau (visiteur / session fermée) → le formulaire de connexion
+  //   s'affiche INSTANTANÉMENT, sans aucun écran d'attente.
+  // - Drapeau présent (Conseil déjà connecté) → le tableau de bord s'ouvre
+  //   INSTANTANÉMENT, confirmé en silence par /auth/me en arrière-plan.
+  const AUTH_FLAG = "gp-auth-ok";
+  const cachedAuth = (() => {
+    try { return sessionStorage.getItem(AUTH_FLAG) === "1"; } catch { return false; }
+  })();
+  const [authed, setAuthed] = useState(cachedAuth);
   const [apps, setApps] = useState([]);
   const [stats, setStats] = useState(null);
   const [filter, setFilter] = useState("all");
@@ -775,13 +784,16 @@ export default function Admin() {
   }, []);
 
   useEffect(() => {
+    if (!cachedAuth) return; // formulaire instantané — rien à vérifier
+    // Confirmation silencieuse : si le secret du coffre a expiré, on retombe
+    // sur le formulaire sans jamais afficher de chargement.
     api
       .get("/auth/me")
-      .then(() => {
-        setAuthed(true);
-        loadAll();
-      })
-      .catch(() => setAuthed(false));
+      .then(() => loadAll())
+      .catch(() => {
+        try { sessionStorage.removeItem(AUTH_FLAG); } catch {}
+        setAuthed(false);
+      });
   }, [loadAll]);
 
   useEffect(() => {
@@ -812,6 +824,7 @@ export default function Admin() {
     try {
       await api.post("/auth/logout");
     } finally {
+      try { sessionStorage.removeItem("gp-auth-ok"); } catch {}
       setAuthed(false);
       setApps([]);
       setStats(null);
@@ -901,21 +914,14 @@ export default function Admin() {
       <Nav />
       <main className="flex-1 pt-28 md:pt-36 pb-24" data-testid="admin-section">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          {authed === null && (
-            /* Vérification de session — AUCUN formulaire affiché pendant l'attente :
-               un Capitaine déjà connecté ne doit JAMAIS revoir la page de connexion en flash. */
-            <div data-testid="admin-session-checking" className="min-h-[55vh] flex flex-col items-center justify-center gap-6 text-center">
-              <Loader2 className="w-10 h-10 text-gold animate-spin" />
-              <div>
-                <p className="font-display text-3xl sm:text-4xl text-gold uppercase tracking-wide mb-3">{a.loading}</p>
-                <p className="font-mono2 text-[10px] tracking-[0.3em] text-mist">{a.login.checking}</p>
-              </div>
-            </div>
-          )}
           {authed === false && (
             <LoginScreen
               checking={false}
-              onAuthed={() => { setAuthed(true); loadAll(); }}
+              onAuthed={() => {
+                try { sessionStorage.setItem("gp-auth-ok", "1"); } catch {}
+                setAuthed(true);
+                loadAll();
+              }}
             />
           )}
           {authed === true && (
