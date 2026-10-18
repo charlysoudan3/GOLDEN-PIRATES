@@ -35,9 +35,9 @@ const fr = {
     p2: "La Saison 1 est derrière nous, la Saison 2 s'annonce comme une marée d'or. Si tu lis ces lignes avec l'envie de te battre au bon endroit, au bon moment, avec les bonnes personnes — alors continue ta lecture, recrue.",
     quote: "On ne rate jamais une saison avec un équipage qui a du cœur, des troupes et du trésor.",
     quoteBy: "— LE CONSEIL DES CAPITAINES, G.P. 1023",
-    imgCaption: "Le vaisseau amiral",
+    imgCaption: "Le festin de l'équipage",
     imgTag: "G.P. — 1023",
-    imgAlt: "Trois-mâts de guerre sous voiles",
+    imgAlt: "L'équipage réuni à la taverne, chopes levées",
     values: [
       { title: "Fraternité d'acier", text: "Ici, personne ne rallie seul. Dons, entraide, rassemblements : l'équipage veille sur le sien." },
       { title: "Rigueur stratégique", text: "Chaque bataille se prépare. Objectifs clairs, ordres nets, exécution chirurgicale en KvK." },
@@ -418,9 +418,9 @@ const en = {
     p2: "Season 1 is behind us, and Season 2 is shaping up to be a golden tide. If you're reading these lines with the urge to fight in the right place, at the right time, with the right people — then keep reading, recruit.",
     quote: "You never waste a season with a crew that has heart, troops and treasure.",
     quoteBy: "— THE COUNCIL OF CAPTAINS, G.P. 1023",
-    imgCaption: "The flagship",
+    imgCaption: "The crew's feast",
     imgTag: "G.P. — 1023",
-    imgAlt: "Warship under full sail",
+    imgAlt: "The crew gathered at the tavern, mugs raised",
     values: [
       { title: "Brotherhood of steel", text: "Here, no one sails alone. Donations, mutual aid, musters: the crew watches over its own." },
       { title: "Strategic rigor", text: "Every battle is prepared. Clear goals, crisp orders, surgical execution in KvK." },
