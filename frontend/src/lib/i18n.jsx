@@ -64,8 +64,8 @@ const fr = {
     title1: "Nous sommes en ",
     titleGold: "Pré-KvK",
     steps: [
-      { season: "SAISON 1", title: "L'épreuve du feu", status: "TERMINÉE", text: "La première KvK est passée par là. L'équipage en est ressorti plus soudé, plus dur, plus doré que jamais." },
-      { season: "PRÉ-KVK — SAISON 2", title: "Mobilisation générale", status: "EN COURS — NOUS SOMMES ICI", text: "La Saison 2 arrive : on renforce les troupes, on remplit les greniers, on aiguise la stratégie. Chaque marin compte." },
+      { season: "SAISON 1", title: "L'épreuve du feu", status: "TERMINÉE", text: "Notre première saison est passée par là — saison normale, sans Conquête du Royaume : l'équipage en est ressorti plus soudé, plus dur, plus doré que jamais." },
+      { season: "PRÉ-KVK — AVANT LA SAISON 2", title: "Mobilisation générale", status: "EN COURS — NOUS SOMMES ICI", text: "La Saison 2 arrive : on renforce les troupes, on remplit les greniers, on aiguise la stratégie. Chaque marin compte." },
       { season: "SAISON 2 — KVK", title: "La bataille des terres", status: "À VENIR", text: "La Conquête du Royaume démarre. Batailles de territoires, Behemoths, sièges : la mer sera rouge — et l'or, nôtre." },
       { season: "FIN DE SAISON 2", title: "Ouverture du recrutement", status: "C'EST ICI QU'ON VOUS ATTEND", text: "Comme l'exige le règlement de migration de Call of Dragons, les nouvelles recrues ne montent à bord qu'en fin de saison — pas avant. Dépose ta candidature dès maintenant : elle sera traitée en priorité." },
     ],
@@ -460,8 +460,8 @@ const en = {
     title1: "We are in ",
     titleGold: "Pre-KvK",
     steps: [
-      { season: "SEASON 1", title: "Trial by fire", status: "COMPLETED", text: "The first KvK came through. The crew came out of it tighter, tougher and more golden than ever." },
-      { season: "PRE-KVK — SEASON 2", title: "General mobilization", status: "ONGOING — WE ARE HERE", text: "Season 2 is coming: troops are hardened, granaries are filled, strategy is sharpened. Every sailor counts." },
+      { season: "SEASON 1", title: "Trial by fire", status: "COMPLETED", text: "Our first season came and went — a normal season, no Kingdom vs Kingdom: the crew came out of it tighter, tougher and more golden than ever." },
+      { season: "PRE-KVK — BEFORE SEASON 2", title: "General mobilization", status: "ONGOING — WE ARE HERE", text: "Season 2 is coming: troops are hardened, granaries are filled, strategy is sharpened. Every sailor counts." },
       { season: "SEASON 2 — KVK", title: "The battle for the land", status: "UPCOMING", text: "The Kingdom's Conquest begins. Territory battles, Behemoths, sieges: the sea will run red — and the gold will be ours." },
       { season: "END OF SEASON 2", title: "Recruitment opens", status: "THIS IS WHERE WE WAIT FOR YOU", text: "As Call of Dragons' migration rule requires, new recruits board only at the end of the season — not before. Submit your application now: it will be reviewed first." },
     ],
