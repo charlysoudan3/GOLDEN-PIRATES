@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Shield, ShieldCheck, MapPin } from "lucide-react";
+import { X, Shield, ShieldCheck, MapPin, Coins } from "lucide-react";
 import LogoMark, { SkullIcon, CompassRose } from "./LogoMark";
 import LangSwitcher from "./LangSwitcher";
 import useAdminSession from "@/lib/useAdminSession";
@@ -64,6 +64,11 @@ export default function Nav() {
   const goAdmin = () => {
     setOpen(false);
     navigate("/admin");
+  };
+
+  const goButin = () => {
+    setOpen(false);
+    navigate("/donations");
   };
 
   const goApply = () => {
@@ -256,6 +261,23 @@ export default function Nav() {
                     )}
                   </motion.button>
                 )}
+                <motion.button
+                  data-testid="nav-link-butin"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.62, duration: 0.7, ease: EASE }}
+                  onClick={location.pathname === "/donations" ? undefined : goButin}
+                  aria-current={location.pathname === "/donations" ? "page" : undefined}
+                  className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
+                    location.pathname === "/donations"
+                      ? "border border-gold bg-gold/10 text-gold cursor-default"
+                      : "text-mist border border-mist/30 bg-deck/50 hover:text-gold hover:border-gold/60 hover:bg-gold/5"
+                  }`}
+                >
+                  <Coins className="w-4 h-4 text-gold/70 shrink-0" />
+                  {c.nav.butin}
+                  {location.pathname === "/donations" && <span className="text-gold">— {c.nav.here}</span>}
+                </motion.button>
                 <motion.button
                   data-testid="nav-link-admin"
                   initial={{ opacity: 0, y: 20 }}

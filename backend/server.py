@@ -735,6 +735,28 @@ async def export_xlsx(lang: str = "fr", _: str = Depends(require_admin)):
     )
 
 
+@api_router.get("/donations/paypal")
+async def donations_paypal(amount: Optional[float] = None):
+    # Le Capitaine configurer PAYPAL_DONATION_URL dans .env (paypal.me ou lien de don).
+    # Tant que la variable est absente, le coffre reste scellé : {configured: false}.
+    url = os.getenv("PAYPAL_DONATION_URL", "").strip()
+    if not url:
+        return {"configured": False}
+    amt = None
+    try:
+        amt = float(amount) if amount is not None else None
+    except (TypeError, ValueError):
+        amt = None
+    if amt is not None:
+        amt = round(min(max(amt, 1.0), 10000.0), 2)
+    if "paypal.me" in url:
+        full = f"{url.rstrip('/')}/{amt}" if amt else url
+    else:
+        sep = "&" if "?" in url else "?"
+        full = f"{url}{sep}amount={amt}" if amt else url
+    return {"configured": True, "url": full}
+
+
 @api_router.get("/admin/export/pdf")
 async def export_pdf(lang: str = "fr", _: str = Depends(require_admin)):
     L = EXPORT_I18N[lang if lang in ("fr", "en") else "fr"]

@@ -96,6 +96,15 @@ export default function Footer() {
                   </li>
                 </>
               )}
+              <li>
+                <button
+                  data-testid="footer-donation-link"
+                  onClick={() => navigate("/donations")}
+                  className="text-bone/75 hover:text-gold transition-colors"
+                >
+                  {s.donationLink}
+                </button>
+              </li>
             </ul>
             <button
               data-testid="footer-back-to-top"

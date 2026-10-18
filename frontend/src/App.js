@@ -8,6 +8,7 @@ import Seo from "@/lib/Seo";
 import Grain from "@/components/Grain";
 import Home from "@/pages/Home";
 import Suivi from "@/pages/Suivi";
+import Donations from "@/pages/Donations";
 import Admin from "@/pages/Admin";
 
 export function scrollToId(id) {
@@ -86,6 +87,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/suivi" element={<Suivi />} />
+            <Route path="/donations" element={<Donations />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

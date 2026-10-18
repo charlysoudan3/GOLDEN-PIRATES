@@ -17,6 +17,10 @@ const ROUTES = {
     desc: "Espace privé du Conseil des Capitaines : registre des candidatures, messagerie et exports. Accès réservé.",
     noindex: true,
   },
+  "/donations": {
+    title: "Le butin volontaire — GOLDEN PIRATES · Royaume 1023",
+    desc: "Soutenez le navire des Golden Pirates (Royaume 1023, Call of Dragons). L'entrée du site est libre et 100 % gratuite — chaque don est un cadeau volontaire.",
+  },
 };
 
 const setMeta = (name, content) => {
