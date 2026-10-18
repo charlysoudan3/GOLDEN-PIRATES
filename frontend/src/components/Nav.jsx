@@ -35,8 +35,14 @@ export default function Nav() {
   }, []);
 
   useEffect(() => {
+    // Verrou iOS-complet : le body SEUL est contournable sur iOS Safari —
+    // on verrouille aussi l'élément racine (html).
     document.body.style.overflow = open ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    document.documentElement.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
   }, [open]);
 
   useEffect(() => {
