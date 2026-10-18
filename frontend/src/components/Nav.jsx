@@ -20,6 +20,7 @@ const NAV_ITEMS = [
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isRecruit, setIsRecruit] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { c } = useLang();
@@ -44,6 +45,27 @@ export default function Nav() {
     const onKey = (e) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  // Une RECRUE = au moins un code de suivi gardé dans son coffre local (gp_bottles).
+  // Rafraîchi à l'ouverture du menu : le coffre peut changer pendant la session.
+  const refreshRecruit = () => {
+    try {
+      const v = JSON.parse(localStorage.getItem("gp_bottles"));
+      setIsRecruit(Array.isArray(v) && v.length > 0);
+    } catch {
+      setIsRecruit(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    try {
+      const v = JSON.parse(localStorage.getItem("gp_bottles"));
+      setIsRecruit(Array.isArray(v) && v.length > 0);
+    } catch {
+      setIsRecruit(false);
+    }
   }, [open]);
 
   useEffect(() => {
@@ -112,13 +134,23 @@ export default function Nav() {
           <div className="flex items-center gap-2 sm:gap-4">
             <LangSwitcher />
             {!isAdmin && (
-              <button
-                data-testid="nav-cta-apply"
-                onClick={goApply}
-                className="hidden md:block font-display text-lg tracking-wider uppercase px-6 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
-              >
-                {c.nav.cta}
-              </button>
+              isRecruit ? (
+                <button
+                  data-testid="nav-cta-suivi"
+                  onClick={goSuivi}
+                  className="hidden md:block font-mono2 text-[11px] tracking-[0.25em] uppercase px-6 py-3 border border-gold/60 text-gold hover:bg-gold/10 transition-all duration-300"
+                >
+                  {c.nav.suivi}
+                </button>
+              ) : (
+                <button
+                  data-testid="nav-cta-apply"
+                  onClick={goApply}
+                  className="hidden md:block font-display text-lg tracking-wider uppercase px-6 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+                >
+                  {c.nav.cta}
+                </button>
+              )
             )}
             <button
               data-testid="nav-menu-toggle"
@@ -177,16 +209,16 @@ export default function Nav() {
             </div>
 
             <div className="relative z-10 flex-1 min-h-0 flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
-              <div className="lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 pb-14">
+              <div className="lg:w-1/2 flex flex-col justify-start lg:justify-center px-6 sm:px-10 lg:px-16 py-8 lg:py-10 lg:pb-14">
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15, duration: 0.6, ease: EASE }}
-                  className="font-mono2 text-[11px] tracking-[0.4em] text-gold mb-8"
+                  className="font-mono2 text-[11px] tracking-[0.4em] text-gold mb-6 lg:mb-8"
                 >
                   NAVIGATION
                 </motion.p>
-                <nav className="space-y-5 sm:space-y-7">
+                <nav className="space-y-3 sm:space-y-7">
                   {NAV_ITEMS.map((l, i) => (
                     <motion.button
                       key={l.id}
@@ -198,9 +230,9 @@ export default function Nav() {
                       className="group flex items-baseline gap-4 sm:gap-6 text-left w-max max-w-full"
                     >
                       <span className="font-mono2 text-sm sm:text-lg text-gold/50 w-8 shrink-0">{l.num}</span>
-                      <span className="relative font-display text-5xl sm:text-6xl lg:text-7xl text-bone group-hover:text-gold transition-colors duration-300 whitespace-nowrap">
+                      <span className="relative font-display text-4xl sm:text-6xl lg:text-7xl text-bone group-hover:text-gold transition-colors duration-300 whitespace-nowrap">
                         {c.nav[l.key]}
-                        <span className="absolute -left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <span className="absolute -left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block">
                           <SkullIcon className="w-5 h-5 text-blood" />
                         </span>
                         <span className="absolute -bottom-1 left-0 h-[2px] w-0 bg-gold group-hover:w-full transition-all duration-500" />
@@ -217,7 +249,7 @@ export default function Nav() {
                 />
               </div>
 
-              <div className="lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-10 pb-14 gap-6">
+              <div className="lg:w-1/2 flex flex-col justify-start lg:justify-center px-6 sm:px-10 lg:px-16 py-8 lg:py-10 lg:pb-14 gap-4 lg:gap-6">
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -226,7 +258,7 @@ export default function Nav() {
                 >
                   {c.footer.spacesTitle}
                 </motion.p>
-                {!isAdmin && (
+                {!isAdmin && !isRecruit && (
                   <motion.button
                     data-testid="nav-cta-apply-menu"
                     initial={{ opacity: 0, y: 30 }}
@@ -249,7 +281,9 @@ export default function Nav() {
                     className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
                       location.pathname === "/suivi"
                         ? "border border-gold bg-gold/10 text-gold cursor-default"
-                        : "text-gold border border-gold/40 hover:bg-gold/10 hover:border-gold"
+                        : isRecruit
+                          ? "bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_35px_rgba(212,175,55,0.4)]"
+                          : "text-gold border border-gold/40 hover:bg-gold/10 hover:border-gold"
                     }`}
                   >
                     {location.pathname === "/suivi" ? (
@@ -278,23 +312,59 @@ export default function Nav() {
                   {c.nav.butin}
                   {location.pathname === "/donations" && <span className="text-gold">— {c.nav.here}</span>}
                 </motion.button>
-                <motion.button
-                  data-testid="nav-link-admin"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7, duration: 0.7, ease: EASE }}
-                  onClick={location.pathname === "/admin" ? undefined : goAdmin}
-                  aria-current={location.pathname === "/admin" ? "page" : undefined}
-                  className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
-                    location.pathname === "/admin"
-                      ? "border border-gold bg-gold/10 text-gold cursor-default"
-                      : "text-bone/90 border border-mist/40 bg-deck/70 hover:text-gold hover:border-gold/60 hover:bg-gold/5"
-                  }`}
-                >
-                  {location.pathname === "/admin" ? <ShieldCheck className="w-4 h-4 shrink-0" /> : <Shield className="w-4 h-4 text-gold/80 shrink-0" />}
-                  {c.nav.admin}
-                  {location.pathname === "/admin" && <span className="text-gold">— {c.nav.here}</span>}
-                </motion.button>
+                {isAdmin ? (
+                  <>
+                    <motion.button
+                      data-testid="nav-link-admin-registry"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7, duration: 0.7, ease: EASE }}
+                      onClick={() => { setOpen(false); navigate("/admin#registry"); }}
+                      aria-current={location.pathname === "/admin" ? "page" : undefined}
+                      className="w-full max-w-md flex items-center justify-center gap-2.5 bg-gold text-ink font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase hover:bg-goldlight transition-all duration-300"
+                    >
+                      {c.nav.admin}
+                    </motion.button>
+                    <motion.button
+                      data-testid="nav-link-admin-messages"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.74, duration: 0.7, ease: EASE }}
+                      onClick={() => { setOpen(false); navigate("/admin#messagerie"); }}
+                      className="w-full max-w-md flex items-center justify-center gap-2.5 text-gold border border-gold/40 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase hover:bg-gold/10 transition-all duration-300"
+                    >
+                      {c.nav.messagerie}
+                    </motion.button>
+                    <motion.button
+                      data-testid="nav-link-public-site"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.78, duration: 0.7, ease: EASE }}
+                      onClick={() => { setOpen(false); navigate("/"); }}
+                      className="w-full max-w-md flex items-center justify-center gap-2.5 text-mist border border-mist/30 bg-deck/50 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase hover:text-gold hover:border-gold/60 transition-all duration-300"
+                    >
+                      {c.nav.publicSite}
+                    </motion.button>
+                  </>
+                ) : (
+                  <motion.button
+                    data-testid="nav-link-admin"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7, duration: 0.7, ease: EASE }}
+                    onClick={location.pathname === "/admin" ? undefined : goAdmin}
+                    aria-current={location.pathname === "/admin" ? "page" : undefined}
+                    className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
+                      location.pathname === "/admin"
+                        ? "border border-gold bg-gold/10 text-gold cursor-default"
+                        : "text-bone/90 border border-mist/40 bg-deck/70 hover:text-gold hover:border-gold/60 hover:bg-gold/5"
+                    }`}
+                  >
+                    {location.pathname === "/admin" ? <ShieldCheck className="w-4 h-4 shrink-0" /> : <Shield className="w-4 h-4 text-gold/80 shrink-0" />}
+                    {c.nav.admin}
+                    {location.pathname === "/admin" && <span className="text-gold">— {c.nav.here}</span>}
+                  </motion.button>
+                )}
               </div>
             </div>
 

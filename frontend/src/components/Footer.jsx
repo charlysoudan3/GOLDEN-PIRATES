@@ -9,6 +9,14 @@ export default function Footer() {
   const { c } = useLang();
   const isAdmin = useAdminSession();
   const s = c.footer;
+  // Une RECRUE = au moins un code gardé dans son coffre local — elle ne voit plus « Postuler ».
+  let isRecruit = false;
+  try {
+    const v = JSON.parse(localStorage.getItem("gp_bottles"));
+    isRecruit = Array.isArray(v) && v.length > 0;
+  } catch {
+    isRecruit = false;
+  }
   const backToTop = () => {
     const lenis = window.__lenis;
     if (lenis) lenis.scrollTo(0, { duration: 1.4 });
@@ -76,24 +84,38 @@ export default function Footer() {
                 </>
               ) : (
                 <>
-                  <li>
-                    <button
-                      data-testid="footer-apply-link"
-                      onClick={() => navigate("/#postuler")}
-                      className="text-gold hover:text-goldlight transition-colors"
-                    >
-                      {s.applyLink}
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      data-testid="footer-track-link"
-                      onClick={() => navigate("/suivi")}
-                      className="text-bone/75 hover:text-gold transition-colors"
-                    >
-                      {s.trackLink}
-                    </button>
-                  </li>
+                  {isRecruit ? (
+                    <li>
+                      <button
+                        data-testid="footer-track-link"
+                        onClick={() => navigate("/suivi")}
+                        className="text-gold hover:text-goldlight transition-colors"
+                      >
+                        {s.trackLink}
+                      </button>
+                    </li>
+                  ) : (
+                    <li>
+                      <button
+                        data-testid="footer-apply-link"
+                        onClick={() => navigate("/#postuler")}
+                        className="text-gold hover:text-goldlight transition-colors"
+                      >
+                        {s.applyLink}
+                      </button>
+                    </li>
+                  )}
+                  {!isRecruit && (
+                    <li>
+                      <button
+                        data-testid="footer-track-link"
+                        onClick={() => navigate("/suivi")}
+                        className="text-bone/75 hover:text-gold transition-colors"
+                      >
+                        {s.trackLink}
+                      </button>
+                    </li>
+                  )}
                 </>
               )}
               <li>

@@ -699,6 +699,7 @@ export default function Admin() {
   // Lien direct du footer Conseil → onglet MESSAGERIE (/admin#messagerie)
   useEffect(() => {
     if (authed && window.location.hash === "#messagerie") setView("messages");
+    if (authed && window.location.hash === "#registry") setView("registry");
   }, [authed]);
 
   const loadAll = useCallback(async () => {

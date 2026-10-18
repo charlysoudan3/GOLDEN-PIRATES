@@ -16,6 +16,8 @@ const fr = {
     here: "VOUS Y ÊTES",
     kingdom: "ROYAUME 1023",
     butin: "LE BUTIN",
+    messagerie: "LA MESSAGERIE",
+    publicSite: "VOIR LE SITE PUBLIC",
     cta: "Postuler",
   },
   hero: {
@@ -484,6 +486,8 @@ const en = {
     here: "YOU'RE HERE",
     kingdom: "KINGDOM 1023",
     butin: "THE TREASURE",
+    messagerie: "MESSAGING",
+    publicSite: "VIEW THE PUBLIC SITE",
     cta: "Apply",
   },
   hero: {
