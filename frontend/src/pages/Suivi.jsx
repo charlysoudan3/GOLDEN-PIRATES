@@ -6,6 +6,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
 import ChatBox from "@/components/ChatBox";
+import PeerDen from "@/components/PeerDen";
 import api, { formatApiError } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 import Countdown from "@/components/Countdown";
@@ -575,6 +576,8 @@ export default function Suivi() {
               </motion.div>
             );
           })()}
+
+          {result && <PeerDen code={result.tracking_code} />}
 
           {rack.length > 0 && (
             <motion.div

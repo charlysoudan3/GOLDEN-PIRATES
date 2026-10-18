@@ -837,6 +837,123 @@ async def delete_message(code: str, message_id: str):
     return clean_msg(res)
 
 
+# ---------------- Tanière des recrues (messagerie recrue ↔ recrue) ----------------
+
+class PeerMessageCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    from_code: str = Field(min_length=4, max_length=20)
+    to_app_id: str = Field(min_length=8, max_length=64)
+    text: str = Field(min_length=1, max_length=1000)
+
+@api_router.get("/peers/search")
+async def peers_search(q: str, code: str):
+    # Protégée par un code de suivi valide ; n'expose JAMAIS discord / email / code d'autrui.
+    me = (code or "").strip().upper()
+    mine = await db.applications.find_one({"tracking_code": me})
+    if not mine:
+        raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
+    q = (q or "").strip()
+    if len(q) < 2:
+        return []
+    docs = await db.applications.find({
+        "pseudo": {"$regex": re.escape(q), "$options": "i"},
+        "tracking_code": {"$ne": me},
+    }).sort("created_at", -1).to_list(12)
+    return [{
+        "app_id": d["id"],
+        "pseudo": d["pseudo"],
+        "power": d.get("power", ""),
+        "troops": d.get("troops", ""),
+        "status": d.get("status", "pending"),
+    } for d in docs]
+
+@api_router.get("/peers/threads")
+async def peers_threads(code: str):
+    me = (code or "").strip().upper()
+    mine = await db.applications.find_one({"tracking_code": me})
+    if not mine:
+        raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
+    my_id = mine["id"]
+    docs = await db.peer_messages.find({
+        "$or": [{"from_id": my_id}, {"to_id": my_id}],
+        "deleted": {"$ne": True},
+    }).sort("created_at", -1).to_list(1000)
+    threads = {}
+    for d in docs:
+        from_me = d["from_id"] == my_id
+        peer_id = d["to_id"] if from_me else d["from_id"]
+        t = threads.setdefault(peer_id, {
+            "app_id": peer_id,
+            "pseudo": d["to_pseudo"] if from_me else d["from_pseudo"],
+            "last": d["text"][:80],
+            "last_at": d["created_at"],
+            "unread": 0,
+        })
+        if not from_me and not d.get("read"):
+            t["unread"] += 1
+    return list(threads.values())
+
+@api_router.get("/peers/thread")
+async def peers_thread(code: str, peer: str):
+    me = (code or "").strip().upper()
+    mine = await db.applications.find_one({"tracking_code": me})
+    if not mine:
+        raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
+    other = await db.applications.find_one({"id": peer})
+    if not other:
+        raise HTTPException(status_code=404, detail="Recrue introuvable")
+    key = "|".join(sorted([mine["id"], peer]))
+    docs = await db.peer_messages.find({"thread": key, "deleted": {"$ne": True}}).sort("created_at", 1).to_list(500)
+    await db.peer_messages.update_many(
+        {"thread": key, "from_id": peer, "read": {"$ne": True}},
+        {"$set": {"read": True}},
+    )
+    return {
+        "peer": {"app_id": peer, "pseudo": other["pseudo"]},
+        "messages": [{
+            "id": d["id"],
+            "from_me": d["from_id"] == mine["id"],
+            "text": d["text"],
+            "created_at": d["created_at"],
+        } for d in docs],
+    }
+
+@api_router.post("/peers/messages")
+async def peers_send(data: PeerMessageCreate):
+    me = (data.from_code or "").strip().upper()
+    mine = await db.applications.find_one({"tracking_code": me})
+    if not mine:
+        raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
+    other = await db.applications.find_one({"id": data.to_app_id})
+    if not other:
+        raise HTTPException(status_code=404, detail="Recrue introuvable")
+    if other["id"] == mine["id"]:
+        raise HTTPException(status_code=400, detail="Tu ne peux pas t'écrire toi-même, marin.")
+    text = data.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Message vide")
+    hour_ago = (now_utc() - timedelta(hours=1)).isoformat()
+    recent = await db.peer_messages.count_documents({
+        "from_id": mine["id"], "created_at": {"$gte": hour_ago},
+    })
+    if recent >= 20:
+        raise HTTPException(status_code=429, detail="Relâche la manivelle — 20 messages par heure maximum entre recrues.")
+    doc = {
+        "id": str(uuid.uuid4()),
+        "thread": "|".join(sorted([mine["id"], other["id"]])),
+        "from_id": mine["id"],
+        "to_id": other["id"],
+        "from_pseudo": mine["pseudo"],
+        "to_pseudo": other["pseudo"],
+        "text": text[:1000],
+        "created_at": now_utc().isoformat(),
+        "deleted": False,
+        "read": False,
+    }
+    await db.peer_messages.insert_one(doc)
+    return {"id": doc["id"], "from_me": True, "text": doc["text"], "created_at": doc["created_at"]}
+
+
 @api_router.get("/admin/conversations")
 async def admin_conversations(_: str = Depends(require_admin)):
     msgs = await db.messages.find({}).sort("created_at", 1).to_list(5000)
