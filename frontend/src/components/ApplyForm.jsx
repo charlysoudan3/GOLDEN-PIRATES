@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Copy, Check, X, Anchor, ListChecks, Hourglass, Megaphone, Skull, Swords, Radio, Feather, LifeBuoy } from "lucide-react";
+import { Copy, Check, X, Anchor, ListChecks, Hourglass, Megaphone, Skull, Swords, Radio, Feather, LifeBuoy, ScrollText, RotateCcw } from "lucide-react";
 import api, { formatApiError } from "@/lib/api";
 import { useLang, fmtPower } from "@/lib/i18n";
 import Countdown from "@/components/Countdown";
@@ -26,12 +26,13 @@ export default function ApplyForm() {
     message: "",
   }));
   const [sending, setSending] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
   const [result, setResult] = useState(null);
   const [copied, setCopied] = useState(false);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const submit = async (e) => {
+  const submit = (e) => {
     e.preventDefault();
     if (sending) return;
     if (!form.pseudo.trim() || form.pseudo.trim().length < 2) {
@@ -46,6 +47,11 @@ export default function ApplyForm() {
       toast.error(s.errors.message);
       return;
     }
+    setReviewing(true);
+  };
+
+  const seal = async () => {
+    if (sending) return;
     setSending(true);
     try {
       const { data } = await api.post("/applications", form);
@@ -118,7 +124,65 @@ export default function ApplyForm() {
             transition={{ duration: 0.9, ease: EASE }}
             className="lg:col-span-7 relative border border-gold/25 bg-parch/80 frame-plate p-6 sm:p-10"
           >
-            <div className="space-y-9">
+            <AnimatePresence mode="wait">
+            {reviewing ? (
+              <motion.div
+                key="review"
+                data-testid="review-panel"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -24 }}
+                transition={{ duration: 0.45, ease: EASE }}
+                className="space-y-6"
+              >
+                <div className="flex items-center gap-3">
+                  <ScrollText className="w-5 h-5 text-gold shrink-0" />
+                  <div>
+                    <p className="font-display text-2xl text-gold uppercase tracking-wide" data-testid="review-title">{s.review.title}</p>
+                    <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mt-1">{s.review.hint}</p>
+                  </div>
+                </div>
+                <div className="border border-gold/25 bg-ink/50 divide-y divide-gold/10">
+                  {[
+                    [s.labels.pseudo, form.pseudo],
+                    [s.labels.power, form.power],
+                    [s.labels.troops, form.troops],
+                    [s.labels.activity, form.activity],
+                    [s.labels.discord, form.discord],
+                    [s.labels.experience, form.experience],
+                    [s.labels.message, form.message],
+                  ].map(([label, value]) => (
+                    <div key={label} data-testid="review-row" className="px-4 py-3">
+                      <p className="font-mono2 text-[9px] tracking-[0.25em] text-gold/80 mb-1">{label.replace(" *", "")}</p>
+                      <p className={`font-fell text-base text-bone/90 leading-snug ${label === s.labels.message ? "whitespace-pre-line" : "break-words"}`}>
+                        {value.trim() ? value : <span className="text-mist/60">—</span>}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <button
+                    type="button"
+                    data-testid="review-edit-btn"
+                    onClick={() => setReviewing(false)}
+                    className="flex-1 inline-flex items-center justify-center gap-2 font-mono2 text-xs tracking-[0.25em] px-6 py-3.5 border border-gold/50 text-gold hover:bg-gold/10 transition-all"
+                  >
+                    <RotateCcw className="w-4 h-4" /> {s.review.edit}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="review-seal-btn"
+                    onClick={seal}
+                    disabled={sending}
+                    className="flex-1 inline-flex items-center justify-center gap-2 font-display text-xl tracking-wider uppercase py-3.5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_40px_rgba(212,175,55,0.45)] disabled:opacity-60 disabled:cursor-wait transition-all"
+                  >
+                    <Check className="w-5 h-5" /> {sending ? s.submitting : s.review.seal}
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div key="edit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+              <div className="space-y-9">
               <fieldset data-testid="form-group-identity">
                 <legend className="flex items-center gap-3 w-full mb-5">
                   <Skull className="w-4 h-4 text-gold shrink-0" />
@@ -256,14 +320,17 @@ export default function ApplyForm() {
                 </div>
               </fieldset>
             </div>
-            <button
-              type="submit"
-              data-testid="submit-application-btn"
-              disabled={sending}
-              className="mt-8 w-full font-display text-2xl tracking-wider uppercase py-4 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_40px_rgba(212,175,55,0.45)] disabled:opacity-60 disabled:cursor-wait transition-all duration-300"
-            >
-              {sending ? s.submitting : s.submit}
-            </button>
+              <button
+                type="submit"
+                data-testid="submit-application-btn"
+                disabled={sending}
+                className="mt-9 w-full font-display text-2xl tracking-wider uppercase py-4 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_40px_rgba(212,175,55,0.45)] disabled:opacity-60 disabled:cursor-wait transition-all duration-300"
+              >
+                {s.submit}
+              </button>
+              </motion.div>
+            )}
+            </AnimatePresence>
             <p className="mt-4 font-mono2 text-[9px] tracking-[0.25em] text-mist text-center">{s.oathNote}</p>
           </motion.form>
         </div>

@@ -117,8 +117,14 @@ const fr = {
     },
     troopsOptions: ["T5 — L'élite de la flotte", "T4/T5 — Mixte", "T4 — Vétéran", "T3 et moins — En progression"],
     activityOptions: ["Quotidienne — 1 h / jour", "Régulière — 2-3 h / jour", "Intensive — 4 h et plus / jour", "Soirs & week-ends"],
-    submit: "Signer les articles de l'équipage",
+    submit: "Relire mon serment",
     submitting: "La cire fond…",
+    review: {
+      title: "Relis ton serment, marin",
+      hint: "CHAQUE LIGNE PART AU REGISTRE DU CONSEIL — REVIENS EN ARRIÈRE SI UNE VOILE CLOCHE, SCELLE QUAND TOUT EST JUSTE.",
+      edit: "REPRENDRE LA PLUME",
+      seal: "SCELLER MA CANDIDATURE",
+    },
     oathNote: "EN SIGNANT, TU JURES LOYAUTÉ À L'ÉQUIPAGE — ARTICLE V DU CODE",
     errors: {
       pseudo: "Ton pseudo de marin est requis (2 caractères minimum).",
@@ -507,8 +513,14 @@ const en = {
     },
     troopsOptions: ["T5 — Fleet elite", "T4/T5 — Mixed", "T4 — Veteran", "T3 or less — In progress"],
     activityOptions: ["Daily — 1 h / day", "Regular — 2-3 h / day", "Intensive — 4+ h / day", "Evenings & weekends"],
-    submit: "Sign the crew's articles",
+    submit: "Review my oath",
     submitting: "The wax is melting…",
+    review: {
+      title: "Read your oath, sailor",
+      hint: "EVERY LINE GOES TO THE COUNCIL'S REGISTRY — SAIL BACK IF SOMETHING RINGS WRONG, SEAL WHEN ALL IS TRUE.",
+      edit: "TAKE UP THE QUILL AGAIN",
+      seal: "SEAL MY APPLICATION",
+    },
     oathNote: "BY SIGNING, YOU SWEAR LOYALTY TO THE CREW — ARTICLE V OF THE CODE",
     errors: {
       pseudo: "Your sailor name is required (2 characters minimum).",
