@@ -901,9 +901,20 @@ export default function Admin() {
       <Nav />
       <main className="flex-1 pt-28 md:pt-36 pb-24" data-testid="admin-section">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          {authed !== true && (
+          {authed === null && (
+            /* Vérification de session — AUCUN formulaire affiché pendant l'attente :
+               un Capitaine déjà connecté ne doit JAMAIS revoir la page de connexion en flash. */
+            <div data-testid="admin-session-checking" className="min-h-[55vh] flex flex-col items-center justify-center gap-6 text-center">
+              <Loader2 className="w-10 h-10 text-gold animate-spin" />
+              <div>
+                <p className="font-display text-3xl sm:text-4xl text-gold uppercase tracking-wide mb-3">{a.loading}</p>
+                <p className="font-mono2 text-[10px] tracking-[0.3em] text-mist">{a.login.checking}</p>
+              </div>
+            </div>
+          )}
+          {authed === false && (
             <LoginScreen
-              checking={authed === null}
+              checking={false}
               onAuthed={() => { setAuthed(true); loadAll(); }}
             />
           )}

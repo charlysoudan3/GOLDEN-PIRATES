@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Shield, ShieldCheck, MapPin, Coins } from "lucide-react";
+import { X, Coins, MapPin } from "lucide-react";
 import LogoMark, { SkullIcon, CompassRose } from "./LogoMark";
 import LangSwitcher from "./LangSwitcher";
 import useAdminSession from "@/lib/useAdminSession";
@@ -18,8 +18,8 @@ const NAV_ITEMS = [
 ];
 
 export default function Nav() {
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [isRecruit, setIsRecruit] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,9 +35,7 @@ export default function Nav() {
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => { document.body.style.overflow = ""; };
   }, [open]);
 
   useEffect(() => {
@@ -47,70 +45,38 @@ export default function Nav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  // Une RECRUE = au moins un code de suivi gardé dans son coffre local (gp_bottles).
-  // Rafraîchi à l'ouverture du menu : le coffre peut changer pendant la session.
-  const refreshRecruit = () => {
-    try {
-      const v = JSON.parse(localStorage.getItem("gp_bottles"));
-      setIsRecruit(Array.isArray(v) && v.length > 0);
-    } catch {
-      setIsRecruit(false);
-    }
-  };
-
+  // Une RECRUE = au moins un code gardé dans son coffre local (gp_bottles).
+  // Réactif : montage, autre onglet (storage) et même onglet (gp_bottles_change).
   useEffect(() => {
-    try {
-      const v = JSON.parse(localStorage.getItem("gp_bottles"));
-      setIsRecruit(Array.isArray(v) && v.length > 0);
-    } catch {
-      setIsRecruit(false);
-    }
-  }, [open, location.pathname]);
-
-  useEffect(() => {
-    const onStorage = (e) => {
-      if (e.key && e.key !== "gp_bottles") return;
-      refreshRecruit();
+    const read = () => {
+      try {
+        const v = JSON.parse(localStorage.getItem("gp_bottles"));
+        setIsRecruit(Array.isArray(v) && v.length > 0);
+      } catch {
+        setIsRecruit(false);
+      }
     };
-    // storage = autres onglets · gp_bottles_change = le même onglet (l'étagère de /suivi)
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("gp_bottles_change", refreshRecruit);
+    read();
+    window.addEventListener("storage", read);
+    window.addEventListener("gp_bottles_change", read);
     return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("gp_bottles_change", refreshRecruit);
+      window.removeEventListener("storage", read);
+      window.removeEventListener("gp_bottles_change", read);
     };
   }, []);
 
-  useEffect(() => {
-    setOpen(false);
-  }, [location.pathname]);
+  useEffect(() => { setOpen(false); }, [location.pathname]);
 
-  const go = (id) => {
+  const goAnchor = (id) => {
     setOpen(false);
     if (location.pathname !== "/") navigate("/#" + id);
     else scrollToId(id);
   };
+  const goPage = (path) => { setOpen(false); navigate(path); };
 
-  const goSuivi = () => {
-    setOpen(false);
-    navigate("/suivi");
-  };
-
-  const goAdmin = () => {
-    setOpen(false);
-    navigate("/admin");
-  };
-
-  const goButin = () => {
-    setOpen(false);
-    navigate("/donations");
-  };
-
-  const goApply = () => {
-    setOpen(false);
-    if (location.pathname !== "/") navigate("/#postuler");
-    else scrollToId("postuler");
-  };
+  // La barre ne garde qu'UN bouton d'action — réservé au VISITEUR (Postuler).
+  // Recrues et Conseil passent par le menu : zéro doublon, zéro bouton qui change tout seul.
+  const onSuivi = location.pathname === "/suivi";
 
   return (
     <>
@@ -146,29 +112,20 @@ export default function Nav() {
 
           <div className="flex items-center gap-2 sm:gap-4">
             <LangSwitcher />
-            {!isAdmin && (
-              isRecruit ? (
-                <button
-                  data-testid="nav-cta-suivi"
-                  onClick={goSuivi}
-                  className="hidden md:block font-mono2 text-[11px] tracking-[0.25em] uppercase px-6 py-3 border border-gold/60 text-gold hover:bg-gold/10 transition-all duration-300"
-                >
-                  {c.nav.suivi}
-                </button>
-              ) : (
-                <button
-                  data-testid="nav-cta-apply"
-                  onClick={goApply}
-                  className="hidden md:block font-display text-lg tracking-wider uppercase px-6 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
-                >
-                  {c.nav.cta}
-                </button>
-              )
+            {!isAdmin && !isRecruit && (
+              <button
+                data-testid="nav-cta-apply"
+                onClick={() => goAnchor("postuler")}
+                className="hidden md:block font-display text-lg tracking-wider uppercase px-6 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+              >
+                {c.nav.cta}
+              </button>
             )}
             <button
               data-testid="nav-menu-toggle"
               onClick={() => setOpen(true)}
               aria-label="Menu"
+              aria-expanded={open}
               className="group flex items-center gap-2.5 border border-gold/40 bg-ink/60 backdrop-blur px-2.5 py-2 sm:px-4 hover:border-gold hover:shadow-[0_0_25px_rgba(212,175,55,0.25)] transition-all duration-300"
             >
               <CompassRose className="w-6 h-6 sm:w-7 sm:h-7 animate-spin-slow" />
@@ -184,7 +141,7 @@ export default function Nav() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: EASE }}
+            transition={{ duration: 0.35, ease: EASE }}
             className="fixed inset-0 z-[85] bg-ink overflow-hidden flex flex-col"
           >
             <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
@@ -222,6 +179,7 @@ export default function Nav() {
             </div>
 
             <div className="relative z-10 flex-1 min-h-0 flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
+              {/* NAVIGATION — les grandes pages, pour tout le monde */}
               <div className="lg:w-1/2 flex flex-col justify-start lg:justify-center px-6 sm:px-10 lg:px-16 py-8 lg:py-10 lg:pb-14">
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
@@ -239,7 +197,7 @@ export default function Nav() {
                       initial={{ opacity: 0, x: -40 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 + i * 0.09, duration: 0.7, ease: EASE }}
-                      onClick={() => go(l.id)}
+                      onClick={() => goAnchor(l.id)}
                       className="group flex items-baseline gap-4 sm:gap-6 text-left w-max max-w-full"
                     >
                       <span className="font-mono2 text-sm sm:text-lg text-gold/50 w-8 shrink-0">{l.num}</span>
@@ -253,53 +211,60 @@ export default function Nav() {
                     </motion.button>
                   ))}
                 </nav>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.7 }}
-                  className="hidden lg:block mt-12 rope-line h-[5px] w-3/4 opacity-50"
-                  aria-hidden="true"
-                />
               </div>
 
-              <div className="lg:w-1/2 flex flex-col justify-start lg:justify-center px-6 sm:px-10 lg:px-16 py-8 lg:py-10 lg:pb-14 gap-4 lg:gap-6">
+              {/* TON ESPACE — un seul visage selon qui tu es, jamais de doublon */}
+              <div className="lg:w-1/2 flex flex-col justify-start lg:justify-center px-6 sm:px-10 lg:px-16 py-8 lg:py-10 lg:pb-14 gap-4 lg:gap-5">
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.35, duration: 0.6, ease: EASE }}
                   className="font-mono2 text-[11px] tracking-[0.4em] text-gold"
                 >
-                  {c.footer.spacesTitle}
+                  {isAdmin ? c.footer.councilTitle : c.footer.spacesTitle}
                 </motion.p>
-                {!isAdmin && !isRecruit && (
-                  <motion.button
-                    data-testid="nav-cta-apply-menu"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.45, duration: 0.7, ease: EASE }}
-                    onClick={goApply}
-                    className="relative w-full max-w-md font-display text-3xl sm:text-4xl tracking-wider uppercase py-5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_45px_rgba(212,175,55,0.5)] transition-all duration-300"
-                  >
-                    {c.nav.cta}
-                  </motion.button>
-                )}
-                {!isAdmin && (
+
+                {isAdmin ? (
+                  <>
+                    <motion.button
+                      data-testid="nav-link-admin-registry"
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5, duration: 0.7, ease: EASE }}
+                      onClick={() => goPage("/admin")}
+                      aria-current={location.pathname === "/admin" ? "page" : undefined}
+                      className="w-full max-w-md flex items-center justify-center gap-2.5 bg-gold text-ink font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase hover:bg-goldlight transition-all duration-300"
+                    >
+                      {c.nav.admin}
+                    </motion.button>
+                    <motion.button
+                      data-testid="nav-link-admin-messages"
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.58, duration: 0.7, ease: EASE }}
+                      onClick={() => goPage("/admin#messagerie")}
+                      className="w-full max-w-md flex items-center justify-center gap-2.5 text-gold border border-gold/40 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase hover:bg-gold/10 transition-all duration-300"
+                    >
+                      {c.nav.messagerie}
+                    </motion.button>
+                  </>
+                ) : (
                   <motion.button
                     data-testid="nav-link-status"
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.55, duration: 0.7, ease: EASE }}
-                    onClick={location.pathname === "/suivi" ? undefined : goSuivi}
-                    aria-current={location.pathname === "/suivi" ? "page" : undefined}
+                    transition={{ delay: 0.5, duration: 0.7, ease: EASE }}
+                    onClick={onSuivi ? undefined : () => goPage("/suivi")}
+                    aria-current={onSuivi ? "page" : undefined}
                     className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
-                      location.pathname === "/suivi"
+                      onSuivi
                         ? "border border-gold bg-gold/10 text-gold cursor-default"
                         : isRecruit
                           ? "bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_35px_rgba(212,175,55,0.4)]"
                           : "text-gold border border-gold/40 hover:bg-gold/10 hover:border-gold"
                     }`}
                   >
-                    {location.pathname === "/suivi" ? (
+                    {onSuivi ? (
                       <>
                         <MapPin className="w-4 h-4 shrink-0" /> {c.nav.suivi} — {c.nav.here}
                       </>
@@ -308,12 +273,13 @@ export default function Nav() {
                     )}
                   </motion.button>
                 )}
+
                 <motion.button
                   data-testid="nav-link-butin"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.62, duration: 0.7, ease: EASE }}
-                  onClick={location.pathname === "/donations" ? undefined : goButin}
+                  onClick={location.pathname === "/donations" ? undefined : () => goPage("/donations")}
                   aria-current={location.pathname === "/donations" ? "page" : undefined}
                   className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
                     location.pathname === "/donations"
@@ -325,59 +291,6 @@ export default function Nav() {
                   {c.nav.butin}
                   {location.pathname === "/donations" && <span className="text-gold">— {c.nav.here}</span>}
                 </motion.button>
-                {isAdmin ? (
-                  <>
-                    <motion.button
-                      data-testid="nav-link-admin-registry"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.7, duration: 0.7, ease: EASE }}
-                      onClick={() => { setOpen(false); navigate("/admin#registry"); }}
-                      aria-current={location.pathname === "/admin" ? "page" : undefined}
-                      className="w-full max-w-md flex items-center justify-center gap-2.5 bg-gold text-ink font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase hover:bg-goldlight transition-all duration-300"
-                    >
-                      {c.nav.admin}
-                    </motion.button>
-                    <motion.button
-                      data-testid="nav-link-admin-messages"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.74, duration: 0.7, ease: EASE }}
-                      onClick={() => { setOpen(false); navigate("/admin#messagerie"); }}
-                      className="w-full max-w-md flex items-center justify-center gap-2.5 text-gold border border-gold/40 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase hover:bg-gold/10 transition-all duration-300"
-                    >
-                      {c.nav.messagerie}
-                    </motion.button>
-                    <motion.button
-                      data-testid="nav-link-public-site"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.78, duration: 0.7, ease: EASE }}
-                      onClick={() => { setOpen(false); navigate("/"); }}
-                      className="w-full max-w-md flex items-center justify-center gap-2.5 text-mist border border-mist/30 bg-deck/50 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase hover:text-gold hover:border-gold/60 transition-all duration-300"
-                    >
-                      {c.nav.publicSite}
-                    </motion.button>
-                  </>
-                ) : (
-                  <motion.button
-                    data-testid="nav-link-admin"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7, duration: 0.7, ease: EASE }}
-                    onClick={location.pathname === "/admin" ? undefined : goAdmin}
-                    aria-current={location.pathname === "/admin" ? "page" : undefined}
-                    className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
-                      location.pathname === "/admin"
-                        ? "border border-gold bg-gold/10 text-gold cursor-default"
-                        : "text-bone/90 border border-mist/40 bg-deck/70 hover:text-gold hover:border-gold/60 hover:bg-gold/5"
-                    }`}
-                  >
-                    {location.pathname === "/admin" ? <ShieldCheck className="w-4 h-4 shrink-0" /> : <Shield className="w-4 h-4 text-gold/80 shrink-0" />}
-                    {c.nav.admin}
-                    {location.pathname === "/admin" && <span className="text-gold">— {c.nav.here}</span>}
-                  </motion.button>
-                )}
               </div>
             </div>
 
