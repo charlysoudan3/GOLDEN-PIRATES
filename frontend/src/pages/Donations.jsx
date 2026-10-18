@@ -245,6 +245,9 @@ export default function Donations() {
               <Coins className="w-6 h-6 shrink-0" />
               {busy ? d.dropBusy : d.dropBtn}
             </motion.button>
+            <p className="mt-5 font-mono2 text-[9px] tracking-[0.25em] text-emerald-300 text-center" data-testid="donations-fee-note">
+              <ShieldCheck className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />{d.feeNote}
+            </p>
             {coming && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}

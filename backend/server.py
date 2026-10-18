@@ -751,7 +751,9 @@ async def donations_paypal(amount: Optional[float] = None):
     if amt is not None:
         amt = round(min(max(amt, 1.0), 10000.0), 2)
     if "paypal.me" in url:
-        full = f"{url.rstrip('/')}/{amt}" if amt else url
+        # Montant pré-rempli propre : 7 → "7", 7.5 → "7.5", 15.75 → "15.75" (jamais "7.0")
+        amt_txt = f"{amt:.2f}".rstrip("0").rstrip(".") if amt is not None else None
+        full = f"{url.rstrip('/')}/{amt_txt}" if amt_txt else url
     else:
         sep = "&" if "?" in url else "?"
         full = f"{url}{sep}amount={amt}" if amt else url
