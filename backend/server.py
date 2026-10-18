@@ -449,6 +449,7 @@ EXPORT_COLUMNS = [
     ("created_at", "DÉPOSÉE LE"),
     ("experience", "EXPÉRIENCE"),
     ("message", "MESSAGE"),
+    ("peer_note", "NOTE DE MER"),
 ]
 
 STATUS_FR = {
@@ -556,7 +557,7 @@ async def export_xlsx(_: str = Depends(require_admin)):
         cell.border = border
     ws2.row_dimensions[1].height = 24
     status_idx = [k for k, _ in EXPORT_COLUMNS].index("status") + 1
-    wrap_idx = {[k for k, _ in EXPORT_COLUMNS].index(k) + 1 for k in ("experience", "message", "note", "activity")}
+    wrap_idx = {[k for k, _ in EXPORT_COLUMNS].index(k) + 1 for k in ("experience", "message", "note", "peer_note", "activity")}
     for n, d in enumerate(docs):
         ws2.append(fmt_row(d))
         rn = ws2.max_row
@@ -572,7 +573,7 @@ async def export_xlsx(_: str = Depends(require_admin)):
         sc.alignment = Alignment(horizontal="center", vertical="top")
     if not docs:
         ws2.append(["La mer est calme — aucune candidature enregistrée pour l'instant."])
-    for i, w in enumerate([15, 20, 12, 20, 24, 18, 15, 36, 17, 42, 52], 1):
+    for i, w in enumerate([15, 20, 12, 20, 24, 18, 15, 36, 17, 42, 52, 34], 1):
         ws2.column_dimensions[get_column_letter(i)].width = w
     ws2.freeze_panes = "A2"
     ws2.auto_filter.ref = ws2.dimensions
@@ -675,8 +676,14 @@ async def export_pdf(_: str = Depends(require_admin)):
             [Paragraph("EXPÉRIENCE", lab), Paragraph(escape(d.get("experience", "")) or "— aucune ligne dans le journal de bord —", val), "", ""],
             [Paragraph("MESSAGE", lab), Paragraph(escape(d.get("message", "")) or "—", val), "", ""],
         ]
+        # lignes pleine largeur (col 1 → 3), index calculés dynamiquement
+        span_rows = [4, 5, 6]
         if d.get("note"):
             rows.append([Paragraph("NOTE DU CONSEIL", lab), Paragraph(escape(d["note"]), val), "", ""])
+            span_rows.append(len(rows) - 1)
+        if d.get("peer_note"):
+            rows.append([Paragraph("NOTE DE MER", lab), Paragraph(escape(d["peer_note"]), val), "", ""])
+            span_rows.append(len(rows) - 1)
         t = Table(rows, colWidths=[0.15 * W, 0.35 * W, 0.15 * W, 0.35 * W])
         style = [
             ("SPAN", (0, 0), (3, 0)),
@@ -693,10 +700,8 @@ async def export_pdf(_: str = Depends(require_admin)):
             ("TOPPADDING", (0, 0), (-1, -1), 5),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
         ]
-        for r in (4, 5, 6):
+        for r in span_rows:
             style.append(("SPAN", (1, r), (3, r)))
-        if d.get("note"):
-            style.append(("SPAN", (1, 7), (3, 7)))
         t.setStyle(TableStyle(style))
         return t
 
