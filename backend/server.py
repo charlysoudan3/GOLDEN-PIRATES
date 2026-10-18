@@ -905,6 +905,7 @@ async def peers_search(q: str, code: str, min_power: Optional[float] = None, max
             "power": d.get("power", ""),
             "troops": d.get("troops", ""),
             "status": d.get("status", "pending"),
+            "joined": d.get("created_at"),
         })
         if len(out) >= 12:
             break

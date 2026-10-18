@@ -230,8 +230,8 @@ class TestRoundtripMultilingual:
         hit = next((x for x in results if x["app_id"] == b["id"]), None)
         assert hit is not None, f"CJK search miss, got: {results}"
         assert hit["pseudo"] == b["pseudo"]
-        # Champs autorisés uniquement
-        assert set(hit.keys()) == {"app_id", "pseudo", "power", "troops", "status"}
+        # Champs autorisés uniquement (joined = date de dépôt, non sensible)
+        assert set(hit.keys()) == {"app_id", "pseudo", "power", "troops", "status", "joined"}
         # Champs sensibles JAMAIS exposés
         for leak in ("discord", "email", "tracking_code", "message", "experience", "ip"):
             assert leak not in hit, f"LEAK: {leak} exposé dans /peers/search"

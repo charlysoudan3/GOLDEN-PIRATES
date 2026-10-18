@@ -3,17 +3,21 @@ import { motion } from "framer-motion";
 import { Search, MessageSquare, ArrowLeft, Send, Users, Anchor as AnchorIcon, Lock, Gauge } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import api from "@/lib/api";
+import StatusBadge from "@/components/StatusBadge";
 
 const EASE = [0.22, 1, 0.36, 1];
 
 export default function PeerDen({ code, myName = "" }) {
-  const { c } = useLang();
+  const { c, lang } = useLang();
   const s = c.suivi;
   const p = s.peer;
+  const al = c.apply.labels;
+  const locale = lang === "fr" ? "fr-FR" : "en-GB";
   const [query, setQuery] = useState("");
   const [results, setResults] = useState(null);
   const [threads, setThreads] = useState(null);
   const [active, setActive] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [msgs, setMsgs] = useState([]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -128,7 +132,7 @@ export default function PeerDen({ code, myName = "" }) {
         </p>
       )}
 
-      {!active && (
+      {!active && !profile && (
         <form onSubmit={(e) => { e.preventDefault(); search(); }} className="flex flex-col sm:flex-row gap-3 mb-2">
           <input
             data-testid="peer-search-input"
@@ -171,11 +175,11 @@ export default function PeerDen({ code, myName = "" }) {
         ))}
       </div>
 
-      {results !== null && results.length === 0 && !active && (
+      {results !== null && results.length === 0 && !active && !profile && (
         <p data-testid="peer-empty" className="font-fell italic text-base text-bone/70 mb-4">{p.resultsEmpty}</p>
       )}
 
-      {results && results.length > 0 && !active && (
+      {results && results.length > 0 && !active && !profile && (
         <div className="mb-6">
           <p className="font-mono2 text-[9px] tracking-[0.25em] text-mist mb-2">{p.resultsTitle}</p>
           <ul className="space-y-2">
@@ -194,7 +198,7 @@ export default function PeerDen({ code, myName = "" }) {
                 <button
                   type="button"
                   data-testid={`peer-open-${r.app_id}`}
-                  onClick={() => openThread(r)}
+                  onClick={() => setProfile(r)}
                   disabled={busy}
                   className="inline-flex items-center gap-2 font-mono2 text-[10px] tracking-[0.25em] text-gold border border-gold/40 px-4 py-2 hover:bg-gold hover:text-ink transition-all duration-300"
                 >
@@ -204,6 +208,60 @@ export default function PeerDen({ code, myName = "" }) {
             ))}
           </ul>
         </div>
+      )}
+
+      {profile && !active && (
+        <motion.div
+          data-testid="peer-profile"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className="relative border border-gold/40 bg-parch/90 frame-plate p-6 sm:p-8 text-center mb-2"
+        >
+          <button
+            type="button"
+            data-testid="peer-profile-back"
+            onClick={() => setProfile(null)}
+            className="absolute top-4 left-4 inline-flex items-center gap-1.5 font-mono2 text-[9px] tracking-[0.25em] text-mist hover:text-gold transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> {p.profile.back}
+          </button>
+          <div
+            aria-hidden
+            data-testid="peer-profile-seal"
+            className="w-20 h-20 mx-auto rounded-full bg-[#101826] border-2 border-[#2b3b57] shadow-[0_4px_16px_rgba(0,0,0,0.65)] flex items-center justify-center -rotate-6 mt-6 mb-4"
+          >
+            <span className="font-display text-3xl text-goldlight">{profile.pseudo.trim().charAt(0).toUpperCase()}</span>
+          </div>
+          <p className="font-mono2 text-[9px] tracking-[0.3em] text-gold mb-2">{p.profile.title}</p>
+          <h4 data-testid="peer-profile-name" className="font-display text-3xl text-bone mb-4 break-words">{profile.pseudo}</h4>
+          <div className="grid sm:grid-cols-2 gap-3 text-left mb-3">
+            <div className="border border-gold/20 bg-ink/50 px-4 py-3">
+              <p className="font-mono2 text-[8px] tracking-[0.25em] text-gold/80 mb-1">{al.power}</p>
+              <p className="font-fell text-lg text-bone break-words">{profile.power || "—"}</p>
+            </div>
+            <div className="border border-gold/20 bg-ink/50 px-4 py-3">
+              <p className="font-mono2 text-[8px] tracking-[0.25em] text-gold/80 mb-1">{al.troops}</p>
+              <p className="font-fell text-lg text-bone break-words">{profile.troops || "—"}</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-5">
+            <StatusBadge status={profile.status} />
+            {profile.joined && (
+              <span className="font-mono2 text-[9px] tracking-[0.2em] text-mist">
+                {p.profile.since} {new Date(profile.joined).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            data-testid="peer-profile-write"
+            onClick={() => { const r = profile; setProfile(null); openThread(r); }}
+            className="w-full inline-flex items-center justify-center gap-2 font-display text-xl tracking-wider uppercase py-3.5 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_40px_rgba(212,175,55,0.45)] transition-all duration-300"
+          >
+            <MessageSquare className="w-5 h-5" /> {p.profile.write}
+          </button>
+        </motion.div>
       )}
 
       {active && (
