@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Coins, MapPin } from "lucide-react";
+import { Shield, Coins, MapPin, Anchor, X } from "lucide-react";
 import LogoMark, { SkullIcon, CompassRose } from "./LogoMark";
 import LangSwitcher from "./LangSwitcher";
 import useAdminSession from "@/lib/useAdminSession";
@@ -10,7 +10,8 @@ import { useLang } from "@/lib/i18n";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-const NAV_ITEMS = [
+// LE DOCK DE COMMANDEMENT — chaque onglet à sa place, visibles directement dans la barre (desktop).
+const DOCK_TABS = [
   { id: "alliance", key: "alliance", num: "I.", tid: "nav-link-manifesto" },
   { id: "code", key: "code", num: "II.", tid: "nav-link-code" },
   { id: "recit", key: "recit", num: "III.", tid: "nav-link-timeline" },
@@ -74,9 +75,9 @@ export default function Nav() {
   };
   const goPage = (path) => { setOpen(false); navigate(path); };
 
-  // La barre ne garde qu'UN bouton d'action — réservé au VISITEUR (Postuler).
-  // Recrues et Conseil passent par le menu : zéro doublon, zéro bouton qui change tout seul.
   const onSuivi = location.pathname === "/suivi";
+  const onButin = location.pathname === "/donations";
+  const onAdmin = location.pathname === "/admin";
 
   return (
     <>
@@ -84,12 +85,13 @@ export default function Nav() {
         data-testid="nav-header"
         className={`fixed top-0 inset-x-0 z-[80] transition-all duration-500 ${
           scrolled
-            ? "bg-ink/90 backdrop-blur-md border-b border-gold/20"
-            : "bg-gradient-to-b from-ink/70 to-transparent"
+            ? "bg-[#0C121C]/90 backdrop-blur-2xl border-b border-gold/30 shadow-[0_4px_30px_rgba(0,0,0,0.8)]"
+            : "bg-gradient-to-b from-ink/80 via-ink/40 to-transparent"
         }`}
       >
-        <div className="absolute inset-x-0 bottom-0 h-[3px] rope-line opacity-60" aria-hidden="true" />
+        <div className="absolute inset-x-0 bottom-0 h-[3px] rope-line opacity-50" aria-hidden="true" />
         <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 md:h-20 flex items-center justify-between gap-3">
+          {/* PAVILLON — la marque */}
           <button
             data-testid="nav-logo"
             onClick={() => {
@@ -101,7 +103,7 @@ export default function Nav() {
           >
             <LogoMark className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 shrink-0 transition-transform duration-700 group-hover:rotate-90" />
             <span className="text-left leading-none min-w-0">
-              <span className="block font-display text-lg sm:text-xl md:text-2xl text-gold tracking-wide whitespace-nowrap">
+              <span className="block font-display text-base sm:text-xl md:text-2xl text-gold tracking-wide whitespace-nowrap">
                 GOLDEN PIRATES
               </span>
               <span className="block font-mono2 text-[8px] sm:text-[10px] tracking-[0.4em] text-mist mt-1 whitespace-nowrap">
@@ -110,198 +112,250 @@ export default function Nav() {
             </span>
           </button>
 
-          <div className="flex items-center gap-2 sm:gap-4">
-            <LangSwitcher />
-            {!isAdmin && !isRecruit && (
+          {/* LES ONGLETS DU DOCK — visibles directement, plus besoin de menu sur grand écran */}
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+            {DOCK_TABS.map((t) => (
               <button
-                data-testid="nav-cta-apply"
-                onClick={() => goAnchor("postuler")}
-                className="hidden md:block font-display text-lg tracking-wider uppercase px-6 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+                key={t.id}
+                data-testid={t.tid}
+                onClick={() => goAnchor(t.id)}
+                className="group relative flex items-baseline gap-1.5 px-3 py-2 font-fell text-base text-bone/85 hover:text-gold transition-colors duration-300"
               >
-                {c.nav.cta}
+                <span className="font-mono2 text-[10px] text-gold/50 group-hover:text-gold">{t.num}</span>
+                <span className="relative">
+                  {c.nav[t.key]}
+                  <span className="absolute -bottom-1 left-0 h-[2px] w-0 bg-gold group-hover:w-full transition-all duration-400" />
+                </span>
               </button>
-            )}
+            ))}
+            <button
+              data-testid="nav-link-butin"
+              onClick={() => goPage("/donations")}
+              aria-current={onButin ? "page" : undefined}
+              className={`relative flex items-center gap-1.5 px-3 py-2 font-fell text-base transition-colors duration-300 ${
+                onButin ? "text-gold" : "text-bone/85 hover:text-gold"
+              }`}
+            >
+              <Coins className="w-4 h-4 text-gold/70" />
+              {c.nav.butin}
+              <span className={`absolute -bottom-1 left-0 h-[2px] bg-gold transition-all duration-400 ${onButin ? "w-full" : "w-0"}`} />
+            </button>
+          </nav>
+
+          {/* LA PASSERELLE DE COMMANDEMENT — langues, CONSEIL (toujours là), CTA du public */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <LangSwitcher />
+            <button
+              data-testid="nav-link-council"
+              onClick={() => goPage("/admin")}
+              aria-current={onAdmin ? "page" : undefined}
+              className={`flex items-center gap-1.5 sm:gap-2 font-mono2 text-[10px] sm:text-xs tracking-[0.2em] uppercase px-2.5 sm:px-4 py-2 border transition-all duration-300 ${
+                onAdmin && isAdmin
+                  ? "border-gold bg-gold/15 text-gold shadow-[0_0_20px_rgba(212,175,55,0.25)]"
+                  : "border-[#8B0000]/70 bg-[#8B0000]/25 text-bone hover:bg-[#8B0000]/45 hover:border-[#8B0000]"
+              }`}
+            >
+              <Shield className={`w-3.5 h-3.5 shrink-0 ${onAdmin && isAdmin ? "text-gold" : "text-red-400"}`} />
+              <span className="hidden sm:inline">{c.nav.conseil}</span>
+            </button>
+            {/* CRENEAU D'ACTION — largeur fixe : zéro déplacement de boutons quand le rôle change */}
+            <div className="hidden md:flex items-center justify-end min-w-[170px]">
+              {isAdmin ? null : isRecruit ? (
+                <button
+                  data-testid="nav-cta-suivi"
+                  onClick={() => goPage("/suivi")}
+                  className="font-display text-base lg:text-lg tracking-wider uppercase px-5 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300 whitespace-nowrap"
+                >
+                  {c.nav.suivi}
+                </button>
+              ) : (
+                <button
+                  data-testid="nav-cta-apply"
+                  onClick={() => goAnchor("postuler")}
+                  className="font-display text-base lg:text-lg tracking-wider uppercase px-5 py-2 bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300 whitespace-nowrap"
+                >
+                  {c.nav.cta}
+                </button>
+              )}
+            </div>
             <button
               data-testid="nav-menu-toggle"
               onClick={() => setOpen(true)}
               aria-label="Menu"
               aria-expanded={open}
-              className="group flex items-center gap-2.5 border border-gold/40 bg-ink/60 backdrop-blur px-2.5 py-2 sm:px-4 hover:border-gold hover:shadow-[0_0_25px_rgba(212,175,55,0.25)] transition-all duration-300"
+              className="lg:hidden group flex items-center gap-2 border border-gold/40 bg-[#0C121C]/70 backdrop-blur px-2.5 py-2 hover:border-gold hover:shadow-[0_0_25px_rgba(212,175,55,0.25)] transition-all duration-300"
             >
-              <CompassRose className="w-6 h-6 sm:w-7 sm:h-7 animate-spin-slow" />
+              <CompassRose className="w-6 h-6 animate-spin-slow" />
               <span className="hidden sm:block font-display text-lg text-gold tracking-wider">MENU</span>
             </button>
           </div>
         </div>
       </header>
 
+      {/* LE TIROIR HUD — verre obsidienne, mobile & tablette */}
       <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.35, ease: EASE }}
-            className="fixed inset-0 z-[85] bg-ink overflow-hidden flex flex-col"
+            transition={{ duration: 0.3, ease: EASE }}
+            className="fixed inset-0 z-[85] bg-ink/70 backdrop-blur-sm lg:hidden"
+            onClick={() => setOpen(false)}
+            data-testid="nav-drawer-overlay"
           >
-            <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_20%,rgba(11,25,44,0.9),transparent_60%)]" />
-              <div className="absolute inset-x-0 top-1/4 h-1/2 bg-[radial-gradient(ellipse_at_70%_50%,rgba(120,150,170,0.12),transparent_65%)] animate-fog" />
-              <div className="absolute right-[-15%] top-1/2 -translate-y-1/2 w-[70vw] max-w-[760px] opacity-[0.1] hidden md:block">
-                <div className="animate-spin-slow">
-                  <CompassRose className="w-full h-auto" />
-                </div>
+            <motion.aside
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ duration: 0.45, ease: EASE }}
+              onClick={(e) => e.stopPropagation()}
+              data-testid="nav-drawer"
+              className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-[#0C121C]/95 backdrop-blur-2xl border-l border-gold/30 shadow-[-20px_0_60px_rgba(0,0,0,0.7)] flex flex-col"
+            >
+              <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_10%,rgba(11,25,44,0.9),transparent_55%)]" />
+                <SkullIcon className="absolute right-[-8%] bottom-[-10%] w-[70vw] max-w-[420px] text-gold/[0.05]" />
               </div>
-              <SkullIcon className="absolute left-[-6%] bottom-[-14%] w-[60vw] max-w-[560px] text-gold/[0.05]" />
-              <div
-                className="absolute inset-0 opacity-[0.05]"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(rgba(212,175,55,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.4) 1px, transparent 1px)",
-                  backgroundSize: "72px 72px",
-                }}
-              />
-            </div>
 
-            <div className="relative z-10 flex items-center justify-between px-4 sm:px-8 h-16 md:h-20 border-b border-gold/15">
-              <LogoMark className="w-8 h-8 md:w-10 md:h-10" />
-              <div className="flex items-center gap-3 sm:gap-4">
-                <LangSwitcher />
+              <div className="relative z-10 flex items-center justify-between px-5 h-16 border-b border-gold/15">
+                <div className="flex items-center gap-2.5">
+                  <LogoMark className="w-9 h-9" />
+                  <span className="leading-none">
+                    <span className="block font-display text-lg text-gold tracking-wide">GOLDEN PIRATES</span>
+                    <span className="block font-mono2 text-[8px] tracking-[0.4em] text-mist mt-1">{c.nav.kingdom}</span>
+                  </span>
+                </div>
                 <button
                   data-testid="nav-menu-close"
                   onClick={() => setOpen(false)}
                   aria-label="Fermer"
                   className="p-2 text-gold hover:rotate-90 transition-transform duration-500"
                 >
-                  <X className="w-7 h-7" />
+                  <X className="w-6 h-6" />
                 </button>
               </div>
-            </div>
 
-            <div className="relative z-10 flex-1 min-h-0 flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
-              {/* NAVIGATION — les grandes pages, pour tout le monde */}
-              <div className="lg:w-1/2 flex flex-col justify-start lg:justify-center px-6 sm:px-10 lg:px-16 py-8 lg:py-10 lg:pb-14">
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15, duration: 0.6, ease: EASE }}
-                  className="font-mono2 text-[11px] tracking-[0.4em] text-gold mb-6 lg:mb-8"
-                >
-                  NAVIGATION
-                </motion.p>
-                <nav className="space-y-3 sm:space-y-7">
-                  {NAV_ITEMS.map((l, i) => (
-                    <motion.button
-                      key={l.id}
-                      data-testid={l.tid}
-                      initial={{ opacity: 0, x: -40 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 + i * 0.09, duration: 0.7, ease: EASE }}
-                      onClick={() => goAnchor(l.id)}
-                      className="group flex items-baseline gap-4 sm:gap-6 text-left w-max max-w-full"
-                    >
-                      <span className="font-mono2 text-sm sm:text-lg text-gold/50 w-8 shrink-0">{l.num}</span>
-                      <span className="relative font-display text-4xl sm:text-6xl lg:text-7xl text-bone group-hover:text-gold transition-colors duration-300 whitespace-nowrap">
-                        {c.nav[l.key]}
-                        <span className="absolute -left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block">
-                          <SkullIcon className="w-5 h-5 text-blood" />
+              <div className="relative z-10 flex-1 min-h-0 overflow-y-auto px-5 py-6 space-y-7">
+                {/* LA NAVIGATION */}
+                <div>
+                  <p className="font-mono2 text-[10px] tracking-[0.4em] text-gold mb-4">NAVIGATION</p>
+                  <div className="space-y-1">
+                    {DOCK_TABS.map((t, i) => (
+                      <motion.button
+                        key={t.id}
+                        data-testid={t.tid}
+                        initial={{ opacity: 0, x: 40 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.12 + i * 0.06, duration: 0.5, ease: EASE }}
+                        onClick={() => goAnchor(t.id)}
+                        className="group w-full flex items-baseline gap-3 py-2.5 text-left border-b border-gold/10 hover:border-gold/30 transition-colors"
+                      >
+                        <span className="font-mono2 text-[11px] text-gold/50 w-6 shrink-0">{t.num}</span>
+                        <span className="font-fell text-xl text-bone group-hover:text-gold transition-colors duration-300">
+                          {c.nav[t.key]}
                         </span>
-                        <span className="absolute -bottom-1 left-0 h-[2px] w-0 bg-gold group-hover:w-full transition-all duration-500" />
+                        <Anchor className="w-3.5 h-3.5 text-gold/0 group-hover:text-gold/70 ml-auto transition-colors duration-300" />
+                      </motion.button>
+                    ))}
+                    <motion.button
+                      data-testid="nav-link-butin"
+                      initial={{ opacity: 0, x: 40 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.38, duration: 0.5, ease: EASE }}
+                      onClick={onButin ? undefined : () => goPage("/donations")}
+                      aria-current={onButin ? "page" : undefined}
+                      className={`w-full flex items-baseline gap-3 py-2.5 text-left border-b border-gold/10 transition-colors ${onButin ? "text-gold" : ""}`}
+                    >
+                      <span className="font-mono2 text-[11px] text-gold/50 w-6 shrink-0">V.</span>
+                      <span className={`font-fell text-xl flex items-center gap-2 ${onButin ? "text-gold" : "text-bone"}`}>
+                        <Coins className="w-4 h-4 text-gold/70" /> {c.nav.butin}
+                        {onButin && <span className="font-mono2 text-[9px] tracking-[0.2em] text-gold">— {c.nav.here}</span>}
                       </span>
                     </motion.button>
-                  ))}
-                </nav>
-              </div>
+                  </div>
+                </div>
 
-              {/* TON ESPACE — un seul visage selon qui tu es, jamais de doublon */}
-              <div className="lg:w-1/2 flex flex-col justify-start lg:justify-center px-6 sm:px-10 lg:px-16 py-8 lg:py-10 lg:pb-14 gap-4 lg:gap-5">
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.35, duration: 0.6, ease: EASE }}
-                  className="font-mono2 text-[11px] tracking-[0.4em] text-gold"
-                >
-                  {isAdmin ? c.footer.councilTitle : c.footer.spacesTitle}
-                </motion.p>
-
-                {isAdmin ? (
-                  <>
-                    <motion.button
-                      data-testid="nav-link-admin-registry"
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5, duration: 0.7, ease: EASE }}
-                      onClick={() => goPage("/admin")}
-                      aria-current={location.pathname === "/admin" ? "page" : undefined}
-                      className="w-full max-w-md flex items-center justify-center gap-2.5 bg-gold text-ink font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase hover:bg-goldlight transition-all duration-300"
-                    >
-                      {c.nav.admin}
-                    </motion.button>
-                    <motion.button
-                      data-testid="nav-link-admin-messages"
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.58, duration: 0.7, ease: EASE }}
-                      onClick={() => goPage("/admin#messagerie")}
-                      className="w-full max-w-md flex items-center justify-center gap-2.5 text-gold border border-gold/40 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase hover:bg-gold/10 transition-all duration-300"
-                    >
-                      {c.nav.messagerie}
-                    </motion.button>
-                  </>
-                ) : (
-                  <motion.button
-                    data-testid="nav-link-status"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.7, ease: EASE }}
-                    onClick={onSuivi ? undefined : () => goPage("/suivi")}
-                    aria-current={onSuivi ? "page" : undefined}
-                    className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
-                      onSuivi
-                        ? "border border-gold bg-gold/10 text-gold cursor-default"
-                        : isRecruit
-                          ? "bg-gold text-ink border border-gold hover:bg-goldlight hover:shadow-[0_0_35px_rgba(212,175,55,0.4)]"
-                          : "text-gold border border-gold/40 hover:bg-gold/10 hover:border-gold"
-                    }`}
-                  >
-                    {onSuivi ? (
+                {/* TON ESPACE — un seul visage selon qui tu es */}
+                <div>
+                  <p className="font-mono2 text-[10px] tracking-[0.4em] text-gold mb-4">
+                    {isAdmin ? c.nav.conseil : c.footer.spacesTitle}
+                  </p>
+                  <div className="space-y-2.5">
+                    {isAdmin ? (
                       <>
-                        <MapPin className="w-4 h-4 shrink-0" /> {c.nav.suivi} — {c.nav.here}
+                        <motion.button
+                          data-testid="nav-link-admin-registry"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.45, duration: 0.5, ease: EASE }}
+                          onClick={() => goPage("/admin")}
+                          className="w-full flex items-center justify-center gap-2 bg-gold text-ink font-mono2 text-[11px] tracking-[0.25em] px-5 py-3.5 uppercase hover:bg-goldlight transition-all duration-300"
+                        >
+                          <Shield className="w-4 h-4 shrink-0" /> {c.nav.registre}
+                        </motion.button>
+                        <motion.button
+                          data-testid="nav-link-admin-messages"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.52, duration: 0.5, ease: EASE }}
+                          onClick={() => goPage("/admin#messagerie")}
+                          className="w-full flex items-center justify-center gap-2 text-gold border border-gold/40 font-mono2 text-[11px] tracking-[0.25em] px-5 py-3.5 uppercase hover:bg-gold/10 transition-all duration-300"
+                        >
+                          {c.nav.messagerie}
+                        </motion.button>
                       </>
                     ) : (
-                      c.nav.suivi
+                      <>
+                        {!isRecruit && (
+                          <motion.button
+                            data-testid="nav-cta-apply-menu"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.45, duration: 0.5, ease: EASE }}
+                            onClick={() => goAnchor("postuler")}
+                            className="w-full flex items-center justify-center bg-gold text-ink font-mono2 text-[11px] tracking-[0.25em] px-5 py-3.5 uppercase hover:bg-goldlight transition-all duration-300"
+                          >
+                            {c.nav.cta}
+                          </motion.button>
+                        )}
+                        <motion.button
+                          data-testid="nav-link-status"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.52, duration: 0.5, ease: EASE }}
+                          onClick={onSuivi ? undefined : () => goPage("/suivi")}
+                          aria-current={onSuivi ? "page" : undefined}
+                          className={`w-full flex items-center justify-center gap-2 font-mono2 text-[11px] tracking-[0.25em] px-5 py-3.5 uppercase transition-all duration-300 ${
+                            onSuivi
+                              ? "border border-gold bg-gold/10 text-gold cursor-default"
+                              : isRecruit
+                                ? "bg-gold text-ink border border-gold hover:bg-goldlight"
+                                : "text-gold border border-gold/40 hover:bg-gold/10 hover:border-gold"
+                          }`}
+                        >
+                          {onSuivi ? (
+                            <>
+                              <MapPin className="w-4 h-4 shrink-0" /> {c.nav.suivi} — {c.nav.here}
+                            </>
+                          ) : (
+                            c.nav.suivi
+                          )}
+                        </motion.button>
+                      </>
                     )}
-                  </motion.button>
-                )}
-
-                <motion.button
-                  data-testid="nav-link-butin"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.62, duration: 0.7, ease: EASE }}
-                  onClick={location.pathname === "/donations" ? undefined : () => goPage("/donations")}
-                  aria-current={location.pathname === "/donations" ? "page" : undefined}
-                  className={`w-full max-w-md flex items-center justify-center gap-2.5 font-mono2 text-xs tracking-[0.3em] px-6 py-4 uppercase transition-all duration-300 ${
-                    location.pathname === "/donations"
-                      ? "border border-gold bg-gold/10 text-gold cursor-default"
-                      : "text-mist border border-mist/30 bg-deck/50 hover:text-gold hover:border-gold/60 hover:bg-gold/5"
-                  }`}
-                >
-                  <Coins className="w-4 h-4 text-gold/70 shrink-0" />
-                  {c.nav.butin}
-                  {location.pathname === "/donations" && <span className="text-gold">— {c.nav.here}</span>}
-                </motion.button>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div
-              className="relative z-10 shrink-0 border-t border-gold/15 bg-ink/80 backdrop-blur px-4 sm:px-8 py-3 flex items-center justify-between gap-4"
-              style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
-            >
-              <span className="font-mono2 text-[9px] tracking-[0.3em] text-mist">GOLDEN PIRATES — {c.nav.kingdom}</span>
-              <SkullIcon className="w-4 h-4 text-blood/80 shrink-0" />
-              <span className="hidden sm:block font-mono2 text-[9px] tracking-[0.3em] text-mist">{c.hero.chips[2]}</span>
-            </div>
+              <div
+                className="relative z-10 shrink-0 border-t border-gold/15 bg-ink/80 px-5 py-3 flex items-center justify-between gap-3"
+                style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+              >
+                <span className="font-mono2 text-[9px] tracking-[0.3em] text-mist">G.P. — {c.nav.kingdom}</span>
+                <SkullIcon className="w-4 h-4 text-blood/80 shrink-0" />
+              </div>
+            </motion.aside>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,127 +1,86 @@
 {
-  "project_name": "Golden Pirates Recruit Portal - Espaces Recrue (Royaume 1023)",
-  "app_type": "Pirate Web App & Recruitment Portal (React JS + Tailwind CSS + Framer Motion)",
-  "design_archetype": "Gothic Nautical & Tactical Pirate Command Center",
-  "theme": "Dark Velvet & Gold Parchment (Ink #06090E, Gold #D4AF37, Bone Parchment #F5EFE0, Crimson #8B0000)",
-  "target_audience": "Recruits, Pirates, Council Officers, Kingdom 1023 Members across Desktop, Tablet, iOS, and Smartphone",
-  "key_problems_addressed": [
-    "Eliminated vertical stack chaos (~8 long blocks collapse together)",
-    "Modular Tabbed & Grid Architecture (Status & Dossier, Council Bottle Chat, Recruits Den, Bottle Shelf)",
-    "Added explicit sorting (Trier par date, statut, nom, puissance) and quick search filters across all lists",
-    "Enhanced button states, active feedback, accessible hit targets, and clear visual hierarchy for mobile/tablet/desktop",
-    "Restored functionality & clarity for re-applications, sanctuary cooldowns, code lookup, and peer messaging"
-  ],
+  "project_name": "Golden Pirates Navbar Rebuild - Tactical Command Dock (Kingdom 1023)",
+  "app_type": "bilingual_pirate_recruitment_portal",
+  "design_archetype": "Brass & Obsidian Tactical War-Room HUD / Strategic Quarterdeck Command Dock",
+  "theme": "Weathered Obsidian Glass, Antique Brass Accents, Gold Foil (#D4AF37), Crimson Velvet (#8B0000), Bone Vellum (#E8D8C8)",
+  "redesign_rationale": "Replaces the dark ink full-screen overlay menu with a modern, high-density Strategic Command Dock. Features horizontal strategic navigation clusters, permanently visible CONSEIL access button, role-adaptive action slots without layout shift, zero-flicker cached session management, and a sleek sliding Tactical HUD drawer for mobile/tablet.",
+  "strategic_grouping_concept": {
+    "cluster_1_brand": "Brand Identity Hub (GOLDEN PIRATES logo mark with rotating helm, ROYAUME 1023 brass badge)",
+    "cluster_2_navigation": "Strategic Anchor Tabs ([I. ALLIANCE], [II. CODE], [III. RÉCIT], [IV. PROCESSUS], [BUTIN & TRÉSOR]) with active glowing indicators",
+    "cluster_3_command": "Command Actions (Bilingual FR/EN toggle, Permanent CONSEIL Login/Dashboard button, and Dynamic Audience Action slot)"
+  },
+  "audience_role_rules": {
+    "visitor": {
+      "visible_cta": "Gold 'POSTULER' CTA (scrolls smoothly to #postuler application form)",
+      "forbidden_cta": "'Suivre ma candidature' is hidden unless a candidature bottle exists in storage"
+    },
+    "recruit": {
+      "trigger": "Detected via localStorage 'gp_bottles' (non-empty array) or active recruit session",
+      "visible_cta": "'SUIVRE MA CANDIDATURE' button (navigates to /suivi with active status pill)",
+      "forbidden_cta": "'POSTULER' CTA is strictly HIDDEN everywhere in the header to avoid duplicate submissions"
+    },
+    "council_admin": {
+      "trigger": "Active admin session in storage/cookie ('gp-auth')",
+      "visible_cta": "Permanent 'CONSEIL' button with 'ACTIF / OFFICIER' indicator",
+      "shortcuts": "Quick access pills to Registre (/admin) and Messagerie (/admin#messagerie)"
+    }
+  },
   "typography": {
-    "headings": {
-      "family": "'Pirata One', gothic, serif",
-      "h1": "text-3xl sm:text-4xl lg:text-5xl font-normal tracking-wide text-[#D4AF37] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]",
-      "h2": "text-2xl sm:text-3xl font-normal tracking-wide text-[#F5EFE0]",
-      "h3": "text-lg sm:text-xl font-normal text-[#D4AF37]",
-      "h4": "text-base sm:text-lg font-medium text-[#F5EFE0]"
+    "brand_heading": {
+      "font_family": "Pirata One, serif",
+      "styles": "text-xl sm:text-2xl font-bold tracking-wider text-[#D4AF37] uppercase"
     },
-    "subtitles_and_body_serif": {
-      "family": "'IM Fell English', serif",
-      "style": "italic",
-      "classes": "font-serif italic text-sm sm:text-base text-[#F5EFE0]/80"
+    "navigation_links": {
+      "font_family": "IM Fell English, serif",
+      "styles": "text-sm sm:text-base tracking-wide text-[#E8D8C8] hover:text-[#D4AF37] transition-colors"
     },
-    "mono_code": {
-      "family": "ui-monospace, 'JetBrains Mono', SFMono-Regular, monospace",
-      "classes": "font-mono tracking-widest uppercase text-amber-300 font-bold bg-[#0D131F] px-2 py-1 rounded border border-[#D4AF37]/30"
+    "command_badges": {
+      "font_family": "ui-monospace, 'JetBrains Mono', monospace",
+      "styles": "text-xs tracking-widest uppercase font-bold text-[#D4AF37] bg-[#0A0F18]/80 border border-[#D4AF37]/40 px-3 py-1.5 rounded"
     }
   },
   "colors": {
-    "background_base": "#06090E",
-    "background_surface": "#0F1622",
-    "background_surface_elevated": "#162030",
-    "parchment_text": "#F5EFE0",
-    "gold_primary": "#D4AF37",
-    "gold_hover": "#E5C158",
-    "gold_subtle": "rgba(212, 175, 55, 0.15)",
-    "crimson_alert": "#8B0000",
-    "crimson_hover": "#A00000",
-    "emerald_success": "#1B4D3E",
-    "border_gold_glow": "border border-[#D4AF37]/30 shadow-[0_0_12px_rgba(212,175,55,0.1)]",
-    "glass_panel": "backdrop-blur-xl bg-[#0F1622]/85 border border-[#D4AF37]/25 shadow-2xl"
+    "header_bg_scrolled": "bg-[#06090E]/95 backdrop-blur-xl border-b border-[#D4AF37]/30 shadow-[0_4px_30px_rgba(0,0,0,0.8)]",
+    "header_bg_top": "bg-gradient-to-b from-[#06090E]/90 via-[#06090E]/60 to-transparent",
+    "gold_accent": "#D4AF37",
+    "gold_hover": "#F0C850",
+    "bone_text": "#E8D8C8",
+    "crimson_council": "#8B0000",
+    "glass_panel": "backdrop-blur-2xl bg-[#0C121C]/90 border border-[#D4AF37]/30"
   },
-  "layout_and_navigation": {
-    "header": "Sticky translucent pirate navigation bar with backdrop-blur-md, kingdom status pill, countdown tag, brand mark, and desktop/mobile quick tabs",
-    "suivi_page_architecture": {
-      "mode": "Modular Tabbed Hub with Top Quick Search Bar",
-      "top_bar": "Search tracking code GP-1023-XXXX with high contrast INTERROGER button + Collapsible recovery panel toggle",
-      "tab_navigation": [
-        {
-          "id": "dossier",
-          "label": "Mon Statut & Dossier",
-          "icon": "ShieldCheck / Scroll",
-          "content": "Status badge, Discord acceptance banner / sanctuary cooldown, 6 detailed dossier fields, Council notes, Re-application trigger"
-        },
-        {
-          "id": "bouteille",
-          "label": "Bouteille à la Mer",
-          "icon": "MessageSquare / Mail",
-          "content": "Council direct messaging channel, real-time feel chat, message deletion, status indicators"
-        },
-        {
-          "id": "taniere",
-          "label": "Tanière des Recrues",
-          "icon": "Users / Compass",
-          "content": "Peer search by pseudo, power sorting, filter tabs, active recruit list with chat modal/drawer"
-        },
-        {
-          "id": "etagere",
-          "label": "Étagère à Bouteilles",
-          "icon": "Database / Bookmark",
-          "content": "Device saved codes grid/list, quick filter (Actif / Archivé), VOIR, Retirer, and POSTULER À NOUVEAU actions"
-        }
-      ],
-      "notifications_drawer": "Floating gold parchment notification bell & side panel for latest kingdom announcements"
-    }
-  },
-  "component_guidelines": {
-    "buttons": "Custom gold-bordered pirate buttons (`bg-gradient-to-r from-[#D4AF37] to-[#B89028] text-[#06090E] font-bold shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200 border border-[#FFF0A5]/40`). NEVER use default blue or plain gray buttons.",
-    "inputs": "Parchment-tinted dark inputs (`bg-[#0A0F18] border border-[#D4AF37]/40 text-[#F5EFE0] placeholder-[#F5EFE0]/40 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] px-4 py-3 rounded-md font-mono text-sm shadow-inner`).",
-    "cards": "Textured dark leather & parchment panels with metallic gold corner trims or 1px stroke border (`bg-[#0F1622] border border-[#D4AF37]/30 rounded-lg p-5 sm:p-6 shadow-xl relative overflow-hidden`).",
-    "badges": "Custom status pills: Accepté (Emerald Green #1B4D3E + Gold text), En Examen (Gold #D4AF37 + Dark text), Refusé (Sanctuaire Crimson #8B0000 + Parchment text)."
-  },
-  "sorting_and_filtering_controls": {
-    "recruits_den": "Sort selector: [Dernière activité, Puissance de combat (max->min), Statut, Alphabetique], Search input for pseudo",
-    "bottle_shelf": "Sort selector: [Date de sauvegarde, Statut de la candidature, Code GP], Filter buttons: [Tous, Validés, En attente, Refusés]"
-  },
-  "motion_and_effects": {
-    "tabs": "Smooth Framer Motion tab switcher (`layoutId='activeTab'`, smooth fade-in and scale-in 0.2s)",
-    "micro_interactions": "Haptic scale feel on hover/tap (`whileHover={{ scale: 1.02 }}`, `whileTap={{ scale: 0.97 }}`)",
-    "reduced_motion": "Respect `prefers-reduced-motion` with static fallbacks"
+  "interactive_behaviored_specifications": {
+    "session_caching": "Module-level cached auth state to guarantee zero loading flicker on initial page mount",
+    "zero_layout_shift": "Action button slot maintains fixed min-width dimensions (min-w-[160px] md:min-w-[200px]) across role state changes",
+    "reactive_events": "Listens for 'gp-auth-changed', 'gp_bottles_change', and window 'storage' events for instant state re-renders without full reload",
+    "mobile_drawer": "Tactical sliding HUD accordion with body scroll lock (overflow: hidden) and Escape key event handler"
   },
   "image_urls": {
     "vintage_map": "https://images.pexels.com/photos/20476788/pexels-photo-20476788.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
-    "world_parchment_map": "https://images.pexels.com/photos/592753/pexels-photo-592753.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
-    "nautical_compass_wood": "https://images.pexels.com/photos/32563237/pexels-photo-32563237.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
-    "telescope_and_box": "https://images.pexels.com/photos/10728161/pexels-photo-10728161.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    "nautical_compass": "https://images.pexels.com/photos/32563237/pexels-photo-32563237.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
   },
   "testing_attributes": {
-    "mandatory": "All interactive elements, buttons, tabs, inputs, filters, sort dropdowns, and status badges MUST include data-testid attributes.",
-    "examples": [
-      "data-testid='suivi-search-input'",
-      "data-testid='suivi-search-button'",
-      "data-testid='tab-dossier'",
-      "data-testid='tab-bouteille'",
-      "data-testid='tab-taniere'",
-      "data-testid='tab-etagere'",
-      "data-testid='sort-recruits-select'",
-      "data-testid='filter-status-all'",
-      "data-testid='btn-reapply'",
-      "data-testid='btn-delete-message'",
-      "data-testid='saved-bottle-view-btn'",
-      "data-testid='saved-bottle-remove-btn'"
-    ]
+    "nav_header": "data-testid='nav-header'",
+    "nav_logo": "data-testid='nav-logo'",
+    "nav_cta_apply": "data-testid='nav-cta-apply'",
+    "nav_cta_suivi": "data-testid='nav-cta-suivi'",
+    "nav_link_council": "data-testid='nav-link-council'",
+    "nav_link_council_login": "data-testid='nav-link-council-login'",
+    "nav_link_admin_registry": "data-testid='nav-link-admin-registry'",
+    "nav_link_admin_messages": "data-testid='nav-link-admin-messages'",
+    "nav_link_alliance": "data-testid='nav-link-manifesto'",
+    "nav_link_code": "data-testid='nav-link-code'",
+    "nav_link_recit": "data-testid='nav-link-timeline'",
+    "nav_link_processus": "data-testid='nav-link-process'",
+    "nav_link_butin": "data-testid='nav-link-butin'",
+    "nav_menu_toggle": "data-testid='nav-menu-toggle'",
+    "nav_menu_close": "data-testid='nav-menu-close'",
+    "lang_switcher": "data-testid='lang-switcher-btn'"
   },
   "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
-    "You are working in a React JS environment (.js and .jsx files). Do NOT use TypeScript type annotations.",
-    "Do not keep the vertical 8-block stack on /suivi page. Reorganize into a clean tabbed/bento UI hierarchy so users never lose their place.",
-    "Make sure all action buttons (VOIR, Retirer, POSTULER À NOUVEAU, Chat recrue, Interroger le registre, Replier) work seamlessly with clear state feedback.",
-    "Implement real sorting dropdowns and filter buttons for the Recruits' Den and Bottle Shelf lists.",
-    "Maintain the immersive pirate brand identity (Ink #06090E, Gold #D4AF37, Parchment #F5EFE0, Gothic typography, leather card panels).",
-    "Ensure total responsiveness across Smartphone (iOS/Android touch hit targets >= 44px), Tablet, and Desktop displays.",
-    "Add data-testid to every interactive component for testing verification."
+    "Execute all interactive nav component logic in React JS (.jsx/.js). Do not use TypeScript annotations.",
+    "Ensure the permanent CONSEIL button is always accessible in the top header (opens login modal or redirects to /admin).",
+    "Strictly hide POSTULER CTA for existing recruits (localStorage gp_bottles) and replace it with SUIVRE MA CANDIDATURE.",
+    "Support desktop, tablet, and 390px mobile viewports with zero text truncation or visual overlapping.",
+    "All interactive buttons and navigation links MUST include data-testid attributes matching test expectations."
   ]
 }
