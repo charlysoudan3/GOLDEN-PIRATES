@@ -332,6 +332,12 @@ export default function ApplyForm() {
             )}
             </AnimatePresence>
             <p className="mt-4 font-mono2 text-[9px] tracking-[0.25em] text-mist text-center">{s.oathNote}</p>
+            <p className="mt-2 font-mono2 text-[9px] tracking-[0.2em] text-mist text-center" data-testid="apply-cgu-accept">
+              {c.conditions.applyNote.before}{" "}
+              <Link to="/conditions" className="text-gold underline underline-offset-2 hover:text-goldlight transition-colors">
+                {c.conditions.applyNote.link}
+              </Link>
+            </p>
           </motion.form>
         </div>
       </div>

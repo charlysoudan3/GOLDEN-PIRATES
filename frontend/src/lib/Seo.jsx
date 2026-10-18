@@ -21,6 +21,10 @@ const ROUTES = {
     title: "Le butin volontaire — GOLDEN PIRATES · Royaume 1023",
     desc: "Soutenez le navire des Golden Pirates (Royaume 1023, Call of Dragons). L'entrée du site est libre et 100 % gratuite — chaque don est un cadeau volontaire.",
   },
+  "/conditions": {
+    title: "Conditions générales & mentions légales — GOLDEN PIRATES",
+    desc: "Mentions légales, conditions générales d'utilisation, protection des données (RGPD) et règles du bord du site des GOLDEN PIRATES (Royaume 1023, Call of Dragons). Éditeur : Charly Soudan — contact : golden.pirates@outlook.fr.",
+  },
 };
 
 const setMeta = (name, content) => {

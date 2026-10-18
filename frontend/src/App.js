@@ -10,6 +10,7 @@ import Home from "@/pages/Home";
 import Suivi from "@/pages/Suivi";
 import Donations from "@/pages/Donations";
 import Admin from "@/pages/Admin";
+import Conditions from "@/pages/Conditions";
 
 export function scrollToId(id) {
   const lenis = typeof window !== "undefined" ? window.__lenis : null;
@@ -88,6 +89,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/suivi" element={<Suivi />} />
             <Route path="/donations" element={<Donations />} />
+            <Route path="/conditions" element={<Conditions />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

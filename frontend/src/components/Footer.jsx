@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Compass } from "lucide-react";
+import { Compass, ShieldCheck, Lock } from "lucide-react";
 import LogoMark from "./LogoMark";
 import { useLang } from "@/lib/i18n";
 import useAdminSession from "@/lib/useAdminSession";
@@ -11,6 +11,7 @@ export default function Footer() {
   const { c } = useLang();
   const isAdmin = useAdminSession();
   const s = c.footer;
+  const t = c.conditions.trust;
   // Une RECRUE = au moins un code gardé dans son coffre local — elle ne voit plus « Postuler ».
   // Réactif : montage, changement de page, autre onglet (storage) et même onglet (gp_bottles_change).
   const [isRecruit, setIsRecruit] = useState(false);
@@ -159,6 +160,53 @@ export default function Footer() {
         >
           GOLDEN PIRATES
         </p>
+
+        {/* LE PAVILLON DE CONFIANCE — éditeur, courriel dédié, conditions, gratuité */}
+        <div
+          data-testid="footer-trust-band"
+          className="relative grid sm:grid-cols-2 lg:grid-cols-4 gap-6 border border-gold/25 bg-deck/60 p-6 sm:p-7 mb-10"
+        >
+          <p className="absolute -top-3 left-5 sm:left-7 bg-ink px-3 font-mono2 text-[9px] tracking-[0.3em] text-gold border border-gold/30">
+            {t.bandTitle}
+          </p>
+          <div data-testid="footer-trust-editor">
+            <p className="font-mono2 text-[9px] tracking-[0.3em] text-gold mb-2.5">{t.editorLabel}</p>
+            <p className="font-fell text-base text-bone/85 leading-relaxed">{t.editor}</p>
+          </div>
+          <div data-testid="footer-trust-mail-block">
+            <p className="font-mono2 text-[9px] tracking-[0.3em] text-gold mb-2.5">{t.mailLabel}</p>
+            <a
+              data-testid="footer-trust-mail"
+              href="mailto:golden.pirates@outlook.fr"
+              className="font-fell text-base text-gold hover:text-goldlight underline underline-offset-4 break-all transition-colors"
+            >
+              golden.pirates@outlook.fr
+            </a>
+            <p className="font-fell text-sm text-mist mt-1.5 leading-relaxed">{t.mailNote}</p>
+          </div>
+          <div data-testid="footer-trust-cgu-block">
+            <p className="font-mono2 text-[9px] tracking-[0.3em] text-gold mb-2.5">{t.cguLabel}</p>
+            <button
+              data-testid="footer-trust-cgu"
+              onClick={() => navigate("/conditions")}
+              className="font-fell text-base text-gold hover:text-goldlight underline underline-offset-4 transition-colors text-left"
+            >
+              {t.cguLink}
+            </button>
+            <p className="font-fell text-sm text-mist mt-1.5 leading-relaxed">{t.cguNote}</p>
+          </div>
+          <div data-testid="footer-trust-badges">
+            <p className="font-mono2 text-[9px] tracking-[0.3em] text-gold mb-2.5">{t.badgeLabel}</p>
+            <div className="flex flex-col items-start gap-2">
+              <span data-testid="footer-trust-free" className="inline-flex items-center gap-2 border border-emerald-400/50 bg-emerald-500/10 text-emerald-300 font-mono2 text-[9px] tracking-[0.2em] px-3 py-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" /> {t.badge1}
+              </span>
+              <span data-testid="footer-trust-nosale" className="inline-flex items-center gap-2 border border-emerald-400/50 bg-emerald-500/10 text-emerald-300 font-mono2 text-[9px] tracking-[0.2em] px-3 py-1.5">
+                <Lock className="w-3.5 h-3.5 shrink-0" /> {t.badge2}
+              </span>
+            </div>
+          </div>
+        </div>
 
         <div className="border-t border-gold/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="font-mono2 text-[9px] tracking-[0.25em] text-mist text-center sm:text-left">{s.disclaimer}</p>
