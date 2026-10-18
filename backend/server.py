@@ -21,7 +21,8 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+from reportlab.graphics.shapes import Drawing, Rect, String
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -547,7 +548,48 @@ async def export_xlsx(_: str = Depends(require_admin)):
     ws.column_dimensions["A"].width = 24
     ws.column_dimensions["B"].width = 14
 
-    # Feuille 2 — Registre complet
+    # Feuille 2 — Bios des recrues (lecture rapide pour les officiers)
+    wsB = wb.create_sheet("Bios des recrues")
+    wsB.merge_cells("A1:E1")
+    for col in "ABCDE":
+        wsB[f"{col}1"].fill = PatternFill("solid", fgColor="0B192C")
+    c = wsB["A1"]
+    c.value = "BIOS DES RECRUES — LA VOIX DE L'ÉQUIPAGE"
+    c.font = Font(color="D4AF37", bold=True, size=14)
+    c.alignment = Alignment(horizontal="center", vertical="center")
+    wsB.row_dimensions[1].height = 30
+    wsB.merge_cells("A2:E2")
+    bios_count = sum(1 for d in docs if (d.get("peer_note") or "").strip())
+    c = wsB["A2"]
+    c.value = f"{len(docs)} recrue(s) · {bios_count} note(s) de mer · édité le {fmt_dt(now_utc().isoformat())}"
+    c.font = Font(color="5C6B7E", italic=True, size=10)
+    c.alignment = Alignment(horizontal="center", vertical="center")
+    for i, h in enumerate(["PSEUDO", "PUISSANCE", "STATUT", "NOTE DE MER", "DÉPOSÉE LE"], 1):
+        cell = wsB.cell(row=3, column=i, value=h)
+        cell.fill = PatternFill("solid", fgColor="0B192C")
+        cell.font = Font(color="D4AF37", bold=True, size=10)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = border
+    for n, d in enumerate(sorted(docs, key=lambda x: (x.get("pseudo") or "").lower()), 0):
+        vals = [
+            d.get("pseudo", ""),
+            d.get("power", ""),
+            STATUS_FR.get(d.get("status"), d.get("status", "")),
+            (d.get("peer_note") or "").strip() or "—",
+            fmt_dt(d.get("created_at")) or "—",
+        ]
+        rn = 4 + n
+        for i, v in enumerate(vals, 1):
+            cell = wsB.cell(row=rn, column=i, value=v)
+            cell.border = border
+            cell.alignment = Alignment(vertical="top", wrap_text=(i == 4))
+            if n % 2 == 1:
+                cell.fill = PatternFill("solid", fgColor="F7F9FC")
+    for i, w in enumerate([24, 12, 15, 64, 16], 1):
+        wsB.column_dimensions[get_column_letter(i)].width = w
+    wsB.freeze_panes = "A4"
+
+    # Feuille 3 — Registre complet
     ws2 = wb.create_sheet("Registre")
     ws2.append([h for _, h in EXPORT_COLUMNS])
     for cell in ws2[1]:
@@ -647,6 +689,52 @@ async def export_pdf(_: str = Depends(require_admin)):
         kpi_style.append(("BACKGROUND", (i, 0), (i, 0), colors.HexColor(tint)))
     kpi_table.setStyle(TableStyle(kpi_style))
     flow += [kpi_table, Spacer(1, 7 * mm)]
+
+    # Page dédiée — répartition des puissances (barres dorées par tranche)
+    if docs:
+        bins = [
+            ("Moins de 6M", 0, 6),
+            ("6M – 10M", 6, 10),
+            ("10M – 15M", 10, 15),
+            ("15M – 20M", 15, 20),
+            ("20M et plus", 20, None),
+        ]
+        bin_counts = [0] * len(bins)
+        unreadable = 0
+        for d in docs:
+            pm = parse_power_m(d.get("power", ""))
+            if pm is None:
+                unreadable += 1
+                continue
+            for i, (_, lo, hi) in enumerate(bins):
+                if (hi is None and pm >= lo) or (lo <= pm < hi):
+                    bin_counts[i] += 1
+                    break
+        chart_title = ParagraphStyle("ct", fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=colors.HexColor(GOLD_HEX))
+        chart_sub = ParagraphStyle("cs", fontName="Helvetica", fontSize=8.5, leading=12, textColor=colors.HexColor("#C9D3E0"))
+        sub_txt = f"Répartition des {len(docs)} candidature(s) par tranche de puissance" + (f" · {unreadable} puissance(s) non lisible(s) hors graphique" if unreadable else "")
+        band_chart = Table([[Paragraph("RÉPARTITION DES PUISSANCES", chart_title)], [Paragraph(sub_txt, chart_sub)]], colWidths=[W])
+        band_chart.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(NAVY_HEX)),
+            ("LINEBELOW", (0, -1), (-1, -1), 1.5, colors.HexColor(GOLD_HEX)),
+            ("LEFTPADDING", (0, 0), (-1, -1), 14),
+            ("TOPPADDING", (0, 0), (0, 0), 12),
+            ("BOTTOMPADDING", (0, -1), (-1, -1), 12),
+        ]))
+        bar_h, gap, label_w = 9 * mm, 6.5 * mm, 32 * mm
+        chart_h = (bar_h + gap) * len(bins)
+        g = Drawing(W, chart_h)
+        max_c = max(bin_counts) or 1
+        max_w = W - label_w - 16 * mm
+        y = chart_h - bar_h
+        for i, (label, _, _) in enumerate(bins):
+            cnt = bin_counts[i]
+            w = max(max_w * cnt / max_c, 1.5) if cnt else 1.5
+            g.add(String(0, y + bar_h / 2 - 3.2, label, fontName="Helvetica", fontSize=8.5, fillColor=colors.HexColor("#4A5A70")))
+            g.add(Rect(label_w, y, w, bar_h, fillColor=colors.HexColor(GOLD_HEX), strokeColor=None, rx=2, ry=2))
+            g.add(String(label_w + w + 5, y + bar_h / 2 - 3.2, f"{cnt} · {round(cnt * 100 / len(docs))}%", fontName="Helvetica-Bold", fontSize=8.5, fillColor=colors.HexColor("#1A2433")))
+            y -= bar_h + gap
+        flow += [band_chart, Spacer(1, 6 * mm), g, PageBreak()]
 
     def build_card(d, numero):
         status = d.get("status", "pending")
