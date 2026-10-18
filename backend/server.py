@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.exceptions import RequestValidationError
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -44,6 +45,12 @@ api_router = APIRouter(prefix="/api")
 
 def now_utc():
     return datetime.now(timezone.utc)
+
+
+def safe_text(t: str) -> str:
+    """Neutralise les surrogates isolés (payload JSON malformé) qui font échouer
+    l'encodage UTF-8 de Mongo. Tout texte valide (chinois, russe, arabe, emoji…) passe intact."""
+    return t.encode("utf-8", "ignore").decode("utf-8")
 
 
 def hash_password(password: str) -> str:
@@ -151,6 +158,10 @@ IP_APPLICATIONS_PER_DAY = 6
 
 @api_router.post("/applications")
 async def create_application(data: ApplicationCreate, request: Request):
+    for _f in ("pseudo", "troops", "activity", "discord", "message"):
+        setattr(data, _f, safe_text(getattr(data, _f) or ""))
+    if data.experience:
+        data.experience = safe_text(data.experience)
     pseudo_key = data.pseudo.strip().lower()
     now = now_utc()
 
@@ -733,7 +744,7 @@ async def update_application(app_id: str, data: StatusUpdate, _: str = Depends(r
     current = await db.applications.find_one({"id": app_id}, {"status": 1, "pseudo_lower": 1, "pseudo": 1})
     if not current:
         raise HTTPException(status_code=404, detail="Candidature introuvable")
-    update = {"note": data.note or ""}
+    update = {"note": safe_text(data.note or "")}
     if current["status"] != data.status:
         update["status"] = data.status
         now_iso = now_utc().isoformat()
@@ -802,7 +813,7 @@ async def send_message(code: str, data: MessageCreate):
     code = code.strip().upper()
     if not await db.applications.find_one({"tracking_code": code}):
         raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
-    text = data.text.strip()
+    text = safe_text(data.text).strip()
     if not text:
         raise HTTPException(status_code=400, detail="Message vide")
     minute_ago = (now_utc() - timedelta(minutes=1)).isoformat()
@@ -929,7 +940,7 @@ async def peers_send(data: PeerMessageCreate):
         raise HTTPException(status_code=404, detail="Recrue introuvable")
     if other["id"] == mine["id"]:
         raise HTTPException(status_code=400, detail="Tu ne peux pas t'écrire toi-même, marin.")
-    text = data.text.strip()
+    text = safe_text(data.text).strip()
     if not text:
         raise HTTPException(status_code=400, detail="Message vide")
     hour_ago = (now_utc() - timedelta(hours=1)).isoformat()
@@ -1004,7 +1015,7 @@ async def admin_send_message(code: str, data: MessageCreate, _: str = Depends(re
     code = code.strip().upper()
     if not await db.applications.find_one({"tracking_code": code}):
         raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
-    text = data.text.strip()
+    text = safe_text(data.text).strip()
     if not text:
         raise HTTPException(status_code=400, detail="Message vide")
     minute_ago = (now_utc() - timedelta(minutes=1)).isoformat()
@@ -1103,6 +1114,16 @@ async def startup():
 
 
 app.include_router(api_router)
+
+
+# Bouclier : une validation échouée (ex: caractères Unicode malformés dans le JSON)
+# doit renvoyer un 422 PROPRE — jamais l'écho de l'input, qui peut planter la sérialisation.
+@app.exception_handler(RequestValidationError)
+async def safe_validation_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "Requête invalide — vérifie les champs envoyés."},
+    )
 
 origins = [
     o.strip() for o in os.environ.get('CORS_ORIGINS', '').split(',')
