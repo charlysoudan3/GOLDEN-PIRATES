@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { ChevronDown, LogOut, Search, Trash2, MessagesSquare, Anchor, Mail, KeyRound, Eye, EyeOff, Lock, Fingerprint, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import { ChevronDown, LogOut, Search, Trash2, MessagesSquare, Anchor, Mail, KeyRound, Eye, EyeOff, Lock, Fingerprint, FileSpreadsheet, FileText, Loader2, Feather } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
@@ -352,6 +352,16 @@ function AppRow({ app, onUpdate, onDelete, history }) {
                   <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1">{d.message}</p>
                   <p className="font-fell text-base text-bone/85 whitespace-pre-wrap">{app.message}</p>
                 </div>
+                {app.peer_note !== undefined && (
+                  <div data-testid={`admin-sea-note-${app.id}`}>
+                    <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist mb-1 flex items-center gap-1.5">
+                      <Feather className="w-3 h-3 text-gold shrink-0" /> {d.seaNote}
+                    </p>
+                    <p className="font-fell italic text-base text-goldlight/85 whitespace-pre-wrap">
+                      {app.peer_note ? `« ${app.peer_note} »` : d.noExp}
+                    </p>
+                  </div>
+                )}
                 <p className="font-mono2 text-[9px] tracking-[0.2em] text-mist">
                   {d.filedOn}{frDate(app.created_at, locale).toUpperCase()}
                 </p>
