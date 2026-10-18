@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Send, Trash2, ScrollText, Check, CheckCheck } from "lucide-react";
+import { Send, Trash2, ScrollText, Check, CheckCheck, ShieldCheck } from "lucide-react";
 import api, { formatApiError } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 
@@ -132,6 +132,7 @@ export default function ChatBox({ code, sender, testPrefix = "chat" }) {
             );
             return messages.map((m, i) => {
               const mine = m.sender === sender;
+              const isCouncil = m.sender === "council";
               const removed = m.deleted;
               const isNew = !removed && (m.was_new || newSeenRef.current.has(m.id));
               const newDay = i === 0 || dayKey(m.created_at) !== dayKey(messages[i - 1].created_at);
@@ -159,18 +160,30 @@ export default function ChatBox({ code, sender, testPrefix = "chat" }) {
                     className={`flex ${mine ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] sm:max-w-[70%] border px-4 py-2.5 ${
+                      className={`relative max-w-[85%] sm:max-w-[70%] border px-4 py-2.5 ${
                         removed
                           ? "border-mist/25 bg-ink/40"
-                          : mine
-                            ? "border-gold/40 bg-gold/10"
-                            : isNew
-                              ? "border-gold/60 bg-deck/90"
-                              : "border-gold/20 bg-deck/80"
+                          : isCouncil
+                            ? "border-gold/60 bg-gradient-to-br from-gold/15 via-gold/5 to-transparent shadow-[0_0_24px_rgba(212,175,55,0.15)]"
+                            : mine
+                              ? "border-gold/40 bg-gold/10"
+                              : isNew
+                                ? "border-gold/60 bg-deck/90"
+                                : "border-gold/20 bg-deck/80"
                       }`}
                     >
+                      {isCouncil && !removed && (
+                        <div
+                          aria-hidden
+                          data-testid={`${testPrefix}-wax-seal`}
+                          className="absolute -top-2.5 -right-2.5 w-8 h-8 rounded-full bg-blood border-2 border-[#7a1f1f] shadow-[0_2px_8px_rgba(0,0,0,0.65)] flex items-center justify-center -rotate-6"
+                        >
+                          <span className="font-display text-[9px] tracking-wider text-goldlight">GP</span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`font-mono2 text-[8px] tracking-[0.25em] ${mine ? "text-gold" : "text-mist"}`}>
+                        {isCouncil && !removed && <ShieldCheck className="w-3 h-3 text-gold shrink-0" />}
+                        <span className={`font-mono2 text-[8px] tracking-[0.25em] ${isCouncil && !removed ? "text-gold" : mine ? "text-gold" : "text-mist"}`}>
                           {mine ? (sender === "council" ? s.councilYou : s.you) : sender === "council" ? s.recruitLabel : s.council}
                         </span>
                         {mine && !removed && (
