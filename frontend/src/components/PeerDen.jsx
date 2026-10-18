@@ -166,7 +166,7 @@ export default function PeerDen({ code, myName = "" }) {
           <p className="font-display text-xl text-gold mb-4 flex items-center gap-2">
             <AnchorIcon className="w-4 h-4" /> {active.pseudo}
           </p>
-          <div data-testid="peer-msg-list" className="space-y-2 mb-4 max-h-80 overflow-y-auto pr-1">
+          <div data-testid="peer-msg-list" className="space-y-3 mb-4 max-h-80 overflow-y-auto p-3 pr-3">
             {msgs.map((m) => (
               <div
                 key={m.id}
