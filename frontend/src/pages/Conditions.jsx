@@ -26,7 +26,7 @@ function Toc({ d, variant }) {
       {d.sections.map((sec) => (
         <li key={sec.id}>
           <button
-            data-testid={`conditions-toc-${sec.id}`}
+            data-testid={`conditions-toc-${sec.id}${variant === "mobile" ? "-mobile" : ""}`}
             onClick={() => jump(sec.id)}
             className={`font-fell text-left hover:text-gold transition-colors ${variant === "mobile" ? "text-base text-bone/85" : "text-sm text-bone/75"}`}
           >
