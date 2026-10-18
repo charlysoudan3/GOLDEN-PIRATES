@@ -3,8 +3,7 @@ import { Anchor, Compass, Swords } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 
 const EASE = [0.16, 1, 0.3, 1];
-const FEAST_IMG =
-  "https://images.pexels.com/photos/6715125/pexels-photo-6715125.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
+const FEAST_IMG = "/feast-pirates.png";
 
 const rise = {
   initial: { opacity: 0, y: 40 },
