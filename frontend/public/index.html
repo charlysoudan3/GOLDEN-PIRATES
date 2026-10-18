@@ -6,7 +6,32 @@
     <meta name="theme-color" content="#06090E" />
     <meta name="color-scheme" content="dark" />
     <script>
-      try { if (localStorage.getItem("GP_SUN") === "1") document.documentElement.classList.add("sun-mode"); } catch (e) {}
+      try {
+        localStorage.removeItem("GP_SUN");
+        var __root = document.documentElement;
+        var __applySun = function () {
+          var h = new Date().getHours();
+          var day = h >= 9 && h <= 19;
+          var light = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+          var contrast = window.matchMedia && window.matchMedia("(prefers-contrast: more)").matches;
+          __root.classList.toggle("sun-mode", contrast || (light && day));
+        };
+        __applySun();
+        ["(prefers-color-scheme: light)", "(prefers-contrast: more)"].forEach(function (q) {
+          var mq = window.matchMedia(q);
+          if (mq.addEventListener) mq.addEventListener("change", __applySun);
+        });
+        setInterval(__applySun, 60000);
+        if ("AmbientLightSensor" in window) {
+          try {
+            var __sensor = new AmbientLightSensor({ frequency: 0.25 });
+            __sensor.addEventListener("reading", function () {
+              if (typeof __sensor.illuminance === "number") __root.classList.toggle("sun-mode", __sensor.illuminance > 120);
+            });
+            __sensor.start();
+          } catch (e) {}
+        }
+      } catch (e) {}
     </script>
     <meta
       name="description"
