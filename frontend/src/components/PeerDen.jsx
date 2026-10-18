@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MessageSquare, ArrowLeft, Send, Users, Anchor as AnchorIcon, Lock } from "lucide-react";
+import { Search, MessageSquare, ArrowLeft, Send, Users, Anchor as AnchorIcon, Lock, Gauge } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import api from "@/lib/api";
 
@@ -19,20 +19,35 @@ export default function PeerDen({ code, myName = "" }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const searchGen = useRef(0);
+  const [range, setRange] = useState(0); // 0 = toutes les puissances
+
+  // Tranches de puissance en millions (bornes : min inclus, max exclu)
+  const RANGES = [
+    { min: null, max: 6 },
+    { min: 6, max: 10 },
+    { min: 10, max: 15 },
+    { min: 15, max: 20 },
+    { min: 20, max: null },
+  ];
 
   const search = async (value) => {
     const q = (typeof value === "string" ? value : query).trim();
-    if (q.length < 2) { setResults(null); return; }
+    const hasRange = range > 0;
+    if (q.length < 2 && !hasRange) { setResults(null); return; }
     const gen = ++searchGen.current;
     setBusy(true);
     setError("");
     try {
-      const { data } = await api.get("/peers/search", { params: { q, code } });
+      const r = RANGES[range - 1];
+      const { data } = await api.get("/peers/search", { params: {
+        q, code,
+        ...(range > 0 ? { min_power: r.min ?? undefined, max_power: r.max ?? undefined } : {}),
+      } });
       if (gen !== searchGen.current) return;
       const ql = q.toLowerCase();
       setResults([...data].sort((a, b) => {
-        const pa = a.pseudo.toLowerCase().startsWith(ql) ? 0 : 1;
-        const pb = b.pseudo.toLowerCase().startsWith(ql) ? 0 : 1;
+        const pa = q.length >= 2 && a.pseudo.toLowerCase().startsWith(ql) ? 0 : 1;
+        const pb = q.length >= 2 && b.pseudo.toLowerCase().startsWith(ql) ? 0 : 1;
         if (pa !== pb) return pa - pb;
         return a.pseudo.localeCompare(b.pseudo, undefined, { sensitivity: "base" });
       }));
@@ -45,11 +60,11 @@ export default function PeerDen({ code, myName = "" }) {
     }
   };
 
-  // Recherche en direct : résultats dès 2 lettres, 300 ms après la dernière frappe — les requêtes obsolètes sont ignorées.
+  // Recherche en direct : résultats dès 2 lettres (ou une tranche choisie), 300 ms après la dernière frappe.
   useEffect(() => {
     const t = setTimeout(() => search(), 300);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, range]);
 
   const loadThreads = async () => {
     try {
@@ -133,6 +148,28 @@ export default function PeerDen({ code, myName = "" }) {
           </button>
         </form>
       )}
+
+      <div data-testid="peer-power-filter" className="flex flex-wrap items-center gap-2 mb-3">
+        <span className="font-mono2 text-[9px] tracking-[0.25em] text-mist flex items-center gap-1.5">
+          <Gauge className="w-3.5 h-3.5 text-gold shrink-0" /> {p.powerFilter}
+        </span>
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <button
+            key={i}
+            type="button"
+            data-testid={`peer-power-${i}`}
+            onClick={() => setRange(i)}
+            aria-pressed={range === i}
+            className={`font-mono2 text-[9px] tracking-[0.15em] px-3 py-1.5 border transition-all duration-300 ${
+              range === i
+                ? "bg-gold text-ink border-gold"
+                : "border-gold/30 text-mist hover:border-gold/60 hover:text-gold"
+            }`}
+          >
+            {i === 0 ? p.powerAll : p.powerRanges[i - 1]}
+          </button>
+        ))}
+      </div>
 
       {results !== null && results.length === 0 && !active && (
         <p data-testid="peer-empty" className="font-fell italic text-base text-bone/70 mb-4">{p.resultsEmpty}</p>

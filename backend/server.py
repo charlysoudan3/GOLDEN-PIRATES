@@ -856,27 +856,59 @@ class PeerMessageCreate(BaseModel):
     to_app_id: str = Field(min_length=8, max_length=64)
     text: str = Field(min_length=1, max_length=1000)
 
+def parse_power_m(text):
+    """'8M', '20m+', '9 500 000', '1,5M' → millions (float) ou None si illisible."""
+    t = re.sub(r"[\s,.\u202f']", "", (text or "")).upper()
+    m = re.search(r"(\d+(?:\.\d+)?)\s*M", t)
+    if m:
+        try:
+            return float(m.group(1))
+        except ValueError:
+            return None
+    m = re.fullmatch(r"(\d{4,})", t)
+    if m:
+        try:
+            return float(m.group(1)) / 1_000_000
+        except ValueError:
+            return None
+    return None
+
+
 @api_router.get("/peers/search")
-async def peers_search(q: str, code: str):
+async def peers_search(q: str, code: str, min_power: Optional[float] = None, max_power: Optional[float] = None):
     # Protégée par un code de suivi valide ; n'expose JAMAIS discord / email / code d'autrui.
     me = (code or "").strip().upper()
     mine = await db.applications.find_one({"tracking_code": me})
     if not mine:
         raise HTTPException(status_code=404, detail="Aucun dossier à ce code de suivi")
     q = (q or "").strip()
-    if len(q) < 2:
+    has_range = min_power is not None or max_power is not None
+    if len(q) < 2 and not has_range:
         return []
-    docs = await db.applications.find({
-        "pseudo": {"$regex": re.escape(q), "$options": "i"},
-        "tracking_code": {"$ne": me},
-    }, collation={"locale": "en", "strength": 2}).sort("pseudo", 1).to_list(12)
-    return [{
-        "app_id": d["id"],
-        "pseudo": d["pseudo"],
-        "power": d.get("power", ""),
-        "troops": d.get("troops", ""),
-        "status": d.get("status", "pending"),
-    } for d in docs]
+    query = {"tracking_code": {"$ne": me}}
+    if len(q) >= 2:
+        query["pseudo"] = {"$regex": re.escape(q), "$options": "i"}
+    docs = await db.applications.find(query, collation={"locale": "en", "strength": 2}).sort("pseudo", 1).to_list(200)
+    out = []
+    for d in docs:
+        if has_range:
+            pm = parse_power_m(d.get("power", ""))
+            if pm is None:
+                continue
+            if min_power is not None and pm < min_power:
+                continue
+            if max_power is not None and pm >= max_power:
+                continue
+        out.append({
+            "app_id": d["id"],
+            "pseudo": d["pseudo"],
+            "power": d.get("power", ""),
+            "troops": d.get("troops", ""),
+            "status": d.get("status", "pending"),
+        })
+        if len(out) >= 12:
+            break
+    return out
 
 @api_router.get("/peers/threads")
 async def peers_threads(code: str):
