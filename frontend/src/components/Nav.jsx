@@ -258,21 +258,6 @@ export default function Nav() {
                         <Anchor className="w-3.5 h-3.5 text-gold/0 group-hover:text-gold/70 ml-auto transition-colors duration-300" />
                       </motion.button>
                     ))}
-                    <motion.button
-                      data-testid="nav-link-butin"
-                      initial={{ opacity: 0, x: 40 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.38, duration: 0.5, ease: EASE }}
-                      onClick={onButin ? undefined : () => goPage("/donations")}
-                      aria-current={onButin ? "page" : undefined}
-                      className={`w-full flex items-baseline gap-3 py-2.5 text-left border-b border-gold/10 transition-colors ${onButin ? "text-gold" : ""}`}
-                    >
-                      <span className="font-mono2 text-[11px] text-gold/50 w-6 shrink-0">V.</span>
-                      <span className={`font-fell text-xl flex items-center gap-2 ${onButin ? "text-gold" : "text-bone"}`}>
-                        <Coins className="w-4 h-4 text-gold/70" /> {c.nav.butin}
-                        {onButin && <span className="font-mono2 text-[9px] tracking-[0.2em] text-gold">— {c.nav.here}</span>}
-                      </span>
-                    </motion.button>
                   </div>
                 </div>
 
@@ -344,6 +329,23 @@ export default function Nav() {
                         </motion.button>
                       </>
                     )}
+                    <motion.button
+                      data-testid="nav-link-butin"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.58, duration: 0.5, ease: EASE }}
+                      onClick={onButin ? undefined : () => goPage("/donations")}
+                      aria-current={onButin ? "page" : undefined}
+                      className={`w-full flex items-center justify-center gap-2 font-mono2 text-[11px] tracking-[0.25em] px-5 py-3.5 uppercase transition-all duration-300 ${
+                        onButin
+                          ? "border border-gold bg-gold/10 text-gold cursor-default"
+                          : "text-gold border border-gold/40 hover:bg-gold/10 hover:border-gold"
+                      }`}
+                    >
+                      <Coins className="w-4 h-4 shrink-0" />
+                      {c.nav.butin}
+                      {onButin && <span className="text-gold">— {c.nav.here}</span>}
+                    </motion.button>
                   </div>
                 </div>
               </div>
