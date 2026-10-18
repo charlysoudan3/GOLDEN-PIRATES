@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Compass, FileQuestion, Bell, RefreshCw, ScrollText, Anchor as AnchorIcon, RotateCcw, X, HelpCircle, Check, Copy, Users, MessageSquare, ShieldCheck, Database } from "lucide-react";
+import { Search, Compass, FileQuestion, Bell, RefreshCw, ScrollText, Anchor as AnchorIcon, RotateCcw, X, HelpCircle, Check, Copy, Users, MessageSquare, ShieldCheck, Database, LifeBuoy } from "lucide-react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
@@ -613,6 +613,13 @@ export default function Suivi() {
                               >
                                 <AnchorIcon className="w-5 h-5" /> {s.discordCta.btn}
                               </a>
+                              <p
+                                data-testid="status-discord-no-access"
+                                className="mt-3 flex items-start gap-2 font-mono2 text-[9px] tracking-[0.2em] text-emerald-300/70 leading-relaxed"
+                              >
+                                <LifeBuoy className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                                <span>{s.discordCta.noAccess}</span>
+                              </p>
                             </div>
                           )}
 

@@ -54,7 +54,7 @@ const fr = {
     articles: [
       { num: "I", title: "Puissance visée", value: "{MIN} à {MAX} — et plus", tag: "STRATÉGIQUE", text: "Notre plage idéale va de {MIN} à {MAX} : assez fort pour peser sur la carte, assez vert pour devenir une légende de la flotte. Les profils au-dessus de la fourchette sont étudiés avec gourmandise par le Conseil." },
       { num: "II", title: "Troupes de guerre", value: "T4 exigé — T5 priorisé", tag: "OBLIGATOIRE", text: "Behemoths, sièges et passages n'attendent pas. Tes troupes doivent suivre le rythme de la flotte." },
-      { num: "III", title: "Discord & vocal", value: "Présence au rassemblement", tag: "OBLIGATOIRE", text: "Les ordres de bataille se crient, pas s'écrivent. Discord et vocal sont obligatoires pendant les Behemoths et les guerres." },
+      { num: "III", title: "Communication de guerre", value: "La Bouteille à la Mer — Discord si tu peux", tag: "OBLIGATOIRE", text: "Les ordres de bataille se crient, pas s'écrivent. Notre messagerie de bord (la Bouteille à la Mer, dans ton Espace Recrue) fonctionne partout dans le monde, même pays bloqués. Discord et vocal s'ajoutent pendant les Behemoths et les guerres si tu y as accès." },
       { num: "IV", title: "Activité quotidienne", value: "Connexion régulière", tag: "SURVEILLÉ", text: "Un pirate absent affaiblit tout l'équipage. On ne te demandera pas d'y passer tes nuits — mais on te demandera d'être là." },
       { num: "V", title: "Fraternité d'acier", value: "Dons & respect des ordres", tag: "HONNEUR", text: "Le butin se partage, les ordres se suivent, l'équipage se protège. La loyauté est notre seule monnaie qui ne perd jamais de valeur." },
     ],
@@ -77,7 +77,7 @@ const fr = {
     steps: [
       { title: "Dépose ta candidature", text: "Remplis les articles du formulaire en bas de page. Deux minutes chrono, sans encre ni serment de sang." },
       { title: "Reçois ton code de suivi", text: "Un code unique du style GP-1023-XXXX te confie l'état de ton dossier. Conserve-le précieusement." },
-      { title: "Entretien avec le Conseil", text: "En fin de saison 2, le Conseil des Capitaines t'invite sur Discord pour jaser autour du tavernain." },
+      { title: "Entretien avec le Conseil", text: "En fin de saison 2, le Conseil des Capitaines t'invite à l'entretien — directement dans ta Bouteille à la Mer, et sur Discord si tu y as accès." },
       { title: "Embarque au Royaume 1023", text: "Pavillon hissé, cap sur l'or : tu intègres la flotte et tu prends part à la prochaine KvK." },
     ],
   },
@@ -138,7 +138,7 @@ const fr = {
       next: [
         "Conserve ton numéro de suivi en lieu sûr — c'est ta seule clef pour consulter ton dossier",
         "Consulte l'Espace Recrue quand tu veux pour voir où en est ton examen",
-        "Garde ton Discord actif : le Conseil t'appellera pour l'entretien",
+        "Le Conseil t'écrira dans ta Bouteille à la Mer (Espace Recrue) — et sur ton Discord si tu en as un",
       ],
       waitTitle: "TEMPS D'ATTENTE",
       wait: "Le Conseil répond à chaque recrue sous 72 h après l'ouverture officielle du recrutement — fin de la Saison 2. Les candidatures déposées en avance passent en premier.",
@@ -150,7 +150,7 @@ const fr = {
   },
   status: {
     pending: { label: "EN EXAMEN", long: "En cours d'examen par le Conseil des Capitaines" },
-    accepted: { label: "ACCEPTÉ À BORD", long: "Accepté — convocation Discord imminente, prépare tes affaires" },
+    accepted: { label: "ACCEPTÉ À BORD", long: "Accepté — convocation imminente dans ta Bouteille à la Mer, prépare tes affaires" },
     rejected: { label: "REFUSÉ", long: "Refusé pour cette saison — bon vent, marin. La mer est vaste : entraîne-toi, renforce tes troupes, et reviens nous voir plus fort. Ta bouteille à la mer reste ouverte pour garder le contact." },
     reserve: { label: "EN RÉSERVE", long: "Le Conseil croit en ton potentiel : renforce ton entraînement et ta puissance, puis remets ta candidature en fin de saison prochaine. Ton dossier passera en priorité — garde ton numéro de suivi." },
     note: "Note du Conseil : ",
@@ -213,6 +213,7 @@ const fr = {
       eyebrow: "TON ÉQUIPAGE T'ATTEND, CAPITAINE",
       title: "Ta place est à bord ! Le quartier général de l'alliance vit sur Discord : c'est là que les campagnes et les défenses s'orchestrent.",
       btn: "REJOINDRE LE DISCORD",
+      noAccess: "Pas d'accès à Discord ? Ta place reste sauvée — le Conseil te suit dans la Bouteille à la Mer.",
     },
     peer: {
       title: "LA TANIÈRE DES RECRUES",
@@ -443,7 +444,7 @@ const en = {
     articles: [
       { num: "I", title: "Target power", value: "{MIN} to {MAX} — and beyond", tag: "STRATEGIC", text: "Our ideal range runs from {MIN} to {MAX}: strong enough to weigh on the map, green enough to become a legend of the fleet. Profiles above the range are studied with relish by the Council." },
       { num: "II", title: "War troops", value: "T4 required — T5 preferred", tag: "REQUIRED", text: "Behemoths, sieges and marches wait for no one. Your troops must keep pace with the fleet." },
-      { num: "III", title: "Discord & voice", value: "Present at musters", tag: "REQUIRED", text: "Battle orders are shouted, not written. Discord and voice are mandatory during Behemoths and wars." },
+      { num: "III", title: "War communications", value: "The Bottle to the Sea — Discord if you can", tag: "REQUIRED", text: "Battle orders are shouted, not written. Our in-app messaging (the Bottle to the Sea, in your Recruit Space) works everywhere in the world, even blocked countries. Discord and voice join in during Behemoths and wars if you have access." },
       { num: "IV", title: "Daily activity", value: "Regular connection", tag: "WATCHED", text: "An absent pirate weakens the whole crew. We won't ask for your nights — we will ask you to show up." },
       { num: "V", title: "Brotherhood of steel", value: "Donations & following orders", tag: "HONOUR", text: "Booty is shared, orders are followed, the crew is protected. Loyalty is the only currency that never loses value." },
     ],
@@ -466,7 +467,7 @@ const en = {
     steps: [
       { title: "Submit your application", text: "Fill in the articles of the form at the bottom of the page. Two minutes flat, no ink or blood oath." },
       { title: "Receive your tracking code", text: "A unique code like GP-1023-XXXX unlocks your file's status. Keep it safe." },
-      { title: "Interview with the Council", text: "At the end of Season 2, the Council of Captains invites you on Discord for a chat." },
+      { title: "Interview with the Council", text: "At the end of Season 2, the Council of Captains invites you to the interview — directly in your Bottle to the Sea, and on Discord if you have access." },
       { title: "Board at Kingdom 1023", text: "Flag raised, heading for gold: you join the fleet and take part in the next KvK." },
     ],
   },
@@ -527,7 +528,7 @@ const en = {
       next: [
         "Keep your tracking number safe — it's your only key to your file",
         "Check the Recruit Space anytime to see where your review stands",
-        "Keep your Discord active: the Council will call you for the interview",
+        "The Council will write to you in your Bottle to the Sea (Recruit Space) — and on your Discord if you have one",
       ],
       waitTitle: "WAITING TIME",
       wait: "The Council answers every recruit within 72 h after official recruitment opens — end of Season 2. Early applications are processed first.",
@@ -539,7 +540,7 @@ const en = {
   },
   status: {
     pending: { label: "UNDER REVIEW", long: "Under review by the Council of Captains" },
-    accepted: { label: "ACCEPTED ABOARD", long: "Accepted — Discord summons incoming, pack your gear" },
+    accepted: { label: "ACCEPTED ABOARD", long: "Accepted — summons incoming in your Bottle to the Sea, pack your gear" },
     rejected: { label: "REJECTED", long: "Rejected for this season — fair winds, sailor. The sea is vast: train hard, grow your troops, and come back stronger. Your bottle stays open to keep in touch." },
     reserve: { label: "ON RESERVE", long: "The Council believes in your potential: train hard, grow your power, and submit a new application at the end of next season. Your file will be reviewed first — keep your tracking number." },
     note: "Council's note: ",
@@ -602,6 +603,7 @@ const en = {
       eyebrow: "YOUR CREW AWAITS, CAPTAIN",
       title: "Your place is aboard! The alliance's headquarters lives on Discord: campaigns and defenses are orchestrated there.",
       btn: "JOIN THE DISCORD",
+      noAccess: "No Discord access? Your spot is still saved — the Council follows up with you in the Bottle to the Sea.",
     },
     peer: {
       title: "THE CREW'S DEN",
