@@ -702,7 +702,7 @@ function ButinPanel() {
       </div>
 
       <p className="font-mono2 text-[11px] tracking-[0.3em] text-emerald-300 mb-6" data-testid="butin-total">
-        {a.butin.total} : {total.toFixed(2)} €
+        {a.butin.total} : {total.toFixed(2)} € · {items.length} {a.butin.giftsLabel}
       </p>
 
       {items.length > 0 ? (
@@ -712,11 +712,17 @@ function ButinPanel() {
               <div aria-hidden className="w-9 h-9 rounded-full bg-gold border border-goldlight flex items-center justify-center shrink-0 rotate-3">
                 <span className="font-display text-base text-ink">{(it.pseudo || "?").trim().charAt(0).toUpperCase()}</span>
               </div>
-              <p className="font-display text-lg text-bone flex-1 truncate">{it.pseudo}</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-display text-lg text-bone truncate">{it.pseudo}</p>
+                <p className="font-mono2 text-[9px] tracking-[0.15em] text-mist mt-0.5" data-testid={`butin-date-${it.id}`}>
+                  {it.created_at
+                    ? new Date(it.created_at).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { day: "2-digit", month: "short", year: "numeric" }) +
+                      " · " +
+                      new Date(it.created_at).toLocaleTimeString(lang === "fr" ? "fr-FR" : "en-GB", { hour: "2-digit", minute: "2-digit" })
+                    : "—"}
+                </p>
+              </div>
               <p className="font-mono2 text-[10px] tracking-[0.15em] text-gold shrink-0">{it.amount.toFixed(2)} €</p>
-              <p className="font-mono2 text-[9px] tracking-[0.15em] text-mist shrink-0 hidden sm:block">
-                {it.created_at ? new Date(it.created_at).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}
-              </p>
               <button
                 type="button"
                 data-testid={`butin-remove-${it.id}`}

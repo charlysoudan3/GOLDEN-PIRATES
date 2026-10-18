@@ -356,6 +356,7 @@ const fr = {
         goalSave: "RÉGLER L'OBJECTIF",
         goalSaved: "OBJECTIF MIS À JOUR ✓",
         goalInvalid: "Donne un objectif d'au moins 1 €.",
+        giftsLabel: "DON(S) REÇU(S)",
       },
       convEmpty: "Aucune conversation — les recrues n'ont pas encore lancé de bouteille.",
       convSearch: "Rechercher une recrue…",
@@ -481,6 +482,22 @@ const fr = {
     },
     thanksTitle: "MER À TOUS LES MARINS",
     thanksText: "Donateur ou non, ta place à bord est exactement la même. La fraternité des Golden Pirates ne se paie pas — elle se vit.",
+    cheer: {
+      title: "LE NAVIRE S'INCLINE, MARIN !",
+      line: (a) => a > 0
+        ? `Ton largage de ${a} € file vers le coffre — PayPal s'est ouvert dans un nouvel onglet : finalise-le, et la mer retiendra ton nom.`
+        : "PayPal s'est ouvert dans un nouvel onglet — choisis ta pièce, finalise ton largage, et la mer retiendra ton nom.",
+      whereTitle: "OÙ VA TON OR ?",
+      where: [
+        "Le navire — le serveur et le domaine restent à flot en toute saison.",
+        "La croissance — traductions, visibilité mondiale, nouveaux espaces pour l'équipage.",
+        "La fête — les réunions d'officiers et les événements qui soudent la fraternité.",
+        "Rien d'autre — pas d'intermédiaire, pas de part cachée : le Capitaine en rend compte à l'équipage.",
+      ],
+      hallNote: "Dès ton don reçu, le Conseil grave ton pseudo dans l'or du Hall des Donateurs — si PayPal n'affiche pas ton pseudo, signale-le à golden.pirates@outlook.fr.",
+      close: "QUE LA MER TE SOIT FAVORABLE",
+      sign: "— LE CONSEIL DES CAPITAINES, G.P. 1023",
+    },
   },
 
   conditions: {
@@ -1029,6 +1046,7 @@ const en = {
         goalSave: "SET THE GOAL",
         goalSaved: "GOAL UPDATED ✓",
         goalInvalid: "Give a goal of at least 1 €.",
+        giftsLabel: "GIFT(S) RECEIVED",
       },
       convEmpty: "No conversations yet — no recruit has launched a bottle.",
       convSearch: "Search a recruit…",
@@ -1154,6 +1172,22 @@ const en = {
     },
     thanksTitle: "THANKS TO EVERY SAILOR",
     thanksText: "Donor or not, your place aboard is exactly the same. The brotherhood of the Golden Pirates cannot be bought — it is lived.",
+    cheer: {
+      title: "THE SHIP BOWS TO YOU, SAILOR!",
+      line: (a) => a > 0
+        ? `Your ${a} € drop is racing to the chest — PayPal just opened in a new tab: finish it, and the sea will remember your name.`
+        : "PayPal just opened in a new tab — pick your coin, finish your drop, and the sea will remember your name.",
+      whereTitle: "WHERE DOES YOUR GOLD GO?",
+      where: [
+        "The ship — the server and domain stay afloat in every season.",
+        "The growth — translations, worldwide visibility, new spaces for the crew.",
+        "The feast — officers' meetings and events that bind the brotherhood.",
+        "Nothing else — no middleman, no hidden share: the Captain reports back to the crew.",
+      ],
+      hallNote: "As soon as your gift lands, the Council engraves your pseudo in the gold of the Donators' Hall — if PayPal doesn't show your pseudo, tell us at golden.pirates@outlook.fr.",
+      close: "MAY THE SEA FAVOR YOU",
+      sign: "— THE COUNCIL OF CAPTAINS, G.P. 1023",
+    },
   },
   conditions: {
     eyebrow: "THE TRUST SCROLL",

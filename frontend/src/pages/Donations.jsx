@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLang } from "@/lib/i18n";
 import Seo from "@/lib/Seo";
 import Nav from "@/components/Nav";
@@ -17,6 +17,8 @@ export default function Donations() {
   const [custom, setCustom] = useState("");
   const [busy, setBusy] = useState(false);
   const [coming, setComing] = useState(false);
+  const [thanks, setThanks] = useState(false);
+  const [thankAmount, setThankAmount] = useState(0);
   const [hallItems, setHallItems] = useState([]);
   const [hallTotal, setHallTotal] = useState(0);
   const [goal, setGoal] = useState(0);
@@ -48,6 +50,8 @@ export default function Donations() {
       if (data.configured && data.url) {
         window.open(data.url, "_blank", "noopener,noreferrer");
         setComing(false);
+        setThankAmount(chosenAmount >= 1 ? Math.min(chosenAmount, 10000) : 0);
+        setThanks(true);
       } else {
         setComing(true);
       }
@@ -365,6 +369,62 @@ export default function Donations() {
           </motion.div>
         </section>
       </main>
+
+      {/* LE REMERCIEMENT DU NAVIRE — après le clic PayPal */}
+      <AnimatePresence>
+        {thanks && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-ink/90 backdrop-blur-sm flex items-center justify-center p-5"
+            onClick={() => setThanks(false)}
+            data-testid="donation-cheer-overlay"
+          >
+            <motion.div
+              data-testid="donation-cheer-modal"
+              initial={{ scale: 0.85, y: 40, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              transition={{ duration: 0.5, ease: EASE }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto border-2 border-gold/60 bg-parch frame-plate p-8 sm:p-10 text-center"
+            >
+              <div aria-hidden className="w-14 h-14 mx-auto mb-5 rounded-full bg-gold border-2 border-goldlight flex items-center justify-center rotate-3 shadow-[0_0_35px_rgba(212,175,55,0.45)]">
+                <Coins className="w-7 h-7 text-ink" />
+              </div>
+              <p className="font-display text-3xl sm:text-4xl text-gold uppercase tracking-wide mb-4" data-testid="donation-cheer-title">
+                {d.cheer.title}
+              </p>
+              <p className="font-fell text-lg text-bone/90 leading-relaxed mb-6" data-testid="donation-cheer-line">
+                {d.cheer.line(thankAmount)}
+              </p>
+              <div className="border border-gold/30 bg-ink/50 p-5 text-left mb-5">
+                <p className="font-mono2 text-[10px] tracking-[0.3em] text-gold mb-3">{d.cheer.whereTitle}</p>
+                <ul className="space-y-2.5">
+                  {d.cheer.where.map((w, i) => (
+                    <li key={i} className="font-fell text-base text-bone/85 leading-relaxed flex items-start gap-2.5">
+                      <Anchor className="w-3.5 h-3.5 text-gold shrink-0 mt-1.5" />
+                      {w}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <p className="font-fell text-sm text-mist leading-relaxed mb-6" data-testid="donation-cheer-hall-note">
+                {d.cheer.hallNote}
+              </p>
+              <p className="font-fell italic text-base text-gold/80 mb-6">{d.cheer.sign}</p>
+              <button
+                data-testid="donation-cheer-close"
+                onClick={() => setThanks(false)}
+                className="w-full font-display text-2xl tracking-wider uppercase py-4 bg-gold text-ink hover:bg-goldlight hover:shadow-[0_0_40px_rgba(212,175,55,0.45)] transition-all duration-300"
+              >
+                {d.cheer.close}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <Footer />
     </div>
   );
