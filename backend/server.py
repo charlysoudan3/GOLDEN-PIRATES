@@ -547,6 +547,9 @@ async def export_xlsx(_: str = Depends(require_admin)):
         r += 1
     ws.column_dimensions["A"].width = 24
     ws.column_dimensions["B"].width = 14
+    nav = ws.cell(row=r + 1, column=1, value="LIRE DANS L'ORDRE : « Bios des recrues » = la voix de l'équipage · « Registre » = le détail de chaque dossier, trié par décision")
+    nav.font = Font(italic=True, size=9, color="5C6B7E")
+    nav.alignment = Alignment(horizontal="left", vertical="center")
 
     # Feuille 2 — Bios des recrues (lecture rapide pour les officiers)
     wsB = wb.create_sheet("Bios des recrues")
@@ -589,20 +592,39 @@ async def export_xlsx(_: str = Depends(require_admin)):
         wsB.column_dimensions[get_column_letter(i)].width = w
     wsB.freeze_panes = "A4"
 
-    # Feuille 3 — Registre complet
+    # Feuille 3 — Registre complet (bandeau + ordre des décisions : à trancher d'abord)
+    DECISION_ORDER = {"pending": 0, "accepted": 1, "reserve": 2, "rejected": 3}
+
+    def _decision_key(d):
+        ts = 0.0
+        try:
+            ts = datetime.fromisoformat(d.get("created_at")).timestamp() if d.get("created_at") else 0.0
+        except (TypeError, ValueError):
+            pass
+        return (DECISION_ORDER.get(d.get("status"), 9), -ts)
+
+    docs_ordered = sorted(docs, key=_decision_key)
     ws2 = wb.create_sheet("Registre")
-    ws2.append([h for _, h in EXPORT_COLUMNS])
-    for cell in ws2[1]:
-        cell.fill = PatternFill("solid", fgColor="0B192C")
-        cell.font = Font(color="D4AF37", bold=True, size=10)
+    ws2.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(EXPORT_COLUMNS))
+    hc = ws2.cell(row=1, column=1, value="REGISTRE COMPLET — ORDRE DES DÉCISIONS (EN EXAMEN → ACCEPTÉES → RÉSERVE → REFUSÉES)")
+    hc.fill = PatternFill("solid", fgColor="0B192C")
+    hc.font = Font(color="D4AF37", bold=True, size=12)
+    hc.alignment = Alignment(horizontal="center", vertical="center")
+    ws2.row_dimensions[1].height = 26
+    hdr_row = 2
+    for i, (_, h) in enumerate(EXPORT_COLUMNS, 1):
+        cell = ws2.cell(row=hdr_row, column=i, value=h)
+        cell.fill = PatternFill("solid", fgColor="14273F")
+        cell.font = Font(color="F2D98D", bold=True, size=10)
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         cell.border = border
-    ws2.row_dimensions[1].height = 24
+    ws2.row_dimensions[hdr_row].height = 24
     status_idx = [k for k, _ in EXPORT_COLUMNS].index("status") + 1
     wrap_idx = {[k for k, _ in EXPORT_COLUMNS].index(k) + 1 for k in ("experience", "message", "note", "peer_note", "activity")}
-    for n, d in enumerate(docs):
-        ws2.append(fmt_row(d))
-        rn = ws2.max_row
+    for n, d in enumerate(docs_ordered):
+        rn = hdr_row + 1 + n
+        for i, v in enumerate(fmt_row(d), 1):
+            ws2.cell(row=rn, column=i, value=v)
         for i in range(1, len(EXPORT_COLUMNS) + 1):
             cell = ws2.cell(row=rn, column=i)
             cell.border = border
@@ -614,11 +636,12 @@ async def export_xlsx(_: str = Depends(require_admin)):
         sc.font = Font(bold=True, color=STATUS_HEX.get(d.get("status"), "#1A2433").lstrip("#"))
         sc.alignment = Alignment(horizontal="center", vertical="top")
     if not docs:
-        ws2.append(["La mer est calme — aucune candidature enregistrée pour l'instant."])
+        ws2.cell(row=hdr_row + 1, column=1, value="La mer est calme — aucune candidature enregistrée pour l'instant.")
     for i, w in enumerate([15, 20, 12, 20, 24, 18, 15, 36, 17, 42, 52, 34], 1):
         ws2.column_dimensions[get_column_letter(i)].width = w
-    ws2.freeze_panes = "A2"
-    ws2.auto_filter.ref = ws2.dimensions
+    ws2.freeze_panes = "A3"
+    last_col = get_column_letter(len(EXPORT_COLUMNS))
+    ws2.auto_filter.ref = f"A{hdr_row}:{last_col}{max(hdr_row + 1, ws2.max_row)}"
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
@@ -794,8 +817,42 @@ async def export_pdf(_: str = Depends(require_admin)):
         return t
 
     if docs:
-        for i, d in enumerate(docs, 1):
-            flow.append(build_card(d, i))
+        DECISION_ORDER = {"pending": 0, "accepted": 1, "reserve": 2, "rejected": 3}
+
+        def _decision_key(d):
+            ts = 0.0
+            try:
+                ts = datetime.fromisoformat(d.get("created_at")).timestamp() if d.get("created_at") else 0.0
+            except (TypeError, ValueError):
+                pass
+            return (DECISION_ORDER.get(d.get("status"), 9), -ts)
+
+        docs_sorted = sorted(docs, key=_decision_key)
+        section_style = ParagraphStyle(
+            "sec", fontName="Helvetica-Bold", fontSize=11.5, leading=15, textColor=colors.HexColor(GOLD_HEX),
+        )
+        SECTION_FR = {
+            "pending": "EN EXAMEN — DOSSIERS À TRANCHER",
+            "accepted": "ACCEPTÉES À BORD",
+            "reserve": "EN RÉSERVE — LA RÉSERVE DE LA FLOTTE",
+            "rejected": "REFUSÉES — DÉCISION RENDUE",
+        }
+        last_status = None
+        for numero, d in enumerate(docs_sorted, 1):
+            st = d.get("status")
+            if st != last_status:
+                group_n = sum(1 for x in docs_sorted if x.get("status") == st)
+                sec = Table([[Paragraph(f"{SECTION_FR.get(st, st)} — {group_n} DOSSIER(S)", section_style)]], colWidths=[W])
+                sec.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(NAVY_HEX)),
+                    ("LINEBELOW", (0, 0), (-1, -1), 1.5, colors.HexColor(GOLD_HEX)),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 14),
+                    ("TOPPADDING", (0, 0), (-1, -1), 9),
+                    ("BOTTOMPADDING", (0, -1), (-1, -1), 9),
+                ]))
+                flow += [sec, Spacer(1, 5 * mm)]
+                last_status = st
+            flow.append(build_card(d, numero))
             flow.append(Spacer(1, 5 * mm))
     else:
         mer = Table([[Paragraph(
@@ -812,8 +869,8 @@ async def export_pdf(_: str = Depends(require_admin)):
 
     def _footer(canv, _d):
         canv.saveState()
-        canv.setStrokeColor(colors.HexColor("#D8DEE8"))
-        canv.setLineWidth(0.5)
+        canv.setStrokeColor(colors.HexColor(GOLD_HEX))
+        canv.setLineWidth(0.75)
         canv.line(15 * mm, 13.5 * mm, A4[0] - 15 * mm, 13.5 * mm)
         canv.setFont("Helvetica", 7.5)
         canv.setFillColor(colors.HexColor(GRAY_HEX))
